@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2009 NVIDIA Corporation
  *
@@ -18,15 +24,15 @@
 
 // A simple timer class
 
-#ifdef __CUDACC__
+#ifdef __MUSACC__
 
 // use CUDA's high-resolution timers when possible
-#include <cuda_runtime_api.h>
-#include <thrust/system/cuda/error.h>
+#include <musa_runtime_api.h>
+#include <thrust/system/musa/error.h>
 #include <thrust/system_error.h>
 #include <string>
 
-void cuda_safe_call(cudaError_t error, const std::string& message = "")
+void cuda_safe_call(musaError_t error, const std::string& message = "")
 {
   if(error)
     throw thrust::system_error(error, thrust::cuda_category(), message);
@@ -34,34 +40,34 @@ void cuda_safe_call(cudaError_t error, const std::string& message = "")
 
 struct timer
 {
-  cudaEvent_t start;
-  cudaEvent_t end;
+  musaEvent_t start;
+  musaEvent_t end;
 
   timer(void)
   {
-    cuda_safe_call(cudaEventCreate(&start));
-    cuda_safe_call(cudaEventCreate(&end));
+    cuda_safe_call(musaEventCreate(&start));
+    cuda_safe_call(musaEventCreate(&end));
     restart();
   }
 
   ~timer(void)
   {
-    cuda_safe_call(cudaEventDestroy(start));
-    cuda_safe_call(cudaEventDestroy(end));
+    cuda_safe_call(musaEventDestroy(start));
+    cuda_safe_call(musaEventDestroy(end));
   }
 
   void restart(void)
   {
-    cuda_safe_call(cudaEventRecord(start, 0));
+    cuda_safe_call(musaEventRecord(start, 0));
   }
 
   double elapsed(void)
   {
-    cuda_safe_call(cudaEventRecord(end, 0));
-    cuda_safe_call(cudaEventSynchronize(end));
+    cuda_safe_call(musaEventRecord(end, 0));
+    cuda_safe_call(musaEventSynchronize(end));
 
     float ms_elapsed;
-    cuda_safe_call(cudaEventElapsedTime(&ms_elapsed, start, end));
+    cuda_safe_call(musaEventElapsedTime(&ms_elapsed, start, end));
     return ms_elapsed / 1e3;
   }
 

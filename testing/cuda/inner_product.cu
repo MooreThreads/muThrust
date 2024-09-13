@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/inner_product.h>
 #include <thrust/execution_policy.h>
@@ -30,8 +36,8 @@ void TestInnerProductDevice(ExecutionPolicy exec)
 
   inner_product_kernel<<<1,1>>>(exec, d_v1.begin(), d_v1.end(), d_v2.begin(), init, result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(expected, result[0]);
@@ -59,14 +65,14 @@ void TestInnerProductCudaStreams()
   v1[0] =  1; v1[1] = -2; v1[2] =  3;
   v2[0] = -4; v2[1] =  5; v2[2] =  6;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
   int init = 3;
-  int result = thrust::inner_product(thrust::cuda::par.on(s), v1.begin(), v1.end(), v2.begin(), init);
+  int result = thrust::inner_product(thrust::musa::par.on(s), v1.begin(), v1.end(), v2.begin(), init);
   ASSERT_EQUAL(result, 7);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestInnerProductCudaStreams);
 

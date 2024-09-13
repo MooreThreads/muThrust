@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -48,7 +54,7 @@
 #endif // THRUST_DEVICE_BACKEND
 
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#define __THRUST_DEVICE_SYSTEM_NAMESPACE cuda
+#define __THRUST_DEVICE_SYSTEM_NAMESPACE musa
 #elif THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_OMP
 #define __THRUST_DEVICE_SYSTEM_NAMESPACE omp
 #elif THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_TBB

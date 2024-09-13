@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2018 NVIDIA Corporation
  *
@@ -26,7 +32,7 @@
 
 #if 0
 #include <thrust/system/cpp/detail/per_device_resource.h>
-#include <thrust/system/cuda/detail/per_device_resource.h>
+#include <thrust/system/musa/detail/per_device_resource.h>
 #include <thrust/system/omp/detail/per_device_resource.h>
 #include <thrust/system/tbb/detail/per_device_resource.h>
 #endif

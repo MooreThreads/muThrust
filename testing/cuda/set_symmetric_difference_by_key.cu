@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/set_operations.h>
 #include <thrust/execution_policy.h>
@@ -50,8 +56,8 @@ void TestSetSymmetricDifferenceByKeyDevice(ExecutionPolicy exec)
                                                   result_key.begin(),
                                                   result_val.begin(),
                                                   end_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   iter_pair end = end_vec[0];
 
@@ -96,25 +102,25 @@ void TestSetSymmetricDifferenceByKeyCudaStreams()
 
   Vector result_key(5), result_val(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
   thrust::pair<Iterator,Iterator> end =
-    thrust::set_symmetric_difference_by_key(thrust::cuda::par.on(s),
+    thrust::set_symmetric_difference_by_key(thrust::musa::par.on(s),
                                             a_key.begin(), a_key.end(),
                                             b_key.begin(), b_key.end(),
                                             a_val.begin(),
                                             b_val.begin(),
                                             result_key.begin(),
                                             result_val.begin());
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL_QUIET(result_key.end(), end.first);
   ASSERT_EQUAL_QUIET(result_val.end(), end.second);
   ASSERT_EQUAL(ref_key, result_key);
   ASSERT_EQUAL(ref_val, result_val);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestSetSymmetricDifferenceByKeyCudaStreams);
 

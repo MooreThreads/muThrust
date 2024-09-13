@@ -9,7 +9,10 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
   cmake_policy(SET CMP0104 OLD)
 endif()
 
-project(Thrust NONE)
+set( CMAKE_INSTALL_PREFIX "/usr/local/musa" CACHE PATH
+    "Install path prefix, prepended onto install directories" )
+set ( VERSION_STRING "1.12.1" )
+project(Thrust VERSION ${VERSION_STRING})
 
 # Determine whether Thrust is the top-level project or included into
 # another project via add_subdirectory()
@@ -21,6 +24,8 @@ endif()
 
 # This must be done before any languages are enabled:
 if (THRUST_TOPLEVEL_PROJECT)
+  include(./module_version/generate_version_query.cmake)
+  add_version_query(${VERSION_STRING})
   include(cmake/ThrustCompilerHacks.cmake)
 endif()
 
@@ -44,7 +49,7 @@ if (NOT THRUST_TOPLEVEL_PROJECT)
 endif()
 
 # We use 3.17 features when building our tests, etc.
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.16)
 
 option(THRUST_ENABLE_HEADER_TESTING "Test that all public headers compile." "ON")
 option(THRUST_ENABLE_TESTING "Build Thrust testing suite." "ON")
@@ -91,7 +96,7 @@ thrust_find_thrust()
 thrust_build_compiler_targets()
 thrust_update_system_found_flags()
 if (THRUST_CUDA_FOUND)
-  include(cmake/ThrustCudaConfig.cmake)
+  include(cmake/ThrustMusaConfig.cmake)
 endif()
 thrust_build_target_list()
 

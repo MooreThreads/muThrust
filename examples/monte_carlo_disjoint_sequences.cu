@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/random.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/functional.h>
@@ -6,7 +12,7 @@
 #include <iostream>
 #include <cmath>
 
-// The technique demonstrated in the example monte_carlo.cu 
+// The technique demonstrated in the example monte_carlo.mu 
 // assigns an independently seeded random number generator to each
 // of 30K threads, and uses a hashing scheme based on thread index to
 // seed each RNG. This technique, while simple, may be succeptible

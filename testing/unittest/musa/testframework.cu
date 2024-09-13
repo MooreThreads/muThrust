@@ -1,7 +1,13 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/testframework.h>
-#include <unittest/cuda/testframework.h>
-#include <thrust/system/cuda/memory.h>
-#include <cuda_runtime.h>
+#include <unittest/musa/testframework.h>
+#include <thrust/system/musa/memory.h>
+#include <musa_runtime.h>
 #include <numeric>
 
 __global__ void dummy_kernel() {}
@@ -11,32 +17,32 @@ bool binary_exists_for_current_device()
   // check against the dummy_kernel
   // if we're unable to get the attributes, then
   // we didn't compile a binary compatible with the current device
-  cudaFuncAttributes attr;
-  cudaError_t error = cudaFuncGetAttributes(&attr, dummy_kernel);
+  musaFuncAttributes attr;
+  musaError_t error = musaFuncGetAttributes(&attr, dummy_kernel);
 
   // clear the CUDA global error state if we just set it, so that
   // check_cuda_error doesn't complain
-  if (cudaSuccess != error) (void)cudaGetLastError();
+  if (musaSuccess != error) (void)musaGetLastError();
 
-  return cudaSuccess == error;
+  return musaSuccess == error;
 }
 
 void list_devices(void)
 {
   int deviceCount;
-  cudaGetDeviceCount(&deviceCount);
+  musaGetDeviceCount(&deviceCount);
   if(deviceCount == 0)
   {
     std::cout << "There is no device supporting CUDA" << std::endl;
   }
 
   int selected_device;
-  cudaGetDevice(&selected_device);
+  musaGetDevice(&selected_device);
 
   for (int dev = 0; dev < deviceCount; ++dev)
   {
-    cudaDeviceProp deviceProp;
-    cudaGetDeviceProperties(&deviceProp, dev);
+    musaDeviceProp deviceProp;
+    musaGetDeviceProperties(&deviceProp, dev);
 
     if(dev == 0)
     {
@@ -78,7 +84,7 @@ std::vector<int> CUDATestDriver::target_devices(const ArgumentMap &kwargs)
   {
     // target all devices in the system
     int count = 0;
-    cudaGetDeviceCount(&count);
+    musaGetDeviceCount(&count);
 
     result.resize(count);
     std::iota(result.begin(), result.end(), 0);
@@ -94,38 +100,38 @@ std::vector<int> CUDATestDriver::target_devices(const ArgumentMap &kwargs)
 
 bool CUDATestDriver::check_cuda_error(bool concise)
 {
-  cudaError_t const error = cudaGetLastError();
-  if(cudaSuccess != error)
+  musaError_t const error = musaGetLastError();
+  if(musaSuccess != error)
   {
     if(!concise)
     {
       std::cout << "[ERROR] CUDA error detected before running tests: ["
-                << std::string(cudaGetErrorName(error))
+                << std::string(musaGetErrorName(error))
                 << ": "
-                << std::string(cudaGetErrorString(error))
+                << std::string(musaGetErrorString(error))
                 << "]" << std::endl;
     }
   }
 
-  return cudaSuccess != error;
+  return musaSuccess != error;
 }
 
 bool CUDATestDriver::post_test_smoke_check(const UnitTest &test, bool concise)
 {
-  cudaError_t const error = cudaDeviceSynchronize();
-  if(cudaSuccess != error)
+  musaError_t const error = musaDeviceSynchronize();
+  if(musaSuccess != error)
   {
     if(!concise)
     {
       std::cout << "\t[ERROR] CUDA error detected after running " << test.name << ": ["
-                << std::string(cudaGetErrorName(error))
+                << std::string(musaGetErrorName(error))
                 << ": "
-                << std::string(cudaGetErrorString(error))
+                << std::string(musaGetErrorString(error))
                 << "]" << std::endl;
     }
   }
 
-  return cudaSuccess == error;
+  return musaSuccess == error;
 }
 
 bool CUDATestDriver::run_tests(const ArgumentSet &args, const ArgumentMap &kwargs)
@@ -158,18 +164,18 @@ bool CUDATestDriver::run_tests(const ArgumentSet &args, const ArgumentMap &kwarg
       device != devices.end();
       ++device)
   {
-    cudaDeviceSynchronize();
+    musaDeviceSynchronize();
 
     // set the device
-    cudaSetDevice(*device);
+    musaSetDevice(*device);
 
     // check if a binary exists for this device
     // if none exists, skip the device silently unless this is the only one we're targeting
     if(devices.size() > 1 && !binary_exists_for_current_device())
     {
       // note which device we're skipping
-      cudaDeviceProp deviceProp;
-      cudaGetDeviceProperties(&deviceProp, *device);
+      musaDeviceProp deviceProp;
+      musaGetDeviceProperties(&deviceProp, *device);
 
       std::cout << "Skipping Device " << *device << ": \"" << deviceProp.name << "\"" << std::endl;
 
@@ -179,8 +185,8 @@ bool CUDATestDriver::run_tests(const ArgumentSet &args, const ArgumentMap &kwarg
     if(!concise)
     {
       // note which device we're testing
-      cudaDeviceProp deviceProp;
-      cudaGetDeviceProperties(&deviceProp, *device);
+      musaDeviceProp deviceProp;
+      musaGetDeviceProperties(&deviceProp, *device);
 
       std::cout << "Testing Device " << *device << ": \"" << deviceProp.name << "\"" << std::endl;
     }
@@ -204,14 +210,14 @@ bool CUDATestDriver::run_tests(const ArgumentSet &args, const ArgumentMap &kwarg
 int CUDATestDriver::current_device_architecture() const
 {
   int current = -1;
-  cudaGetDevice(&current);
-  cudaDeviceProp deviceProp;
-  cudaGetDeviceProperties(&deviceProp, current);
+  musaGetDevice(&current);
+  musaDeviceProp deviceProp;
+  musaGetDeviceProperties(&deviceProp, current);
 
   return 100 * deviceProp.major + 10 * deviceProp.minor;
 }
 
-UnitTestDriver &driver_instance(thrust::system::cuda::tag)
+UnitTestDriver &driver_instance(thrust::system::musa::tag)
 {
   static CUDATestDriver s_instance;
   return s_instance;

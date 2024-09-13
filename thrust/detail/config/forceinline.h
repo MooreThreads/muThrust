@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -22,7 +28,7 @@
 
 #include <thrust/detail/config.h>
 
-#if defined(__CUDACC__) || defined(__NVCOMPILER_CUDA__)
+#if defined(__MUSACC__) || defined(__NVCOMPILER_CUDA__)
 
 #define __thrust_forceinline__ __forceinline__
 

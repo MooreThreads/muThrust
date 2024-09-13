@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/detail/config.h>
 
 #if THRUST_CPP_DIALECT >= 2014
@@ -15,7 +21,7 @@
 // The initial_value_type and thrust::plus<T> types are covered by the
 // mixin::postfix_args::scan_mixed_types_overloads component.
 //
-// The testing/scan.cu TestMixedTypes test spells out the expected behavior,
+// The testing/scan.mu TestMixedTypes test spells out the expected behavior,
 // which is defined by https://wg21.link/P0571.
 
 namespace

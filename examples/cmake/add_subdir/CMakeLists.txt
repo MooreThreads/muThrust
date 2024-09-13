@@ -47,9 +47,11 @@ thrust_update_system_found_flags()
 # Create and use a Thrust target configured to use CUDA acceleration if CUDA
 # is available:
 if (THRUST_CUDA_FOUND)
-  enable_language(CUDA)
+  # enable_language(CUDA)
+  list(APPEND CMAKE_MODULE_PATH /usr/local/musa/cmake)
+  find_package(MUSA REQUIRED)
   thrust_create_target(ThrustCUDA HOST CPP DEVICE CUDA)
-  add_executable(ExecWithCUDA dummy.cu)
+  musa_add_executable(ExecWithCUDA dummy.cu)
   target_link_libraries(ExecWithCUDA ThrustCUDA)
 endif()
 

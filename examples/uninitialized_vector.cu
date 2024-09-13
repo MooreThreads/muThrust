@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 // Occasionally, it is advantageous to avoid initializing the individual
 // elements of a device_vector. For example, the default behavior of
 // zero-initializing numeric data may introduce undesirable overhead.

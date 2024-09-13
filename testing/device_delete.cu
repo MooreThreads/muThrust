@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/device_vector.h>
 #include <thrust/device_ptr.h>
@@ -14,7 +20,7 @@ struct Foo
   __host__ __device__
   ~Foo(void)
   {
-#ifdef __CUDA_ARCH__
+#ifdef __MUSA_ARCH__
     // __device__ overload
     if(set_me_upon_destruction != 0)
       *set_me_upon_destruction = true;

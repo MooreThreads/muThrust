@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/pair.h>
 #include <thrust/sort.h>
@@ -10,7 +16,7 @@ template<typename ExecutionPolicy, typename Iterator1, typename Iterator2, typen
 __global__
 void stable_sort_by_key_kernel(ExecutionPolicy exec, Iterator1 keys_first, Iterator1 keys_last, Iterator2 values_first, Iterator3 is_supported)
 {
-#if (__CUDA_ARCH__ >= 200)
+#if (__MUSA_ARCH__ >= 200)
   *is_supported = true;
   thrust::stable_sort_by_key(exec, keys_first, keys_last, values_first);
 #else
@@ -55,8 +61,8 @@ void TestPairStableSortByKeyDevice(ExecutionPolicy exec)
 
   // sort on the device
   stable_sort_by_key_kernel<<<1,1>>>(exec, d_pairs.begin(), d_pairs.end(), d_values.begin(), is_supported.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   if(is_supported[0])
   {

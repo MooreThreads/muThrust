@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/generate.h>
 #include <thrust/execution_policy.h>
@@ -37,8 +43,8 @@ void TestGenerateDevice(ExecutionPolicy exec, const size_t n)
 
   generate_kernel<<<1,1>>>(exec, d_result.begin(), d_result.end(), f);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(h_result, d_result);
@@ -69,11 +75,11 @@ void TestGenerateCudaStreams()
   
   return_value<int> f(value);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  thrust::generate(thrust::cuda::par.on(s), result.begin(), result.end(), f);
-  cudaStreamSynchronize(s);
+  thrust::generate(thrust::musa::par.on(s), result.begin(), result.end(), f);
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(result[0], value);
   ASSERT_EQUAL(result[1], value);
@@ -81,7 +87,7 @@ void TestGenerateCudaStreams()
   ASSERT_EQUAL(result[3], value);
   ASSERT_EQUAL(result[4], value);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestGenerateCudaStreams);
 
@@ -107,8 +113,8 @@ void TestGenerateNDevice(ExecutionPolicy exec, const size_t n)
 
   generate_n_kernel<<<1,1>>>(exec, d_result.begin(), d_result.size(), f);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(h_result, d_result);
@@ -139,11 +145,11 @@ void TestGenerateNCudaStreams()
   
   return_value<int> f(value);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  thrust::generate_n(thrust::cuda::par.on(s), result.begin(), result.size(), f);
-  cudaStreamSynchronize(s);
+  thrust::generate_n(thrust::musa::par.on(s), result.begin(), result.size(), f);
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(result[0], value);
   ASSERT_EQUAL(result[1], value);
@@ -151,7 +157,7 @@ void TestGenerateNCudaStreams()
   ASSERT_EQUAL(result[3], value);
   ASSERT_EQUAL(result[4], value);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestGenerateNCudaStreams);
 

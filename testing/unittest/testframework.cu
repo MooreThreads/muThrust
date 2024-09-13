@@ -1,10 +1,16 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include "unittest/testframework.h"
 #include "unittest/exceptions.h"
 #include <thrust/memory.h>
 
 // #include backends' testframework.h, if they exist and are required for the build
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#include <unittest/cuda/testframework.h>
+#include <unittest/musa/testframework.h>
 #endif
 
 #include <iostream>

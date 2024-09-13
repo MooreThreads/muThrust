@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #pragma once
 
 #include <string>
@@ -26,14 +32,14 @@ namespace unittest
         typedef unittest::static_assert_exception ex_t; \
         thrust::device_ptr<ex_t> device_ptr = thrust::device_new<ex_t>(); \
         ex_t* raw_ptr = thrust::raw_pointer_cast(device_ptr); \
-        ::cudaMemcpyToSymbol(unittest::detail::device_exception, &raw_ptr, sizeof(ex_t*)); \
+        ::musaMemcpyToSymbol(unittest::detail::device_exception, &raw_ptr, sizeof(ex_t*)); \
         try { X; } catch (ex_t) { triggered = true; } \
         if (!triggered) { \
             triggered = static_cast<ex_t>(*device_ptr).triggered; \
         } \
         thrust::device_free(device_ptr); \
         raw_ptr = NULL; \
-        ::cudaMemcpyToSymbol(unittest::detail::device_exception, &raw_ptr, sizeof(ex_t*)); \
+        ::musaMemcpyToSymbol(unittest::detail::device_exception, &raw_ptr, sizeof(ex_t*)); \
         if (!triggered) { unittest::UnitTestFailure f; f << "[" << __FILE__ << ":" << __LINE__ << "] did not trigger a THRUST_STATIC_ASSERT"; throw f; } \
     }
 
@@ -86,7 +92,7 @@ namespace unittest
         {
             static_assert_exception ex(filename, lineno);
 
-#ifdef __CUDA_ARCH__
+#ifdef __MUSA_ARCH__
             *detail::device_exception = ex;
 #else
             throw ex;

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/reduce.h>
 #include <thrust/execution_policy.h>
@@ -24,8 +30,8 @@ void TestReduceDevice(ExecutionPolicy exec, const size_t n)
   T h_result = thrust::reduce(h_data.begin(), h_data.end(), init);
   
   reduce_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), init, d_result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_result, d_result[0]);
 }
@@ -60,16 +66,16 @@ void TestReduceCudaStreams()
   Vector v(3);
   v[0] = 1; v[1] = -2; v[2] = 3;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
   // no initializer
-  ASSERT_EQUAL(thrust::reduce(thrust::cuda::par.on(s), v.begin(), v.end()), 2);
+  ASSERT_EQUAL(thrust::reduce(thrust::musa::par.on(s), v.begin(), v.end()), 2);
 
   // with initializer
-  ASSERT_EQUAL(thrust::reduce(thrust::cuda::par.on(s), v.begin(), v.end(), 10), 12);
+  ASSERT_EQUAL(thrust::reduce(thrust::musa::par.on(s), v.begin(), v.end(), 10), 12);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestReduceCudaStreams);
 

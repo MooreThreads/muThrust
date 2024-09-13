@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
@@ -8,7 +14,7 @@ template<typename ExecutionPolicy, typename Iterator1, typename Iterator2, typen
 __global__
 void sort_by_key_kernel(ExecutionPolicy exec, Iterator1 keys_first, Iterator1 keys_last, Iterator2 values_first, Compare comp, Iterator3 is_supported)
 {
-#if (__CUDA_ARCH__ >= 200)
+#if (__MUSA_ARCH__ >= 200)
   *is_supported = true;
   thrust::sort_by_key(exec, keys_first, keys_last, values_first, comp);
 #else
@@ -39,8 +45,8 @@ void TestComparisonSortByKeyDevice(ExecutionPolicy exec, const size_t n, Compare
   
   thrust::device_vector<bool> is_supported(1);
   sort_by_key_kernel<<<1,1>>>(exec, d_keys.begin(), d_keys.end(), d_values.begin(), comp, is_supported.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   if(is_supported[0])
   {
@@ -131,16 +137,16 @@ void TestComparisonSortByKeyCudaStreams()
   keys[8] = 5; vals[8] = 5;
   keys[9] = 6; vals[9] = 6;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::sort_by_key(thrust::cuda::par.on(s), keys.begin(), keys.end(), vals.begin(), my_less<int>());
-  cudaStreamSynchronize(s);
+  thrust::sort_by_key(thrust::musa::par.on(s), keys.begin(), keys.end(), vals.begin(), my_less<int>());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(true, thrust::is_sorted(keys.begin(), keys.end()));
   ASSERT_EQUAL(true, thrust::is_sorted(vals.begin(), vals.end()));
                       
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestComparisonSortByKeyCudaStreams);
 
@@ -161,16 +167,16 @@ void TestSortByKeyCudaStreams()
   keys[8] = 5; vals[8] = 5;
   keys[9] = 6; vals[9] = 6;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::sort_by_key(thrust::cuda::par.on(s), keys.begin(), keys.end(), vals.begin());
-  cudaStreamSynchronize(s);
+  thrust::sort_by_key(thrust::musa::par.on(s), keys.begin(), keys.end(), vals.begin());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(true, thrust::is_sorted(keys.begin(), keys.end()));
   ASSERT_EQUAL(true, thrust::is_sorted(vals.begin(), vals.end()));
                       
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestSortByKeyCudaStreams);
 

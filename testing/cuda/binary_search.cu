@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 
 #include <thrust/binary_search.h>
@@ -14,8 +20,8 @@ void TestEqualRangeOnStream()
 
   vector_t input(10);
   thrust::sequence(thrust::device, input.begin(), input.end(), 0);
-  cudaStream_t stream = 0;
-  result_t result = thrust::equal_range(thrust::cuda::par.on(stream),
+  musaStream_t stream = 0;
+  result_t result = thrust::equal_range(thrust::musa::par.on(stream),
                                         input.begin(), input.end(),
                                         5);
 

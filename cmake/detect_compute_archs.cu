@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2019-2020 NVIDIA Corporation
  *
@@ -21,11 +27,11 @@
 int main(int argc, char** argv) {
   std::set<std::string> archs;
   int devices;
-  if ((cudaGetDeviceCount(&devices) == cudaSuccess) && (devices > 0)) {
+  if ((musaGetDeviceCount(&devices) == musaSuccess) && (devices > 0)) {
     for (int dev = 0; dev < devices; ++dev) {
       char buff[32];
-      cudaDeviceProp prop;
-      if(cudaGetDeviceProperties(&prop, dev) != cudaSuccess) continue;
+      musaDeviceProp prop;
+      if(musaGetDeviceProperties(&prop, dev) != musaSuccess) continue;
       sprintf(buff, "%d%d", prop.major, prop.minor);
       archs.insert(buff);
     }

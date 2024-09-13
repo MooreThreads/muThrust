@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/detail/config.h>
 #include <thrust/device_malloc_allocator.h>
@@ -80,7 +86,7 @@ struct my_allocator_with_custom_destroy
   __host__ __device__
   void destroy(T *)
   {
-#if !__CUDA_ARCH__
+#if !__MUSA_ARCH__
     g_state = true;
 #endif
   }

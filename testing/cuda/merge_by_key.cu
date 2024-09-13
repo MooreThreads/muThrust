@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/merge.h>
 #include <thrust/functional.h>
@@ -60,8 +66,8 @@ void TestMergeByKeyDevice(ExecutionPolicy exec)
                                result_key.begin(),
                                result_val.begin(),
                                result_ends.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   thrust::pair<Iterator,Iterator> ends = result_ends[0];
 
@@ -110,25 +116,25 @@ void TestMergeByKeyCudaStreams()
 
   Vector result_key(7), result_val(7);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
   thrust::pair<Iterator,Iterator> ends =
-    thrust::merge_by_key(thrust::cuda::par.on(s),
+    thrust::merge_by_key(thrust::musa::par.on(s),
                          a_key.begin(), a_key.end(),
                          b_key.begin(), b_key.end(),
                          a_val.begin(), b_val.begin(),
                          result_key.begin(),
                          result_val.begin());
 
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL_QUIET(result_key.end(), ends.first);
   ASSERT_EQUAL_QUIET(result_val.end(), ends.second);
   ASSERT_EQUAL(ref_key, result_key);
   ASSERT_EQUAL(ref_val, result_val);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestMergeByKeyCudaStreams);
 

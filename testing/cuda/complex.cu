@@ -1,10 +1,16 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 
 #include <thrust/complex.h>
 #include <thrust/detail/preprocessor.h>
 #include <thrust/detail/alignment.h>
 
-#include <cuda_fp16.h>
+#include <musa_fp16.h>
 
 template <typename T, typename VectorT>
 void TestComplexAlignment()

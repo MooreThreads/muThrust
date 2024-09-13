@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/gather.h>
 #include <thrust/execution_policy.h>
@@ -36,8 +42,8 @@ void TestGatherDevice(ExecutionPolicy exec, const size_t n)
 
   gather_kernel<<<1,1>>>(exec, d_map.begin(), d_map.end(), d_source.begin(), d_output.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(h_output, d_output);
@@ -68,11 +74,11 @@ void TestGatherCudaStreams()
   src[0] = 0; src[1] = 1; src[2] = 2; src[3] = 3; src[4] = 4; src[5] = 5; src[6] = 6; src[7] = 7;
   dst[0] = 0; dst[1] = 0; dst[2] = 0; dst[3] = 0; dst[4] = 0;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  thrust::gather(thrust::cuda::par.on(s), map.begin(), map.end(), src.begin(), dst.begin());
-  cudaStreamSynchronize(s);
+  thrust::gather(thrust::musa::par.on(s), map.begin(), map.end(), src.begin(), dst.begin());
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(dst[0], 6);
   ASSERT_EQUAL(dst[1], 2);
@@ -80,7 +86,7 @@ void TestGatherCudaStreams()
   ASSERT_EQUAL(dst[3], 7);
   ASSERT_EQUAL(dst[4], 2);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestGatherCudaStreams);
 
@@ -137,8 +143,8 @@ void TestGatherIfDevice(ExecutionPolicy exec, const size_t n)
 
   gather_if_kernel<<<1,1>>>(exec, d_map.begin(), d_map.end(), d_stencil.begin(), d_source.begin(), d_output.begin(), is_even_gather_if<unsigned int>());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(h_output, d_output);
@@ -170,11 +176,11 @@ void TestGatherIfCudaStreams(void)
   src[0] = 0; src[1] = 1; src[2] = 2; src[3] = 3; src[4] = 4; src[5] = 5; src[6] = 6; src[7] = 7;
   dst[0] = 0; dst[1] = 0; dst[2] = 0; dst[3] = 0; dst[4] = 0;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  thrust::gather_if(thrust::cuda::par.on(s), map.begin(), map.end(), flg.begin(), src.begin(), dst.begin());
-  cudaStreamSynchronize(s);
+  thrust::gather_if(thrust::musa::par.on(s), map.begin(), map.end(), flg.begin(), src.begin(), dst.begin());
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(dst[0], 0);
   ASSERT_EQUAL(dst[1], 2);
@@ -182,7 +188,7 @@ void TestGatherIfCudaStreams(void)
   ASSERT_EQUAL(dst[3], 7);
   ASSERT_EQUAL(dst[4], 0);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestGatherIfCudaStreams);
 

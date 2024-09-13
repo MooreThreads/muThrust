@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 
 #include <thrust/detail/config.h>
@@ -7,7 +13,7 @@
 #include <thrust/system/tbb/detail/par.h>
 
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#  include <thrust/system/cuda/detail/par.h>
+#  include <thrust/system/musa/detail/par.h>
 #endif
 
 #if THRUST_CPP_DIALECT >= 2011
@@ -160,7 +166,7 @@ typedef policy_info<
 
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
 typedef policy_info<
-    thrust::system::cuda::detail::par_t,
+    thrust::system::musa::detail::par_t,
     thrust::cuda_cub::execute_on_stream_base
 > cuda_par_info;
 #endif

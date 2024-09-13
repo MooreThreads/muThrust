@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2018 NVIDIA Corporation
  *
@@ -569,8 +575,8 @@ template<typename T>
 
 struct largest_available_float
 {
-#if defined(__CUDA_ARCH__)
-#  if (__CUDA_ARCH__ < 130)
+#if defined(__MUSA_ARCH__)
+#  if (__MUSA_ARCH__ < 130)
   typedef float type;
 #  else
   typedef double type;

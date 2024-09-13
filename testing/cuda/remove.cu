@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/remove.h>
 #include <thrust/execution_policy.h>
@@ -82,8 +88,8 @@ void TestRemoveDevice(ExecutionPolicy exec)
   size_t h_size = thrust::remove(h_data.begin(), h_data.end(), 0) - h_data.begin();
 
   remove_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), 0, d_result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   size_t d_size = (iterator)d_result[0] - d_data.begin();
   
@@ -123,8 +129,8 @@ void TestRemoveIfDevice(ExecutionPolicy exec)
   size_t h_size = thrust::remove_if(h_data.begin(), h_data.end(), is_true<int>()) - h_data.begin();
 
   remove_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), is_true<int>(), d_result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   size_t d_size = (iterator)d_result[0] - d_data.begin();
   
@@ -167,8 +173,8 @@ void TestRemoveIfStencilDevice(ExecutionPolicy exec)
   size_t h_size = thrust::remove_if(h_data.begin(), h_data.end(), h_stencil.begin(), is_true<int>()) - h_data.begin();
 
   remove_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_stencil.begin(), is_true<int>(), d_result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   size_t d_size = (iterator)d_result[0] - d_data.begin();
   
@@ -211,8 +217,8 @@ void TestRemoveCopyDevice(ExecutionPolicy exec)
   size_t h_size = thrust::remove_copy(h_data.begin(), h_data.end(), h_result.begin(), 0) - h_result.begin();
 
   remove_copy_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin(), 0, d_new_end.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   size_t d_size = (iterator)d_new_end[0] - d_result.begin();
   
@@ -255,8 +261,8 @@ void TestRemoveCopyIfDevice(ExecutionPolicy exec)
   size_t h_size = thrust::remove_copy_if(h_data.begin(), h_data.end(), h_result.begin(), is_true<int>()) - h_result.begin();
 
   remove_copy_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin(), is_true<int>(), d_new_end.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   size_t d_size = (iterator)d_new_end[0] - d_result.begin();
   
@@ -302,8 +308,8 @@ void TestRemoveCopyIfStencilDevice(ExecutionPolicy exec)
   size_t h_size = thrust::remove_copy_if(h_data.begin(), h_data.end(), h_stencil.begin(), h_result.begin(), is_true<int>()) - h_result.begin();
 
   remove_copy_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_stencil.begin(), d_result.begin(), is_true<int>(), d_new_end.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   size_t d_size = (iterator)d_new_end[0] - d_result.begin();
   
@@ -342,10 +348,10 @@ void TestRemoveCudaStreams()
   data[3] =  3; 
   data[4] =  2; 
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::remove(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::remove(thrust::musa::par.on(s),
                                         data.begin(), 
                                         data.end(), 
                                         (T) 2);
@@ -356,7 +362,7 @@ void TestRemoveCudaStreams()
   ASSERT_EQUAL(data[1], 1);
   ASSERT_EQUAL(data[2], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestRemoveCudaStreams);
 
@@ -375,10 +381,10 @@ void TestRemoveCopyCudaStreams()
 
   Vector result(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::remove_copy(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::remove_copy(thrust::musa::par.on(s),
                                              data.begin(), 
                                              data.end(), 
                                              result.begin(), 
@@ -390,7 +396,7 @@ void TestRemoveCopyCudaStreams()
   ASSERT_EQUAL(result[1], 1);
   ASSERT_EQUAL(result[2], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestRemoveCopyCudaStreams);
 
@@ -407,10 +413,10 @@ void TestRemoveIfCudaStreams()
   data[3] =  3; 
   data[4] =  2; 
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::remove_if(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::remove_if(thrust::musa::par.on(s),
                                            data.begin(), 
                                            data.end(), 
                                            is_even<T>());
@@ -421,7 +427,7 @@ void TestRemoveIfCudaStreams()
   ASSERT_EQUAL(data[1], 1);
   ASSERT_EQUAL(data[2], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestRemoveIfCudaStreams);
 
@@ -445,10 +451,10 @@ void TestRemoveIfStencilCudaStreams()
   stencil[3] = 0;
   stencil[4] = 1;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::remove_if(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::remove_if(thrust::musa::par.on(s),
                                            data.begin(), 
                                            data.end(),
                                            stencil.begin(),
@@ -460,7 +466,7 @@ void TestRemoveIfStencilCudaStreams()
   ASSERT_EQUAL(data[1], 1);
   ASSERT_EQUAL(data[2], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestRemoveIfStencilCudaStreams);
 
@@ -479,10 +485,10 @@ void TestRemoveCopyIfCudaStreams()
 
   Vector result(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::remove_copy_if(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::remove_copy_if(thrust::musa::par.on(s),
                                                 data.begin(), 
                                                 data.end(), 
                                                 result.begin(), 
@@ -494,7 +500,7 @@ void TestRemoveCopyIfCudaStreams()
   ASSERT_EQUAL(result[1], 1);
   ASSERT_EQUAL(result[2], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestRemoveCopyIfCudaStreams);
 
@@ -520,10 +526,10 @@ void TestRemoveCopyIfStencilCudaStreams()
 
   Vector result(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::remove_copy_if(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::remove_copy_if(thrust::musa::par.on(s),
                                                 data.begin(), 
                                                 data.end(), 
                                                 stencil.begin(),
@@ -536,7 +542,7 @@ void TestRemoveCopyIfStencilCudaStreams()
   ASSERT_EQUAL(result[1], 1);
   ASSERT_EQUAL(result[2], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestRemoveCopyIfStencilCudaStreams);
 

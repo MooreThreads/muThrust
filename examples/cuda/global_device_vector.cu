@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/detail/config.h>
 #include <thrust/device_vector.h>
 
@@ -8,17 +14,17 @@
 // To get around this, you can create your own allocator which ignores
 // deallocation failures that occur because the CUDA runtime is shut down.
 
-extern "C" cudaError_t cudaFreeIgnoreShutdown(void* ptr) {
-  cudaError_t const err = cudaFree(ptr);
-  if (cudaSuccess == err || cudaErrorCudartUnloading == err)
-    return cudaSuccess;
+extern "C" musaError_t cudaFreeIgnoreShutdown(void* ptr) {
+  musaError_t const err = musaFree(ptr);
+  if (musaSuccess == err || musaErrorMusartUnloading == err)
+    return musaSuccess;
   return err; 
 }
 
-typedef thrust::system::cuda::detail::cuda_memory_resource<
-  cudaMalloc, 
+typedef thrust::system::musa::detail::cuda_memory_resource<
+  musaMalloc, 
   cudaFreeIgnoreShutdown,
-  thrust::cuda::pointer<void>
+  thrust::musa::pointer<void>
 > device_ignore_shutdown_memory_resource;
 
 #if THRUST_CPP_DIALECT >= 2011

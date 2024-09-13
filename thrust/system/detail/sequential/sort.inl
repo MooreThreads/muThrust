@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -162,7 +168,7 @@ void stable_sort(sequential::execution_policy<DerivedPolicy> &exec,
 {
 
   // the compilation time of stable_primitive_sort is too expensive to use within a single CUDA thread
-#ifndef __CUDA_ARCH__
+#ifndef __MUSA_ARCH__
   typedef typename thrust::iterator_traits<RandomAccessIterator>::value_type KeyType;
   sort_detail::use_primitive_sort<KeyType,StrictWeakOrdering> use_primitive_sort;
 #else
@@ -186,7 +192,7 @@ void stable_sort_by_key(sequential::execution_policy<DerivedPolicy> &exec,
 {
 
   // the compilation time of stable_primitive_sort_by_key is too expensive to use within a single CUDA thread
-#ifndef __CUDA_ARCH__
+#ifndef __MUSA_ARCH__
   typedef typename thrust::iterator_traits<RandomAccessIterator1>::value_type KeyType;
   sort_detail::use_primitive_sort<KeyType,StrictWeakOrdering> use_primitive_sort;
 #else

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/copy.h>
 #include <thrust/execution_policy.h>
@@ -23,8 +29,8 @@ void TestCopyDevice(ExecutionPolicy exec, size_t n)
   thrust::copy(h_src.begin(), h_src.end(), h_dst.begin());
   copy_kernel<<<1,1>>>(exec, d_src.begin(), d_src.end(), d_dst.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(h_dst, d_dst);
@@ -67,8 +73,8 @@ void TestCopyNDevice(ExecutionPolicy exec, size_t n)
   thrust::copy_n(h_src.begin(), h_src.size(), h_dst.begin());
   copy_n_kernel<<<1,1>>>(exec, d_src.begin(), d_src.size(), d_dst.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(h_dst, d_dst);

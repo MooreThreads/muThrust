@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/merge.h>
 #include <thrust/functional.h>
@@ -58,8 +64,8 @@ void TestMergeDevice(ExecutionPolicy exec)
                           d_b.begin(), d_b.begin() + size,
                           d_result.begin(),
                           d_end.begin());
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
 
     d_result.resize((iter_type)d_end[0] - d_result.begin());
 
@@ -103,10 +109,10 @@ void TestMergeCudaStreams()
 
   Vector result(7);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Iterator end = thrust::merge(thrust::cuda::par.on(s),
+  Iterator end = thrust::merge(thrust::musa::par.on(s),
                                a.begin(), a.end(),
                                b.begin(), b.end(),
                                result.begin());
@@ -114,7 +120,7 @@ void TestMergeCudaStreams()
   ASSERT_EQUAL_QUIET(result.end(), end);
   ASSERT_EQUAL(ref, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestMergeCudaStreams);
 

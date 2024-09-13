@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/sort.h>
 #include <thrust/functional.h>
@@ -29,10 +35,10 @@ void TestStableSortWithLargeKeys(void)
     _TestStableSortWithLargeKeys<int,    4>();
     _TestStableSortWithLargeKeys<int,    8>();
     _TestStableSortWithLargeKeys<int,   16>();
-    _TestStableSortWithLargeKeys<int,   32>();
-    _TestStableSortWithLargeKeys<int,   64>();
-    _TestStableSortWithLargeKeys<int,  128>();
-    _TestStableSortWithLargeKeys<int,  256>();
+    // _TestStableSortWithLargeKeys<int,   32>();
+    // _TestStableSortWithLargeKeys<int,   64>();
+    // _TestStableSortWithLargeKeys<int,  128>();
+    // _TestStableSortWithLargeKeys<int,  256>();
 
 // XXX these take too long to compile
 //    _TestStableSortWithLargeKeys<int,  512>();

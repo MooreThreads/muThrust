@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/uninitialized_copy.h>
 #include <thrust/execution_policy.h>
@@ -22,8 +28,8 @@ void TestUninitializedCopyDevice(ExecutionPolicy exec)
   // copy to Vector
   Vector v2(5);
   uninitialized_copy_kernel<<<1,1>>>(exec, v1.begin(), v1.end(), v2.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   ASSERT_EQUAL(v2[0], 0);
   ASSERT_EQUAL(v2[1], 1);
@@ -57,11 +63,11 @@ void TestUninitializedCopyCudaStreams()
   // copy to Vector
   Vector v2(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::uninitialized_copy(thrust::cuda::par.on(s), v1.begin(), v1.end(), v2.begin());
-  cudaStreamSynchronize(s);
+  thrust::uninitialized_copy(thrust::musa::par.on(s), v1.begin(), v1.end(), v2.begin());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v2[0], 0);
   ASSERT_EQUAL(v2[1], 1);
@@ -69,7 +75,7 @@ void TestUninitializedCopyCudaStreams()
   ASSERT_EQUAL(v2[3], 3);
   ASSERT_EQUAL(v2[4], 4);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestUninitializedCopyCudaStreams);
 
@@ -93,8 +99,8 @@ void TestUninitializedCopyNDevice(ExecutionPolicy exec)
   // copy to Vector
   Vector v2(5);
   uninitialized_copy_n_kernel<<<1,1>>>(exec, v1.begin(), v1.size(), v2.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   ASSERT_EQUAL(v2[0], 0);
   ASSERT_EQUAL(v2[1], 1);
@@ -128,11 +134,11 @@ void TestUninitializedCopyNCudaStreams()
   // copy to Vector
   Vector v2(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::uninitialized_copy_n(thrust::cuda::par.on(s), v1.begin(), v1.size(), v2.begin());
-  cudaStreamSynchronize(s);
+  thrust::uninitialized_copy_n(thrust::musa::par.on(s), v1.begin(), v1.size(), v2.begin());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v2[0], 0);
   ASSERT_EQUAL(v2[1], 1);
@@ -140,7 +146,7 @@ void TestUninitializedCopyNCudaStreams()
   ASSERT_EQUAL(v2[3], 3);
   ASSERT_EQUAL(v2[4], 4);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestUninitializedCopyNCudaStreams);
 

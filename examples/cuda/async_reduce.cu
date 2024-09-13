@@ -1,7 +1,13 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/detail/config.h>
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
-#include <thrust/system/cuda/execution_policy.h>
+#include <thrust/system/musa/execution_policy.h>
 #include <cassert>
 
 #if THRUST_CPP_DIALECT >= 2011
@@ -24,7 +30,7 @@
 template<typename Iterator, typename T, typename BinaryOperation, typename Pointer>
 __global__ void reduce_kernel(Iterator first, Iterator last, T init, BinaryOperation binary_op, Pointer result)
 {
-  *result = thrust::reduce(thrust::cuda::par, first, last, init, binary_op);
+  *result = thrust::reduce(thrust::musa::par, first, last, init, binary_op);
 }
 
 int main()
@@ -36,19 +42,19 @@ int main()
   // method 1: call thrust::reduce from an asynchronous CUDA kernel launch
 
   // create a CUDA stream 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
   // launch a CUDA kernel with only 1 thread on our stream
   reduce_kernel<<<1,1,0,s>>>(data.begin(), data.end(), 0, thrust::plus<int>(), result.data());
 
   // wait for the stream to finish
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   // our result should be ready
   assert(result[0] == n);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 
   // reset the result
   result[0] = 0;

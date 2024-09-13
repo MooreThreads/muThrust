@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 ///////////////////////////////////////////////////////////////////////////////
 //  Copyright (c)      2018 NVIDIA Corporation
 //
@@ -190,7 +196,7 @@ struct is_trivially_relocatable_impl<T[N]> : is_trivially_relocatable_impl<T> {}
 
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
 
-#include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
+#include <thrust/system/musa/detail/guarded_cuda_runtime_api.h>
 
 THRUST_PROCLAIM_TRIVIALLY_RELOCATABLE(char1)
 THRUST_PROCLAIM_TRIVIALLY_RELOCATABLE(char2)

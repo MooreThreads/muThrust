@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/logical.h>
 #include <thrust/functional.h>
@@ -21,8 +27,8 @@ void TestAllOfDevice(ExecutionPolicy exec)
   
   all_of_kernel<<<1,1>>>(exec, v.begin(), v.end(), thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
@@ -31,40 +37,40 @@ void TestAllOfDevice(ExecutionPolicy exec)
   
   all_of_kernel<<<1,1>>>(exec, v.begin(), v.end(), thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
   
   all_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 0, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
 
   all_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 1, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
 
   all_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 2, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
 
   all_of_kernel<<<1,1>>>(exec, v.begin() + 1, v.begin() + 2, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
@@ -92,21 +98,21 @@ void TestAllOfCudaStreams()
   
   Vector v(3, 1);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  ASSERT_EQUAL(thrust::all_of(thrust::cuda::par.on(s), v.begin(), v.end(), thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::all_of(thrust::musa::par.on(s), v.begin(), v.end(), thrust::identity<T>()), true);
   
   v[1] = 0;
   
-  ASSERT_EQUAL(thrust::all_of(thrust::cuda::par.on(s), v.begin(), v.end(), thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::all_of(thrust::musa::par.on(s), v.begin(), v.end(), thrust::identity<T>()), false);
   
-  ASSERT_EQUAL(thrust::all_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 0, thrust::identity<T>()), true);
-  ASSERT_EQUAL(thrust::all_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 1, thrust::identity<T>()), true);
-  ASSERT_EQUAL(thrust::all_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 2, thrust::identity<T>()), false);
-  ASSERT_EQUAL(thrust::all_of(thrust::cuda::par.on(s), v.begin() + 1, v.begin() + 2, thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::all_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 0, thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::all_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 1, thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::all_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 2, thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::all_of(thrust::musa::par.on(s), v.begin() + 1, v.begin() + 2, thrust::identity<T>()), false);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestAllOfCudaStreams);
 
@@ -129,8 +135,8 @@ void TestAnyOfDevice(ExecutionPolicy exec)
   
   any_of_kernel<<<1,1>>>(exec, v.begin(), v.end(), thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
@@ -139,40 +145,40 @@ void TestAnyOfDevice(ExecutionPolicy exec)
   
   any_of_kernel<<<1,1>>>(exec, v.begin(), v.end(), thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
   
   any_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 0, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
 
   any_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 1, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
 
   any_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 2, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
 
   any_of_kernel<<<1,1>>>(exec, v.begin() + 1, v.begin() + 2, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
@@ -200,21 +206,21 @@ void TestAnyOfCudaStreams()
 
   Vector v(3, 1);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  ASSERT_EQUAL(thrust::any_of(thrust::cuda::par.on(s), v.begin(), v.end(), thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::any_of(thrust::musa::par.on(s), v.begin(), v.end(), thrust::identity<T>()), true);
 
   v[1] = 0;
   
-  ASSERT_EQUAL(thrust::any_of(thrust::cuda::par.on(s), v.begin(), v.end(), thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::any_of(thrust::musa::par.on(s), v.begin(), v.end(), thrust::identity<T>()), true);
 
-  ASSERT_EQUAL(thrust::any_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 0, thrust::identity<T>()), false);
-  ASSERT_EQUAL(thrust::any_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 1, thrust::identity<T>()), true);
-  ASSERT_EQUAL(thrust::any_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 2, thrust::identity<T>()), true);
-  ASSERT_EQUAL(thrust::any_of(thrust::cuda::par.on(s), v.begin() + 1, v.begin() + 2, thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::any_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 0, thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::any_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 1, thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::any_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 2, thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::any_of(thrust::musa::par.on(s), v.begin() + 1, v.begin() + 2, thrust::identity<T>()), false);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestAnyOfCudaStreams);
 
@@ -237,8 +243,8 @@ void TestNoneOfDevice(ExecutionPolicy exec)
   
   none_of_kernel<<<1,1>>>(exec, v.begin(), v.end(), thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
@@ -247,40 +253,40 @@ void TestNoneOfDevice(ExecutionPolicy exec)
   
   none_of_kernel<<<1,1>>>(exec, v.begin(), v.end(), thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
   
   none_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 0, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
 
   none_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 1, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
 
   none_of_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 2, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
 
   none_of_kernel<<<1,1>>>(exec, v.begin() + 1, v.begin() + 2, thrust::identity<T>(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
@@ -308,21 +314,21 @@ void TestNoneOfCudaStreams()
 
   Vector v(3, 1);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  ASSERT_EQUAL(thrust::none_of(thrust::cuda::par.on(s), v.begin(), v.end(), thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::none_of(thrust::musa::par.on(s), v.begin(), v.end(), thrust::identity<T>()), false);
 
   v[1] = 0;
   
-  ASSERT_EQUAL(thrust::none_of(thrust::cuda::par.on(s), v.begin(), v.end(), thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::none_of(thrust::musa::par.on(s), v.begin(), v.end(), thrust::identity<T>()), false);
 
-  ASSERT_EQUAL(thrust::none_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 0, thrust::identity<T>()), true);
-  ASSERT_EQUAL(thrust::none_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 1, thrust::identity<T>()), false);
-  ASSERT_EQUAL(thrust::none_of(thrust::cuda::par.on(s), v.begin() + 0, v.begin() + 2, thrust::identity<T>()), false);
-  ASSERT_EQUAL(thrust::none_of(thrust::cuda::par.on(s), v.begin() + 1, v.begin() + 2, thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::none_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 0, thrust::identity<T>()), true);
+  ASSERT_EQUAL(thrust::none_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 1, thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::none_of(thrust::musa::par.on(s), v.begin() + 0, v.begin() + 2, thrust::identity<T>()), false);
+  ASSERT_EQUAL(thrust::none_of(thrust::musa::par.on(s), v.begin() + 1, v.begin() + 2, thrust::identity<T>()), true);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestNoneOfCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/detail/raw_reference_cast.h>
 #include <thrust/device_vector.h>
 #include <thrust/sequence.h>
@@ -16,7 +22,7 @@
 //
 // When a Thrust iterator is referenced (e.g. *iter) the result is not
 // a native or "raw" reference like int& or float&.  Instead,
-// the result is a type such as thrust::system::cuda::reference<int>
+// the result is a type such as thrust::system::musa::reference<int>
 // or thrust::system::tbb::reference<float>, depending on the system
 // to which the data belongs.  These reference wrappers are necessary
 // to make expressions like *iter1 = *iter2; work correctly when

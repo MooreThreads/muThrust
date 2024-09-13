@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *  Copyright 2013 Filipe RNC Maia
@@ -101,7 +107,7 @@ __host__ __device__ inline int isfinite(double x){
 
 #else
 
-#  if defined(__CUDACC__) && !(defined(__CUDA__) && defined(__clang__)) && !defined(__NVCOMPILER_CUDA__)
+#  if defined(__MUSACC__) && !(defined(__MUSA__) && defined(__clang__)) && !defined(__NVCOMPILER_CUDA__)
 // NVCC implements at least some signature of these as functions not macros.
 using ::isinf;
 using ::isnan;
@@ -115,7 +121,7 @@ using std::isinf;
 using std::isnan;
 using std::signbit;
 using std::isfinite;
-#  endif // __CUDACC__
+#  endif // __MUSACC__
 #endif // _MSC_VER
 
 using ::atanh;
@@ -140,7 +146,7 @@ __host__ __device__ inline float copysignf(float x, float y){
 
 
 
-#if !defined(__CUDACC__) && !defined(__NVCOMPILER_CUDA__)
+#if !defined(__MUSACC__) && !defined(__NVCOMPILER_CUDA__)
 
 // Simple approximation to log1p as Visual Studio is lacking one
 inline double log1p(double x){
@@ -184,7 +190,7 @@ inline double hypot(double x, double y){
 
 #endif // _MSC_VER <= 1500
 
-#endif // __CUDACC__
+#endif // __MUSACC__
 
 #endif // _MSC_VER
 

@@ -91,7 +91,7 @@ function(thrust_add_example target_name_var example_name example_src thrust_targ
   set(config_meta_target ${config_prefix}.examples)
   set(example_meta_target thrust.all.example.${example_name})
 
-  add_executable(${example_target} "${real_example_src}")
+  musa_add_executable(${example_target} "${real_example_src}")
   target_link_libraries(${example_target} ${thrust_target})
   target_include_directories(${example_target} PRIVATE "${Thrust_SOURCE_DIR}/examples")
   thrust_clone_target_properties(${example_target} ${thrust_target})
@@ -149,4 +149,4 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
 endforeach()
 
 add_subdirectory(cmake)
-add_subdirectory(cuda)
+# add_subdirectory(cuda)

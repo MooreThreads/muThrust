@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/copy.h>
 #include <thrust/sequence.h>
@@ -49,8 +55,8 @@ void TestCopyIfDevice(ExecutionPolicy exec)
     h_new_end = thrust::copy_if(h_data.begin(), h_data.end(), h_result.begin(), is_even<int>());
 
     copy_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin(), is_even<int>(), d_new_end_vec.begin());
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
 
     d_new_end = d_new_end_vec[0];
     
@@ -68,8 +74,8 @@ void TestCopyIfDevice(ExecutionPolicy exec)
     h_new_end = thrust::copy_if(h_data.begin(), h_data.end(), h_result.begin(), mod_3<int>());
 
     copy_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin(), mod_3<int>(), d_new_end_vec.begin());
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
 
     d_new_end = d_new_end_vec[0];
     
@@ -108,10 +114,10 @@ void TestCopyIfCudaStreams()
 
   Vector result(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::copy_if(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::copy_if(thrust::musa::par.on(s),
                                          data.begin(), 
                                          data.end(), 
                                          result.begin(),
@@ -122,7 +128,7 @@ void TestCopyIfCudaStreams()
   ASSERT_EQUAL(result[0], 2);
   ASSERT_EQUAL(result[1], 2);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestCopyIfCudaStreams);
 
@@ -159,8 +165,8 @@ void TestCopyIfStencilDevice(ExecutionPolicy exec)
     h_new_end = thrust::copy_if(h_data.begin(), h_data.end(), h_result.begin(), is_even<int>());
 
     copy_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin(), is_even<int>(), d_new_end_vec.begin());
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
 
     d_new_end = d_new_end_vec[0];
     
@@ -178,8 +184,8 @@ void TestCopyIfStencilDevice(ExecutionPolicy exec)
     h_new_end = thrust::copy_if(h_data.begin(), h_data.end(), h_result.begin(), mod_3<int>());
 
     copy_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin(), mod_3<int>(), d_new_end_vec.begin());
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
 
     d_new_end = d_new_end_vec[0];
     
@@ -226,10 +232,10 @@ void TestCopyIfStencilCudaStreams()
   stencil[3] = 0;
   stencil[4] = 1;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Vector::iterator end = thrust::copy_if(thrust::cuda::par.on(s),
+  Vector::iterator end = thrust::copy_if(thrust::musa::par.on(s),
                                          data.begin(), 
                                          data.end(),
                                          stencil.begin(),
@@ -241,7 +247,7 @@ void TestCopyIfStencilCudaStreams()
   ASSERT_EQUAL(result[0], 2);
   ASSERT_EQUAL(result[1], 2);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestCopyIfStencilCudaStreams);
 

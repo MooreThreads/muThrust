@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/sequence.h>
 #include <thrust/execution_policy.h>
@@ -34,8 +40,8 @@ void TestSequenceDevice(ExecutionPolicy exec)
   
   sequence_kernel<<<1,1>>>(exec, v.begin(), v.end());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
  
   ASSERT_EQUAL(v[0], 0);
@@ -46,8 +52,8 @@ void TestSequenceDevice(ExecutionPolicy exec)
   
   sequence_kernel<<<1,1>>>(exec, v.begin(), v.end(), 10);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(v[0], 10);
@@ -58,8 +64,8 @@ void TestSequenceDevice(ExecutionPolicy exec)
   
   sequence_kernel<<<1,1>>>(exec, v.begin(), v.end(), 10, 2);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(v[0], 10);
@@ -87,11 +93,11 @@ void TestSequenceCudaStreams()
   
   Vector v(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::sequence(thrust::cuda::par.on(s), v.begin(), v.end());
-  cudaStreamSynchronize(s);
+  thrust::sequence(thrust::musa::par.on(s), v.begin(), v.end());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v[0], 0);
   ASSERT_EQUAL(v[1], 1);
@@ -99,8 +105,8 @@ void TestSequenceCudaStreams()
   ASSERT_EQUAL(v[3], 3);
   ASSERT_EQUAL(v[4], 4);
 
-  thrust::sequence(thrust::cuda::par.on(s), v.begin(), v.end(), 10);
-  cudaStreamSynchronize(s);
+  thrust::sequence(thrust::musa::par.on(s), v.begin(), v.end(), 10);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v[0], 10);
   ASSERT_EQUAL(v[1], 11);
@@ -108,8 +114,8 @@ void TestSequenceCudaStreams()
   ASSERT_EQUAL(v[3], 13);
   ASSERT_EQUAL(v[4], 14);
   
-  thrust::sequence(thrust::cuda::par.on(s), v.begin(), v.end(), 10, 2);
-  cudaStreamSynchronize(s);
+  thrust::sequence(thrust::musa::par.on(s), v.begin(), v.end(), 10, 2);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v[0], 10);
   ASSERT_EQUAL(v[1], 12);
@@ -117,7 +123,7 @@ void TestSequenceCudaStreams()
   ASSERT_EQUAL(v[3], 16);
   ASSERT_EQUAL(v[4], 18);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestSequenceCudaStreams);
 

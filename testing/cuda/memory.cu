@@ -1,5 +1,11 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
-#include <thrust/system/cuda/memory.h>
+#include <thrust/system/musa/memory.h>
 #include <thrust/system/cpp/memory.h>
 #include <thrust/memory.h>
 #include <thrust/execution_policy.h>
@@ -24,11 +30,11 @@ void TestSelectSystemCudaToCpp()
 {
   using thrust::system::detail::generic::select_system;
 
-  thrust::cuda::tag cuda_tag;
+  thrust::musa::tag cuda_tag;
   thrust::cpp::tag cpp_tag;
-  thrust::cuda_cub::cross_system<thrust::cuda::tag,thrust::cpp::tag> cuda_to_cpp(cuda_tag, cpp_tag);
+  thrust::cuda_cub::cross_system<thrust::musa::tag,thrust::cpp::tag> cuda_to_cpp(cuda_tag, cpp_tag);
 
-  // select_system(cuda::tag, thrust::host_system_tag) should return cuda_to_cpp
+  // select_system(musa::tag, thrust::host_system_tag) should return cuda_to_cpp
   bool is_cuda_to_cpp = are_same_type(cuda_to_cpp, select_system(cuda_tag, cpp_tag));
   ASSERT_EQUAL(true, is_cuda_to_cpp);
 }
@@ -59,8 +65,8 @@ void TestGetTemporaryBufferDeviceSeq()
   
   get_temporary_buffer_kernel<<<1,1>>>(n, d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ptr_and_sz_type ptr_and_sz = d_result[0];
@@ -78,8 +84,8 @@ void TestGetTemporaryBufferDeviceSeq()
 
     return_temporary_buffer_kernel<<<1,1>>>(ptr_and_sz.first, ptr_and_sz.second);
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
   }
 }
@@ -109,8 +115,8 @@ void TestMallocDeviceSeq()
   
   malloc_kernel<<<1,1>>>(n, d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   pointer ptr = d_result[0];
@@ -126,8 +132,8 @@ void TestMallocDeviceSeq()
 
     free_kernel<<<1,1>>>(ptr);
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
   }
 }

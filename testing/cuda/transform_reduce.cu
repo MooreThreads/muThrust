@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/transform_reduce.h>
 #include <thrust/execution_policy.h>
@@ -25,8 +31,8 @@ void TestTransformReduceDevice(ExecutionPolicy exec)
   thrust::device_vector<T> result(1);
 
   transform_reduce_kernel<<<1,1>>>(exec, data.begin(), data.end(), thrust::negate<T>(), init, thrust::plus<T>(), result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(8, (T)result[0]);
 }
@@ -56,15 +62,15 @@ void TestTransformReduceCudaStreams()
   
   T init = 10;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  T result = thrust::transform_reduce(thrust::cuda::par.on(s), data.begin(), data.end(), thrust::negate<T>(), init, thrust::plus<T>());
-  cudaStreamSynchronize(s);
+  T result = thrust::transform_reduce(thrust::musa::par.on(s), data.begin(), data.end(), thrust::negate<T>(), init, thrust::plus<T>());
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(8, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestTransformReduceCudaStreams);
 

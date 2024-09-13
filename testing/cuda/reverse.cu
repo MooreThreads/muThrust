@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/reverse.h>
 #include <thrust/execution_policy.h>
@@ -21,8 +27,8 @@ void TestReverseDevice(ExecutionPolicy exec)
   thrust::reverse(h_data.begin(), h_data.end());
 
   reverse_kernel<<<1,1>>>(exec, raw_pointer_cast(d_data.data()), raw_pointer_cast(d_data.data() + d_data.size()));
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_data, d_data);
 };
@@ -63,8 +69,8 @@ void TestReverseCopyDevice(ExecutionPolicy exec)
   thrust::reverse_copy(h_data.begin(), h_data.end(), h_result.begin());
 
   reverse_copy_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   ASSERT_EQUAL(h_result, d_result);
 };
@@ -94,12 +100,12 @@ void TestReverseCudaStreams()
   data[3] = 4;
   data[4] = 5;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::reverse(thrust::cuda::par.on(s), data.begin(), data.end());
+  thrust::reverse(thrust::musa::par.on(s), data.begin(), data.end());
 
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   Vector ref(5);
   ref[0] = 5;
@@ -110,7 +116,7 @@ void TestReverseCudaStreams()
 
   ASSERT_EQUAL(ref, data);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestReverseCudaStreams);
 
@@ -127,12 +133,12 @@ void TestReverseCopyCudaStreams()
 
   Vector result(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::reverse_copy(thrust::cuda::par.on(s), data.begin(), data.end(), result.begin());
+  thrust::reverse_copy(thrust::musa::par.on(s), data.begin(), data.end(), result.begin());
 
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   Vector ref(5);
   ref[0] = 5;
@@ -143,7 +149,7 @@ void TestReverseCopyCudaStreams()
 
   ASSERT_EQUAL(ref, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestReverseCopyCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/extrema.h>
 
@@ -46,8 +52,8 @@ void TestMinMaxElementDevice(ExecutionPolicy exec)
 
   minmax_element_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   d_min = ((pair_type)d_result[0]).first;
@@ -61,8 +67,8 @@ void TestMinMaxElementDevice(ExecutionPolicy exec)
 
   minmax_element_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), thrust::greater<int>(), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   d_max = ((pair_type)d_result[0]).first;
@@ -99,15 +105,15 @@ void TestMinMaxElementCudaStreams()
   data[4] = 5;
   data[5] = 1;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  ASSERT_EQUAL( *thrust::minmax_element(thrust::cuda::par.on(s), data.begin(), data.end()).first,  1);
-  ASSERT_EQUAL( *thrust::minmax_element(thrust::cuda::par.on(s), data.begin(), data.end()).second, 5);
-  ASSERT_EQUAL(  thrust::minmax_element(thrust::cuda::par.on(s), data.begin(), data.end()).first  - data.begin(), 2);
-  ASSERT_EQUAL(  thrust::minmax_element(thrust::cuda::par.on(s), data.begin(), data.end()).second - data.begin(), 1);
+  ASSERT_EQUAL( *thrust::minmax_element(thrust::musa::par.on(s), data.begin(), data.end()).first,  1);
+  ASSERT_EQUAL( *thrust::minmax_element(thrust::musa::par.on(s), data.begin(), data.end()).second, 5);
+  ASSERT_EQUAL(  thrust::minmax_element(thrust::musa::par.on(s), data.begin(), data.end()).first  - data.begin(), 2);
+  ASSERT_EQUAL(  thrust::minmax_element(thrust::musa::par.on(s), data.begin(), data.end()).second - data.begin(), 1);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestMinMaxElementCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/equal.h>
 #include <thrust/functional.h>
@@ -30,8 +36,8 @@ void TestEqualDevice(ExecutionPolicy exec, const size_t n)
   //empty ranges
   equal_kernel<<<1,1>>>(exec, d_data1.begin(), d_data1.begin(), d_data1.begin(), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(d_result[0], true);
@@ -39,8 +45,8 @@ void TestEqualDevice(ExecutionPolicy exec, const size_t n)
   //symmetric cases
   equal_kernel<<<1,1>>>(exec, d_data1.begin(), d_data1.end(), d_data1.begin(), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(d_result[0], true);
@@ -52,8 +58,8 @@ void TestEqualDevice(ExecutionPolicy exec, const size_t n)
     //different vectors
     equal_kernel<<<1,1>>>(exec, d_data1.begin(), d_data1.end(), d_data2.begin(), d_result.begin());
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
 
     ASSERT_EQUAL(d_result[0], false);
@@ -61,16 +67,16 @@ void TestEqualDevice(ExecutionPolicy exec, const size_t n)
     //different predicates
     equal_kernel<<<1,1>>>(exec, d_data1.begin(), d_data1.begin() + 1, d_data2.begin(), thrust::less<T>(), d_result.begin());
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
 
     ASSERT_EQUAL(d_result[0], true);
 
     equal_kernel<<<1,1>>>(exec, d_data1.begin(), d_data1.begin() + 1, d_data2.begin(), thrust::greater<T>(), d_result.begin());
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
 
     ASSERT_EQUAL(d_result[0], false);
@@ -101,22 +107,22 @@ void TestEqualCudaStreams()
   v1[0] = 5; v1[1] = 2; v1[2] = 0; v1[3] = 0; v1[4] = 0;
   v2[0] = 5; v2[1] = 2; v2[2] = 0; v2[3] = 6; v2[4] = 1;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.end(), v1.begin()), true);
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.end(), v2.begin()), false);
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v2.begin(), v2.end(), v2.begin()), true);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.end(), v1.begin()), true);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.end(), v2.begin()), false);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v2.begin(), v2.end(), v2.begin()), true);
   
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.begin() + 0, v1.begin()), true);
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.begin() + 1, v1.begin()), true);
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.begin() + 3, v2.begin()), true);
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.begin() + 4, v2.begin()), false);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.begin() + 0, v1.begin()), true);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.begin() + 1, v1.begin()), true);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.begin() + 3, v2.begin()), true);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.begin() + 4, v2.begin()), false);
   
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.end(), v2.begin(), thrust::less_equal<int>()), true);
-  ASSERT_EQUAL(thrust::equal(thrust::cuda::par.on(s), v1.begin(), v1.end(), v2.begin(), thrust::greater<int>()),    false);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.end(), v2.begin(), thrust::less_equal<int>()), true);
+  ASSERT_EQUAL(thrust::equal(thrust::musa::par.on(s), v1.begin(), v1.end(), v2.begin(), thrust::greater<int>()),    false);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestEqualCudaStreams);
 

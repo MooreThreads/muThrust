@@ -1,7 +1,13 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/detail/config.h>
 
 // Disabled on MSVC && NVCC < 11.1 for GH issue #1098.
-#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC) && defined(__CUDACC__)
+#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC) && defined(__MUSACC__)
 #if (__CUDACC_VER_MAJOR__ < 11) || (__CUDACC_VER_MAJOR__ == 11 && __CUDACC_VER_MINOR__ < 1)
 #define THRUST_BUG_1098_ACTIVE
 #endif // NVCC version check

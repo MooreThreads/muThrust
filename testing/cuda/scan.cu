@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <cstdio>
 #include <unittest/unittest.h>
 #include <thrust/scan.h>
@@ -41,8 +47,8 @@ void TestScanDevice(ExecutionPolicy exec, const size_t n)
 
   inclusive_scan_kernel<<<1,1>>>(exec, d_input.begin(), d_input.end(), d_output.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(d_output, h_output);
@@ -51,8 +57,8 @@ void TestScanDevice(ExecutionPolicy exec, const size_t n)
 
   exclusive_scan_kernel<<<1,1>>>(exec, d_input.begin(), d_input.end(), d_output.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(d_output, h_output);
@@ -61,8 +67,8 @@ void TestScanDevice(ExecutionPolicy exec, const size_t n)
 
   exclusive_scan_kernel<<<1,1>>>(exec, d_input.begin(), d_input.end(), d_output.begin(), (T) 11);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(d_output, h_output);
@@ -75,8 +81,8 @@ void TestScanDevice(ExecutionPolicy exec, const size_t n)
 
   inclusive_scan_kernel<<<1,1>>>(exec, d_output.begin(), d_output.end(), d_output.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(d_output, h_output);
@@ -88,8 +94,8 @@ void TestScanDevice(ExecutionPolicy exec, const size_t n)
 
   exclusive_scan_kernel<<<1,1>>>(exec, d_output.begin(), d_output.end(), d_output.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(d_output, h_output);
@@ -133,12 +139,12 @@ void TestScanCudaStreams()
 
   Vector input_copy(input);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
   // inclusive scan
-  iter = thrust::inclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), output.begin());
-  cudaStreamSynchronize(s);
+  iter = thrust::inclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), output.begin());
+  musaStreamSynchronize(s);
 
   result[0] = 1; result[1] = 4; result[2] = 2; result[3] = 6; result[4] = 1;
   ASSERT_EQUAL(std::size_t(iter - output.begin()), input.size());
@@ -146,8 +152,8 @@ void TestScanCudaStreams()
   ASSERT_EQUAL(output, result);
   
   // exclusive scan
-  iter = thrust::exclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), output.begin(), 0);
-  cudaStreamSynchronize(s);
+  iter = thrust::exclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), output.begin(), 0);
+  musaStreamSynchronize(s);
 
   result[0] = 0; result[1] = 1; result[2] = 4; result[3] = 2; result[4] = 6;
   ASSERT_EQUAL(std::size_t(iter - output.begin()), input.size());
@@ -155,8 +161,8 @@ void TestScanCudaStreams()
   ASSERT_EQUAL(output, result);
   
   // exclusive scan with init
-  iter = thrust::exclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), output.begin(), 3);
-  cudaStreamSynchronize(s);
+  iter = thrust::exclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), output.begin(), 3);
+  musaStreamSynchronize(s);
 
   result[0] = 3; result[1] = 4; result[2] = 7; result[3] = 5; result[4] = 9;
   ASSERT_EQUAL(std::size_t(iter - output.begin()), input.size());
@@ -164,8 +170,8 @@ void TestScanCudaStreams()
   ASSERT_EQUAL(output, result);
   
   // inclusive scan with op
-  iter = thrust::inclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), output.begin(), thrust::plus<T>());
-  cudaStreamSynchronize(s);
+  iter = thrust::inclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), output.begin(), thrust::plus<T>());
+  musaStreamSynchronize(s);
 
   result[0] = 1; result[1] = 4; result[2] = 2; result[3] = 6; result[4] = 1;
   ASSERT_EQUAL(std::size_t(iter - output.begin()), input.size());
@@ -173,8 +179,8 @@ void TestScanCudaStreams()
   ASSERT_EQUAL(output, result);
 
   // exclusive scan with init and op
-  iter = thrust::exclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), output.begin(), 3, thrust::plus<T>());
-  cudaStreamSynchronize(s);
+  iter = thrust::exclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), output.begin(), 3, thrust::plus<T>());
+  musaStreamSynchronize(s);
 
   result[0] = 3; result[1] = 4; result[2] = 7; result[3] = 5; result[4] = 9;
   ASSERT_EQUAL(std::size_t(iter - output.begin()), input.size());
@@ -183,8 +189,8 @@ void TestScanCudaStreams()
 
   // inplace inclusive scan
   input = input_copy;
-  iter = thrust::inclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), input.begin());
-  cudaStreamSynchronize(s);
+  iter = thrust::inclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), input.begin());
+  musaStreamSynchronize(s);
 
   result[0] = 1; result[1] = 4; result[2] = 2; result[3] = 6; result[4] = 1;
   ASSERT_EQUAL(std::size_t(iter - input.begin()), input.size());
@@ -192,8 +198,8 @@ void TestScanCudaStreams()
 
   // inplace exclusive scan with init
   input = input_copy;
-  iter = thrust::exclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), input.begin(), 3);
-  cudaStreamSynchronize(s);
+  iter = thrust::exclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), input.begin(), 3);
+  musaStreamSynchronize(s);
 
   result[0] = 3; result[1] = 4; result[2] = 7; result[3] = 5; result[4] = 9;
   ASSERT_EQUAL(std::size_t(iter - input.begin()), input.size());
@@ -201,14 +207,14 @@ void TestScanCudaStreams()
 
   // inplace exclusive scan with implicit init=0
   input = input_copy;
-  iter = thrust::exclusive_scan(thrust::cuda::par.on(s), input.begin(), input.end(), input.begin());
-  cudaStreamSynchronize(s);
+  iter = thrust::exclusive_scan(thrust::musa::par.on(s), input.begin(), input.end(), input.begin());
+  musaStreamSynchronize(s);
 
   result[0] = 0; result[1] = 1; result[2] = 4; result[3] = 2; result[4] = 6;
   ASSERT_EQUAL(std::size_t(iter - input.begin()), input.size());
   ASSERT_EQUAL(input, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestScanCudaStreams);
 

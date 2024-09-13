@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2018 NVIDIA Corporation
  *
@@ -39,7 +45,7 @@
 // FIXME: Combine THRUST_INLINE_CONSTANT and
 // THRUST_INLINE_INTEGRAL_MEMBER_CONSTANT into one macro when NVCC properly
 // supports `constexpr` globals in host and device code.
-#if defined(__CUDA_ARCH__) || defined(__NVCOMPILER_CUDA__)
+#if defined(__MUSA_ARCH__) || defined(__NVCOMPILER_CUDA__)
 // FIXME: Add this when NVCC supports inline variables.
 //#  if   THRUST_CPP_DIALECT >= 2017
 //#    define THRUST_INLINE_CONSTANT                 inline constexpr
@@ -70,7 +76,7 @@
 #  define THRUST_IS_HOST_CODE (!__builtin_is_device_code())
 #  define THRUST_INCLUDE_DEVICE_CODE 1
 #  define THRUST_INCLUDE_HOST_CODE 1
-#elif defined(__CUDA_ARCH__)
+#elif defined(__MUSA_ARCH__)
 #  define THRUST_IS_DEVICE_CODE 1
 #  define THRUST_IS_HOST_CODE 0
 #  define THRUST_INCLUDE_DEVICE_CODE 1

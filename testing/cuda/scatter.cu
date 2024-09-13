@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/scatter.h>
 #include <thrust/execution_policy.h>
@@ -35,8 +41,8 @@ void TestScatterDevice(ExecutionPolicy exec)
   thrust::scatter(h_input.begin(), h_input.end(), h_map.begin(), h_output.begin());
 
   scatter_kernel<<<1,1>>>(exec, d_input.begin(), d_input.end(), d_map.begin(), d_output.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_output, d_output);
 }
@@ -93,8 +99,8 @@ void TestScatterIfDevice(ExecutionPolicy exec)
   thrust::scatter_if(h_input.begin(), h_input.end(), h_map.begin(), h_map.begin(), h_output.begin(), is_even_scatter_if<unsigned int>());
 
   scatter_if_kernel<<<1,1>>>(exec, d_input.begin(), d_input.end(), d_map.begin(), d_map.begin(), d_output.begin(), is_even_scatter_if<unsigned int>());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_output, d_output);
 }
@@ -126,12 +132,12 @@ void TestScatterCudaStreams()
   src[0] = 0; src[1] = 1; src[2] = 2; src[3] = 3; src[4] = 4;
   dst[0] = 0; dst[1] = 0; dst[2] = 0; dst[3] = 0; dst[4] = 0; dst[5] = 0; dst[6] = 0; dst[7] = 0;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::scatter(thrust::cuda::par.on(s), src.begin(), src.end(), map.begin(), dst.begin());
+  thrust::scatter(thrust::musa::par.on(s), src.begin(), src.end(), map.begin(), dst.begin());
 
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(dst[0], 0);
   ASSERT_EQUAL(dst[1], 2);
@@ -142,7 +148,7 @@ void TestScatterCudaStreams()
   ASSERT_EQUAL(dst[6], 0);
   ASSERT_EQUAL(dst[7], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestScatterCudaStreams);
 
@@ -161,11 +167,11 @@ void TestScatterIfCudaStreams()
   src[0] = 0; src[1] = 1; src[2] = 2; src[3] = 3; src[4] = 4;
   dst[0] = 0; dst[1] = 0; dst[2] = 0; dst[3] = 0; dst[4] = 0; dst[5] = 0; dst[6] = 0; dst[7] = 0;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  thrust::scatter_if(thrust::cuda::par.on(s), src.begin(), src.end(), map.begin(), flg.begin(), dst.begin());
-  cudaStreamSynchronize(s);
+  thrust::scatter_if(thrust::musa::par.on(s), src.begin(), src.end(), map.begin(), flg.begin(), dst.begin());
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(dst[0], 0);
   ASSERT_EQUAL(dst[1], 0);
@@ -176,7 +182,7 @@ void TestScatterIfCudaStreams()
   ASSERT_EQUAL(dst[6], 0);
   ASSERT_EQUAL(dst[7], 3);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestScatterIfCudaStreams);
 

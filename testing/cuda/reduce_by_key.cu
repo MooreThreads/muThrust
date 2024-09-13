@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/reduce.h>
 #include <thrust/execution_policy.h>
@@ -109,8 +115,8 @@ void TestReduceByKeyDevice(ExecutionPolicy exec)
   
   reduce_by_key_kernel<<<1,1>>>(exec, keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), new_last_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   new_last = new_last_vec[0];
@@ -134,8 +140,8 @@ void TestReduceByKeyDevice(ExecutionPolicy exec)
   
   reduce_by_key_kernel<<<1,1>>>(exec, keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), is_equal_div_10_reduce<T>(), new_last_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   new_last = new_last_vec[0];
@@ -155,8 +161,8 @@ void TestReduceByKeyDevice(ExecutionPolicy exec)
   
   reduce_by_key_kernel<<<1,1>>>(exec, keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), thrust::equal_to<T>(), thrust::plus<T>(), new_last_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   new_last = new_last_vec[0];
@@ -207,10 +213,10 @@ void TestReduceByKeyCudaStreams()
   Vector output_keys(keys.size());
   Vector output_values(values.size());
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  new_last = thrust::reduce_by_key(thrust::cuda::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin());
+  new_last = thrust::reduce_by_key(thrust::musa::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin());
 
   ASSERT_EQUAL(new_last.first  - output_keys.begin(),   5);
   ASSERT_EQUAL(new_last.second - output_values.begin(), 5);
@@ -229,7 +235,7 @@ void TestReduceByKeyCudaStreams()
   // test BinaryPredicate
   initialize_keys(keys);  initialize_values(values);
   
-  new_last = thrust::reduce_by_key(thrust::cuda::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), is_equal_div_10_reduce<T>());
+  new_last = thrust::reduce_by_key(thrust::musa::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), is_equal_div_10_reduce<T>());
 
   ASSERT_EQUAL(new_last.first  - output_keys.begin(),   3);
   ASSERT_EQUAL(new_last.second - output_values.begin(), 3);
@@ -244,7 +250,7 @@ void TestReduceByKeyCudaStreams()
   // test BinaryFunction
   initialize_keys(keys);  initialize_values(values);
 
-  new_last = thrust::reduce_by_key(thrust::cuda::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), thrust::equal_to<T>(), thrust::plus<T>());
+  new_last = thrust::reduce_by_key(thrust::musa::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), thrust::equal_to<T>(), thrust::plus<T>());
 
   ASSERT_EQUAL(new_last.first  - output_keys.begin(),   5);
   ASSERT_EQUAL(new_last.second - output_values.begin(), 5);
@@ -260,7 +266,7 @@ void TestReduceByKeyCudaStreams()
   ASSERT_EQUAL(output_values[3], 15);
   ASSERT_EQUAL(output_values[4], 15);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestReduceByKeyCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/transform.h>
 #include <thrust/execution_policy.h>
@@ -28,8 +34,8 @@ void TestTransformUnaryDevice(ExecutionPolicy exec)
   thrust::device_vector<typename Vector::iterator> iter_vec(1);
   
   transform_kernel<<<1,1>>>(exec, input.begin(), input.end(), output.begin(), thrust::negate<T>(), iter_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   iter = iter_vec[0];
   
@@ -82,8 +88,8 @@ void TestTransformIfUnaryNoStencilDevice(ExecutionPolicy exec)
                                thrust::negate<T>(),
                                thrust::identity<T>(),
                                iter_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   iter = iter_vec[0];
   
@@ -139,8 +145,8 @@ void TestTransformIfUnaryDevice(ExecutionPolicy exec)
                                thrust::negate<T>(),
                                thrust::identity<T>(),
                                iter_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   iter = iter_vec[0];
   
@@ -188,8 +194,8 @@ void TestTransformBinaryDevice(ExecutionPolicy exec)
   thrust::device_vector<typename Vector::iterator> iter_vec(1);
   
   transform_kernel<<<1,1>>>(exec, input1.begin(), input1.end(), input2.begin(), output.begin(), thrust::minus<T>(), iter_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   iter = iter_vec[0];
   
@@ -250,8 +256,8 @@ void TestTransformIfBinaryDevice(ExecutionPolicy exec)
                                thrust::minus<T>(),
                                thrust::not1(identity),
                                iter_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   iter = iter_vec[0];
   
@@ -284,16 +290,16 @@ void TestTransformUnaryCudaStreams()
   input[0]  =  1; input[1]  = -2; input[2]  =  3;
   result[0] = -1; result[1] =  2; result[2] = -3;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  iter = thrust::transform(thrust::cuda::par.on(s), input.begin(), input.end(), output.begin(), thrust::negate<T>());
-  cudaStreamSynchronize(s);
+  iter = thrust::transform(thrust::musa::par.on(s), input.begin(), input.end(), output.begin(), thrust::negate<T>());
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(std::size_t(iter - output.begin()), input.size());
   ASSERT_EQUAL(output, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestTransformUnaryCudaStreams);
 
@@ -313,16 +319,16 @@ void TestTransformBinaryCudaStreams()
   input2[0] = -4; input2[1] =  5; input2[2] =  6;
   result[0] =  5; result[1] = -7; result[2] = -3;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  iter = thrust::transform(thrust::cuda::par.on(s), input1.begin(), input1.end(), input2.begin(), output.begin(), thrust::minus<T>());
-  cudaStreamSynchronize(s);
+  iter = thrust::transform(thrust::musa::par.on(s), input1.begin(), input1.end(), input2.begin(), output.begin(), thrust::minus<T>());
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(std::size_t(iter - output.begin()), input1.size());
   ASSERT_EQUAL(output, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestTransformBinaryCudaStreams);
 

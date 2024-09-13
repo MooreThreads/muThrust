@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/count.h>
 #include <thrust/execution_policy.h>
@@ -22,8 +28,8 @@ void TestCountDevice(ExecutionPolicy exec, const size_t n)
   size_t h_result = thrust::count(h_data.begin(), h_data.end(), T(5));
 
   count_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), T(5), d_result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_result, d_result[0]);
 }
@@ -70,8 +76,8 @@ void TestCountIfDevice(ExecutionPolicy exec, const size_t n)
   
   size_t h_result = thrust::count_if(h_data.begin(), h_data.end(), greater_than_five<T>());
   count_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), greater_than_five<T>(), d_result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_result, d_result[0]);
 }
@@ -98,14 +104,14 @@ void TestCountCudaStreams()
   thrust::device_vector<int> data(5);
   data[0] = 1; data[1] = 1; data[2] = 0; data[3] = 0; data[4] = 1;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  ASSERT_EQUAL(thrust::count(thrust::cuda::par.on(s), data.begin(), data.end(), 0), 2);
-  ASSERT_EQUAL(thrust::count(thrust::cuda::par.on(s), data.begin(), data.end(), 1), 3);
-  ASSERT_EQUAL(thrust::count(thrust::cuda::par.on(s), data.begin(), data.end(), 2), 0);
+  ASSERT_EQUAL(thrust::count(thrust::musa::par.on(s), data.begin(), data.end(), 0), 2);
+  ASSERT_EQUAL(thrust::count(thrust::musa::par.on(s), data.begin(), data.end(), 1), 3);
+  ASSERT_EQUAL(thrust::count(thrust::musa::par.on(s), data.begin(), data.end(), 2), 0);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestCountCudaStreams);
 

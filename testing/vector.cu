@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 
 #include <thrust/detail/config.h>
@@ -592,7 +598,7 @@ void TestVectorResizing(void)
     ASSERT_EQUAL(v.size(), 0lu);
 
 // TODO remove this WAR
-#if defined(__CUDACC__) && CUDART_VERSION==3000
+#if defined(__MUSACC__) && MUSART_VERSION==3000
     // depending on sizeof(T), we will receive one
     // of two possible exceptions
     try
@@ -603,9 +609,9 @@ void TestVectorResizing(void)
     catch(std::bad_alloc e)
     {
       // reset the CUDA error
-      cudaGetLastError();
+      musaGetLastError();
     } // end catch
-#endif // defined(__CUDACC__) && CUDART_VERSION==3000
+#endif // defined(__MUSACC__) && MUSART_VERSION==3000
 
     ASSERT_EQUAL(v.size(), 0lu);
 }
@@ -629,14 +635,14 @@ void TestVectorReserving(void)
     ASSERT_EQUAL(v.capacity(), old_capacity);
 
 // TODO remove this WAR
-#if defined(__CUDACC__) && CUDART_VERSION==3000
+#if defined(__MUSACC__) && MUSART_VERSION==3000
     try
     {
       v.reserve(std::numeric_limits<size_t>::max());
     }
     catch(std::length_error e) {}
     catch(std::bad_alloc e) {}
-#endif // defined(__CUDACC__) && CUDART_VERSION==3000
+#endif // defined(__MUSACC__) && MUSART_VERSION==3000
 
     ASSERT_EQUAL(v.capacity(), old_capacity);
 }

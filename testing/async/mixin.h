@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #pragma once
 
 #include <thrust/detail/config.h>
@@ -238,7 +244,7 @@
 // ```
 //
 // Similar invokers with slight tweaks are used in other
-// async/exclusive_scan/*.cu tests.
+// async/exclusive_scan/*.mu tests.
 
 // clang-format on
 

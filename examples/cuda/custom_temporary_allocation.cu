@@ -1,5 +1,11 @@
-#include <thrust/system/cuda/vector.h>
-#include <thrust/system/cuda/execution_policy.h>
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
+#include <thrust/system/musa/vector.h>
+#include <thrust/system/musa/execution_policy.h>
 #include <thrust/host_vector.h>
 #include <thrust/generate.h>
 #include <thrust/sort.h>
@@ -14,7 +20,7 @@
 // storage during algorithms such as thrust::sort. The idea will be to create a
 // simple cache of allocations to search when temporary storage is requested.
 // If a hit is found in the cache, we quickly return the cached allocation
-// instead of resorting to the more expensive thrust::cuda::malloc.
+// instead of resorting to the more expensive thrust::musa::malloc.
 
 // Note: Thrust now has its own caching allocator layer; if you just need a
 // caching allocator, you ought to use that. This example is still useful
@@ -45,7 +51,7 @@ private:
   std::string message;
 };
 
-// A simple allocator for caching cudaMalloc allocations.
+// A simple allocator for caching musaMalloc allocations.
 struct cached_allocator
 {
   typedef char value_type;
@@ -81,15 +87,15 @@ struct cached_allocator
     else
     {
       // No allocation of the right size exists, so create a new one with
-      // `thrust::cuda::malloc`.
+      // `thrust::musa::malloc`.
       try
       {
         std::cout << "cached_allocator::allocate(): allocating new block"
                   << std::endl;
 
-        // Allocate memory and convert the resulting `thrust::cuda::pointer` to
+        // Allocate memory and convert the resulting `thrust::musa::pointer` to
         // a raw pointer.
-        result = thrust::cuda::malloc<char>(num_bytes).get();
+        result = thrust::musa::malloc<char>(num_bytes).get();
       }
       catch (std::runtime_error&)
       {
@@ -137,16 +143,16 @@ private:
         ; i != free_blocks.end()
         ; ++i)
     {
-      // Transform the pointer to cuda::pointer before calling cuda::free.
-      thrust::cuda::free(thrust::cuda::pointer<char>(i->second));
+      // Transform the pointer to musa::pointer before calling musa::free.
+      thrust::musa::free(thrust::musa::pointer<char>(i->second));
     }
 
     for( allocated_blocks_type::iterator i = allocated_blocks.begin()
        ; i != allocated_blocks.end()
        ; ++i)
     {
-      // Transform the pointer to cuda::pointer before calling cuda::free.
-      thrust::cuda::free(thrust::cuda::pointer<char>(i->first));
+      // Transform the pointer to musa::pointer before calling musa::free.
+      thrust::musa::free(thrust::musa::pointer<char>(i->first));
     }
   }
 };
@@ -160,8 +166,8 @@ int main()
   // Generate random input.
   thrust::generate(h_input.begin(), h_input.end(), rand);
 
-  thrust::cuda::vector<int> d_input = h_input;
-  thrust::cuda::vector<int> d_result(num_elements);
+  thrust::musa::vector<int> d_input = h_input;
+  thrust::musa::vector<int> d_result(num_elements);
 
   std::size_t num_trials = 5;
 
@@ -171,9 +177,9 @@ int main()
   {
     d_result = d_input;
 
-    // Pass alloc through cuda::par as the first parameter to sort
+    // Pass alloc through musa::par as the first parameter to sort
     // to cause allocations to be handled by alloc during sort.
-    thrust::sort(thrust::cuda::par(alloc), d_result.begin(), d_result.end());
+    thrust::sort(thrust::musa::par(alloc), d_result.begin(), d_result.end());
 
     // Ensure the result is sorted.
     assert(thrust::is_sorted(d_result.begin(), d_result.end()));

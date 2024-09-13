@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
@@ -27,8 +33,8 @@ void TestIsSortedUntilDevice(ExecutionPolicy exec)
   
   is_sorted_until_kernel<<<1,1>>>(exec, v.begin(), v.end(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL_QUIET(v.begin() + 1, (iter_type)result[0]);
@@ -37,8 +43,8 @@ void TestIsSortedUntilDevice(ExecutionPolicy exec)
   
   is_sorted_until_kernel<<<1,1>>>(exec, v.begin(), v.end(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL_QUIET(v.end(), (iter_type)result[0]);
@@ -66,8 +72,8 @@ void TestIsSortedUntilCudaStreams()
   typedef Vector::value_type T;
   typedef Vector::iterator Iterator;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
   Vector v(4);
   v[0] = 0; v[1] = 5; v[2] = 8; v[3] = 0;
@@ -76,46 +82,46 @@ void TestIsSortedUntilCudaStreams()
 
   Iterator last  = v.begin() + 0;
   Iterator ref = last;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last));
 
   last = v.begin() + 1;
   ref = last;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last));
 
   last = v.begin() + 2;
   ref = last;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last));
 
   last = v.begin() + 3;
   ref = v.begin() + 3;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last));
 
   last = v.begin() + 4;
   ref = v.begin() + 3;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last));
 
   last = v.begin() + 3;
   ref = v.begin() + 3;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last, thrust::less<T>()));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last, thrust::less<T>()));
 
   last = v.begin() + 4;
   ref = v.begin() + 3;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last, thrust::less<T>()));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last, thrust::less<T>()));
 
   last = v.begin() + 1;
   ref = v.begin() + 1;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last, thrust::greater<T>()));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last, thrust::greater<T>()));
 
   last = v.begin() + 4;
   ref = v.begin() + 1;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last, thrust::greater<T>()));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last, thrust::greater<T>()));
 
   first = v.begin() + 2;
   last = v.begin() + 4;
   ref = v.begin() + 4;
-  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::cuda::par.on(s), first, last, thrust::greater<T>()));
+  ASSERT_EQUAL_QUIET(ref, thrust::is_sorted_until(thrust::musa::par.on(s), first, last, thrust::greater<T>()));
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestIsSortedUntilCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/unique.h>
 #include <thrust/functional.h>
@@ -78,8 +84,8 @@ void TestUniqueByKeyDevice(ExecutionPolicy exec)
   
   unique_by_key_kernel<<<1,1>>>(exec, keys.begin(), keys.end(), values.begin(), new_last_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   new_last = new_last_vec[0];
@@ -103,8 +109,8 @@ void TestUniqueByKeyDevice(ExecutionPolicy exec)
   
   unique_by_key_kernel<<<1,1>>>(exec, keys.begin(), keys.end(), values.begin(), is_equal_div_10_unique<T>(), new_last_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   new_last = new_last_vec[0];
@@ -148,11 +154,11 @@ void TestUniqueByKeyCudaStreams()
   // basic test
   initialize_keys(keys);  initialize_values(values);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  new_last = thrust::unique_by_key(thrust::cuda::par.on(s), keys.begin(), keys.end(), values.begin());
-  cudaStreamSynchronize(s);
+  new_last = thrust::unique_by_key(thrust::musa::par.on(s), keys.begin(), keys.end(), values.begin());
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(new_last.first  - keys.begin(),   5);
   ASSERT_EQUAL(new_last.second - values.begin(), 5);
@@ -171,7 +177,7 @@ void TestUniqueByKeyCudaStreams()
   // test BinaryPredicate
   initialize_keys(keys);  initialize_values(values);
   
-  new_last = thrust::unique_by_key(thrust::cuda::par.on(s), keys.begin(), keys.end(), values.begin(), is_equal_div_10_unique<T>());
+  new_last = thrust::unique_by_key(thrust::musa::par.on(s), keys.begin(), keys.end(), values.begin(), is_equal_div_10_unique<T>());
   
   ASSERT_EQUAL(new_last.first  - keys.begin(),   3);
   ASSERT_EQUAL(new_last.second - values.begin(), 3);
@@ -183,7 +189,7 @@ void TestUniqueByKeyCudaStreams()
   ASSERT_EQUAL(values[1], 2);
   ASSERT_EQUAL(values[2], 7);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestUniqueByKeyCudaStreams);
 
@@ -225,8 +231,8 @@ void TestUniqueCopyByKeyDevice(ExecutionPolicy exec)
 
   unique_by_key_copy_kernel<<<1,1>>>(exec, keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), new_last_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   new_last = new_last_vec[0];
@@ -250,8 +256,8 @@ void TestUniqueCopyByKeyDevice(ExecutionPolicy exec)
   
   unique_by_key_copy_kernel<<<1,1>>>(exec, keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), is_equal_div_10_unique<T>(), new_last_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   new_last = new_last_vec[0];
@@ -299,11 +305,11 @@ void TestUniqueCopyByKeyCudaStreams()
   Vector output_keys(keys.size());
   Vector output_values(values.size());
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  new_last = thrust::unique_by_key_copy(thrust::cuda::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin());
-  cudaStreamSynchronize(s);
+  new_last = thrust::unique_by_key_copy(thrust::musa::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(new_last.first  - output_keys.begin(),   5);
   ASSERT_EQUAL(new_last.second - output_values.begin(), 5);
@@ -322,8 +328,8 @@ void TestUniqueCopyByKeyCudaStreams()
   // test BinaryPredicate
   initialize_keys(keys);  initialize_values(values);
   
-  new_last = thrust::unique_by_key_copy(thrust::cuda::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), is_equal_div_10_unique<T>());
-  cudaStreamSynchronize(s);
+  new_last = thrust::unique_by_key_copy(thrust::musa::par.on(s), keys.begin(), keys.end(), values.begin(), output_keys.begin(), output_values.begin(), is_equal_div_10_unique<T>());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(new_last.first  - output_keys.begin(),   3);
   ASSERT_EQUAL(new_last.second - output_values.begin(), 3);
@@ -335,7 +341,7 @@ void TestUniqueCopyByKeyCudaStreams()
   ASSERT_EQUAL(output_values[1], 2);
   ASSERT_EQUAL(output_values[2], 7);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestUniqueCopyByKeyCudaStreams);
 

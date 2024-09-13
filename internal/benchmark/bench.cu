@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
 #include <thrust/pair.h>
@@ -38,7 +44,7 @@
 
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
   #include <thrust/system_error.h>      // For `thrust::system_error`
-  #include <thrust/system/cuda/error.h> // For `thrust::cuda_category`
+  #include <thrust/system/musa/error.h> // For `thrust::cuda_category`
 #endif
 
 // We don't use THRUST_PP_STRINGIZE and THRUST_PP_CAT because they are new, and
@@ -769,8 +775,8 @@ struct sort_tester
     {
       thrust::sort(this->input.begin(), this->input.end());
       #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-        cudaError_t err = cudaDeviceSynchronize();
-        if (err != cudaSuccess)
+        musaError_t err = musaDeviceSynchronize();
+        if (err != musaSuccess)
           throw thrust::error_code(err, thrust::cuda_category());
       #endif
     }
@@ -813,8 +819,8 @@ struct transform_inplace_tester
         , thrust::negate<T>()
       );
       #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-        cudaError_t err = cudaDeviceSynchronize();
-        if (err != cudaSuccess)
+        musaError_t err = musaDeviceSynchronize();
+        if (err != musaSuccess)
           throw thrust::error_code(err, thrust::cuda_category());
       #endif
     }
@@ -854,8 +860,8 @@ struct inclusive_scan_inplace_tester
           this->input.begin(), this->input.end(), this->input.begin()
       );
       #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-        cudaError_t err = cudaDeviceSynchronize();
-        if (err != cudaSuccess)
+        musaError_t err = musaDeviceSynchronize();
+        if (err != musaSuccess)
           throw thrust::error_code(err, thrust::cuda_category());
       #endif
     }
@@ -891,8 +897,8 @@ struct copy_tester
     {
       thrust::copy(this->input.begin(), this->input.end(), this->input.begin());
       #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-        cudaError_t err = cudaDeviceSynchronize();
-        if (err != cudaSuccess)
+        musaError_t err = musaDeviceSynchronize();
+        if (err != musaSuccess)
           throw thrust::error_code(err, thrust::cuda_category());
       #endif
     }
@@ -931,8 +937,8 @@ struct shuffle_tester
     {
       thrust::shuffle(this->input.begin(), this->input.end(), this->g);
       #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-        cudaError_t err = cudaDeviceSynchronize();
-        if (err != cudaSuccess)
+        musaError_t err = musaDeviceSynchronize();
+        if (err != musaSuccess)
           throw thrust::error_code(err, thrust::cuda_category());
       #endif
     }
@@ -1252,7 +1258,7 @@ int main(int argc, char** argv)
     int device = std::atoi(clp("device", "0").c_str());
     // `std::atoi` returns 0 if the conversion fails.
 
-    cudaSetDevice(device);
+    musaSetDevice(device);
   #endif
 
   if (!clp.has("no-header"))

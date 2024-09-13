@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/swap.h>
 #include <thrust/execution_policy.h>
@@ -23,8 +29,8 @@ void TestSwapRangesDevice(ExecutionPolicy exec)
   v2[0] = 5; v2[1] = 6; v2[2] = 7; v2[3] = 8; v2[4] = 9;
 
   swap_ranges_kernel<<<1,1>>>(exec, v1.begin(), v1.end(), v2.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   ASSERT_EQUAL(v1[0], 5);
   ASSERT_EQUAL(v1[1], 6);
@@ -61,11 +67,11 @@ void TestSwapRangesCudaStreams()
   Vector v2(5);
   v2[0] = 5; v2[1] = 6; v2[2] = 7; v2[3] = 8; v2[4] = 9;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::swap_ranges(thrust::cuda::par.on(s), v1.begin(), v1.end(), v2.begin());
-  cudaStreamSynchronize(s);
+  thrust::swap_ranges(thrust::musa::par.on(s), v1.begin(), v1.end(), v2.begin());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v1[0], 5);
   ASSERT_EQUAL(v1[1], 6);
@@ -79,7 +85,7 @@ void TestSwapRangesCudaStreams()
   ASSERT_EQUAL(v2[3], 3);
   ASSERT_EQUAL(v2[4], 4);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestSwapRangesCudaStreams);
 

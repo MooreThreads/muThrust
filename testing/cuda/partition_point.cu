@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/partition.h>
 #include <thrust/functional.h>
@@ -31,8 +37,8 @@ void TestPartitionPointDevice(ExecutionPolicy exec)
 
   thrust::device_vector<iterator> result(1);
   partition_point_kernel<<<1,1>>>(exec, v.begin(), v.end(), is_even<int>(), result.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   ASSERT_EQUAL(ref - v.begin(), (iterator)result[0] - v.begin());
 }
@@ -66,16 +72,16 @@ void TestPartitionPointCudaStreams()
   Iterator last = v.begin() + 4;
   Iterator ref = first + 3;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  ASSERT_EQUAL_QUIET(ref, thrust::partition_point(thrust::cuda::par.on(s), first, last, thrust::identity<T>()));
+  ASSERT_EQUAL_QUIET(ref, thrust::partition_point(thrust::musa::par.on(s), first, last, thrust::identity<T>()));
 
   last = v.begin() + 3;
   ref = last;
-  ASSERT_EQUAL_QUIET(ref, thrust::partition_point(thrust::cuda::par.on(s), first, last, thrust::identity<T>()));
+  ASSERT_EQUAL_QUIET(ref, thrust::partition_point(thrust::musa::par.on(s), first, last, thrust::identity<T>()));
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestPartitionPointCudaStreams);
 

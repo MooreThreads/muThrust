@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/uninitialized_fill.h>
 #include <thrust/execution_policy.h>
@@ -24,8 +30,8 @@ void TestUninitializedFillDevice(ExecutionPolicy exec)
   
   uninitialized_fill_kernel<<<1,1>>>(exec, v.begin() + 1, v.begin() + 4, exemplar);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(v[0], 0);
@@ -38,8 +44,8 @@ void TestUninitializedFillDevice(ExecutionPolicy exec)
   
   uninitialized_fill_kernel<<<1,1>>>(exec, v.begin() + 0, v.begin() + 3, exemplar);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(v[0], exemplar);
@@ -52,8 +58,8 @@ void TestUninitializedFillDevice(ExecutionPolicy exec)
   
   uninitialized_fill_kernel<<<1,1>>>(exec, v.begin() + 2, v.end(), exemplar);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(v[0], 8);
@@ -66,8 +72,8 @@ void TestUninitializedFillDevice(ExecutionPolicy exec)
   
   uninitialized_fill_kernel<<<1,1>>>(exec, v.begin(), v.end(), exemplar);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(v[0], exemplar);
@@ -102,11 +108,11 @@ void TestUninitializedFillCudaStreams()
   
   T exemplar(7);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  thrust::uninitialized_fill(thrust::cuda::par.on(s), v.begin(), v.end(), exemplar);
-  cudaStreamSynchronize(s);
+  thrust::uninitialized_fill(thrust::musa::par.on(s), v.begin(), v.end(), exemplar);
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(v[0], exemplar);
   ASSERT_EQUAL(v[1], exemplar);
@@ -114,7 +120,7 @@ void TestUninitializedFillCudaStreams()
   ASSERT_EQUAL(v[3], exemplar);
   ASSERT_EQUAL(v[4], exemplar);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestUninitializedFillCudaStreams);
 
@@ -142,8 +148,8 @@ void TestUninitializedFillNDevice(ExecutionPolicy exec)
   
   uninitialized_fill_n_kernel<<<1,1>>>(exec, v.begin() + 1, 3, exemplar, iter_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   Vector::iterator iter = iter_vec[0];
@@ -159,8 +165,8 @@ void TestUninitializedFillNDevice(ExecutionPolicy exec)
   
   uninitialized_fill_n_kernel<<<1,1>>>(exec, v.begin() + 0, 3, exemplar, iter_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   iter = iter_vec[0];
@@ -176,8 +182,8 @@ void TestUninitializedFillNDevice(ExecutionPolicy exec)
   
   uninitialized_fill_n_kernel<<<1,1>>>(exec, v.begin() + 2, 3, exemplar, iter_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   iter = iter_vec[0];
@@ -193,8 +199,8 @@ void TestUninitializedFillNDevice(ExecutionPolicy exec)
   
   uninitialized_fill_n_kernel<<<1,1>>>(exec, v.begin(), v.size(), exemplar, iter_vec.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   iter = iter_vec[0];
@@ -232,11 +238,11 @@ void TestUninitializedFillNCudaStreams()
   
   T exemplar(7);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  thrust::uninitialized_fill_n(thrust::cuda::par.on(s), v.begin(), v.size(), exemplar);
-  cudaStreamSynchronize(s);
+  thrust::uninitialized_fill_n(thrust::musa::par.on(s), v.begin(), v.size(), exemplar);
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(v[0], exemplar);
   ASSERT_EQUAL(v[1], exemplar);
@@ -244,7 +250,7 @@ void TestUninitializedFillNCudaStreams()
   ASSERT_EQUAL(v[3], exemplar);
   ASSERT_EQUAL(v[4], exemplar);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestUninitializedFillNCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/host_vector.h>
 #include <thrust/complex.h>
@@ -5,7 +11,7 @@
 #include <iostream>
 
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#include <unittest/cuda/testframework.h>
+#include <unittest/musa/testframework.h>
 #endif
 
 struct basic_arithmetic_functor

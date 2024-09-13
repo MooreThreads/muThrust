@@ -1,57 +1,63 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #pragma once
 
 #include <cassert>
 
 #  define CUDA_SAFE_CALL_NO_SYNC( call) do {                                 \
-    cudaError err = call;                                                    \
-    if( cudaSuccess != err) {                                                \
+    musaError err = call;                                                    \
+    if( musaSuccess != err) {                                                \
         fprintf(stderr, "CUDA error in file '%s' in line %i : %s.\n",        \
-                __FILE__, __LINE__, cudaGetErrorString( err) );              \
+                __FILE__, __LINE__, musaGetErrorString( err) );              \
         exit(EXIT_FAILURE);                                                  \
     } } while (0)
 
 #  define CUDA_SAFE_CALL( call) do {                                         \
     CUDA_SAFE_CALL_NO_SYNC(call);                                            \
-    cudaError err = cudaDeviceSynchronize();                                 \
-    if( cudaSuccess != err) {                                                \
+    musaError err = musaDeviceSynchronize();                                 \
+    if( musaSuccess != err) {                                                \
         fprintf(stderr, "CUDA error in file '%s' in line %i : %s.\n",        \
-                __FILE__, __LINE__, cudaGetErrorString( err) );              \
+                __FILE__, __LINE__, musaGetErrorString( err) );              \
         exit(EXIT_FAILURE);                                                  \
     } } while (0)
 
 class cuda_timer
 {
-    cudaEvent_t start_;
-    cudaEvent_t stop_;
+    musaEvent_t start_;
+    musaEvent_t stop_;
 
  public:
     cuda_timer()
     {
-        CUDA_SAFE_CALL(cudaEventCreate(&start_));
-        CUDA_SAFE_CALL(cudaEventCreate(&stop_));
+        CUDA_SAFE_CALL(musaEventCreate(&start_));
+        CUDA_SAFE_CALL(musaEventCreate(&stop_));
     }
 
     ~cuda_timer()
     {
-        CUDA_SAFE_CALL(cudaEventDestroy(start_));
-        CUDA_SAFE_CALL(cudaEventDestroy(stop_));
+        CUDA_SAFE_CALL(musaEventDestroy(start_));
+        CUDA_SAFE_CALL(musaEventDestroy(stop_));
     }
 
     void start()
     {
-        CUDA_SAFE_CALL(cudaEventRecord(start_, 0));
+        CUDA_SAFE_CALL(musaEventRecord(start_, 0));
     }
 
     void stop()
     {
-        CUDA_SAFE_CALL(cudaEventRecord(stop_, 0));
-        CUDA_SAFE_CALL(cudaEventSynchronize(stop_));
+        CUDA_SAFE_CALL(musaEventRecord(stop_, 0));
+        CUDA_SAFE_CALL(musaEventSynchronize(stop_));
     }
 
     double milliseconds_elapsed()
     {
         float elapsed_time;
-        CUDA_SAFE_CALL(cudaEventElapsedTime(&elapsed_time, start_, stop_));
+        CUDA_SAFE_CALL(musaEventElapsedTime(&elapsed_time, start_, stop_));
         return elapsed_time;
     }
 

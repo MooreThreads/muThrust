@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/uninitialized_fill.h>
 #include <thrust/device_malloc_allocator.h>
@@ -156,7 +162,7 @@ struct CopyConstructTest
   __host__ __device__
   CopyConstructTest(const CopyConstructTest &)
   {
-#if __CUDA_ARCH__
+#if __MUSA_ARCH__
     copy_constructed_on_device = true;
     copy_constructed_on_host   = false;
 #else

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/sort.h>
 #include <thrust/functional.h>
@@ -87,7 +93,7 @@ void _TestStableSortByKeyWithLargeValues(void)
     ASSERT_EQUAL_QUIET(h_keys, d_keys);
     ASSERT_EQUAL_QUIET(h_vals, d_vals);
 
-    // so cuda::stable_merge_sort_by_key() is called
+    // so musa::stable_merge_sort_by_key() is called
     thrust::stable_sort_by_key(h_keys.begin(), h_keys.end(), h_vals.begin(), greater_div_10<unsigned int>());
     thrust::stable_sort_by_key(d_keys.begin(), d_keys.end(), d_vals.begin(), greater_div_10<unsigned int>());
 

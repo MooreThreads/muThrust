@@ -21,7 +21,7 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
   set(headers_exclude_systems_globs thrust/system/*/*)
   set(headers_systems_globs
     thrust/system/${host_lower}/*
-    thrust/system/${device_lower}/*
+    thrust/system/musa/*
   )
   set(headers_exclude_details_globs
     thrust/detail/*
@@ -109,14 +109,16 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
       set(headertest_src_ext .cu)
     endif()
 
-    set(headertest_src "headers/${config_prefix}/${header}${headertest_src_ext}")
+    set(headertest_src "${CMAKE_BINARY_DIR}/headers/${config_prefix}/${header}${headertest_src_ext}")
     configure_file("${Thrust_SOURCE_DIR}/cmake/header_test.in" "${headertest_src}")
 
     list(APPEND headertest_srcs "${headertest_src}")
   endforeach()
 
   set(headertest_target ${config_prefix}.headers)
-  add_library(${headertest_target} OBJECT ${headertest_srcs})
+  set(MUSA_LINK_LIBRARIES_KEYWORD PUBLIC)
+  musa_add_library(${headertest_target} ${headertest_srcs})
+  set(MUSA_LINK_LIBRARIES_KEYWORD)
   target_link_libraries(${headertest_target} PUBLIC ${thrust_target})
   thrust_clone_target_properties(${headertest_target} ${thrust_target})
 

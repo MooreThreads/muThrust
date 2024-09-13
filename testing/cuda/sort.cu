@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/sort.h>
 #include <thrust/functional.h>
@@ -8,7 +14,7 @@ template<typename ExecutionPolicy, typename Iterator, typename Compare, typename
 __global__
 void sort_kernel(ExecutionPolicy exec, Iterator first, Iterator last, Compare comp, Iterator2 is_supported)
 {
-#if (__CUDA_ARCH__ >= 200)
+#if (__MUSA_ARCH__ >= 200)
   *is_supported = true;
   thrust::sort(exec, first, last, comp);
 #else
@@ -37,8 +43,8 @@ void TestComparisonSortDevice(ExecutionPolicy exec, const size_t n, Compare comp
   thrust::device_vector<bool> is_supported(1);
 
   sort_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), comp, is_supported.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
 
   if(is_supported[0])
@@ -128,15 +134,15 @@ void TestSortCudaStreams()
   keys[8] = 5;
   keys[9] = 6;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::sort(thrust::cuda::par.on(s), keys.begin(), keys.end());
-  cudaStreamSynchronize(s);
+  thrust::sort(thrust::musa::par.on(s), keys.begin(), keys.end());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(true, thrust::is_sorted(keys.begin(), keys.end()));
                       
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestSortCudaStreams);
 
@@ -156,15 +162,15 @@ void TestComparisonSortCudaStreams()
   keys[8] = 5;
   keys[9] = 6;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::sort(thrust::cuda::par.on(s), keys.begin(), keys.end(), my_less<int>());
-  cudaStreamSynchronize(s);
+  thrust::sort(thrust::musa::par.on(s), keys.begin(), keys.end(), my_less<int>());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(true, thrust::is_sorted(keys.begin(), keys.end(), my_less<int>()));
                       
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestComparisonSortCudaStreams);
 

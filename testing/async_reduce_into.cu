@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #define THRUST_ENABLE_FUTURE_RAW_DATA_MEMBER
 
 #include <thrust/detail/config.h>
@@ -105,14 +111,14 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
@@ -124,14 +130,14 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
@@ -169,14 +175,14 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on_init
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
@@ -189,14 +195,14 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on_init
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
@@ -239,14 +245,14 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on_init_plus
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
@@ -260,14 +266,14 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on_init_plus
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
@@ -312,14 +318,14 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on_init_custom_plus
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
@@ -333,14 +339,14 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on_init_custom_plus
   // Members.
-, cudaStream_t stream_;
+, musaStream_t stream_;
   // Constructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking)
+    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
 , thrust::cuda_cub::throw_on_error(
-    cudaStreamDestroy(stream_)
+    musaStreamDestroy(stream_)
   );
   // `validate_event` member.
 , ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());

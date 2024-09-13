@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -55,7 +61,7 @@
 #endif // THRUST_HOST_COMPILER
 
 // figure out which device compiler we're using
-#if defined(__CUDACC__) || defined(__NVCOMPILER_CUDA__)
+#if defined(__MUSACC__) || defined(__NVCOMPILER_CUDA__)
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_NVCC
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_MSVC
@@ -63,7 +69,7 @@
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_GCC
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_CLANG
 // CUDA-capable clang should behave similar to NVCC.
-#if defined(__CUDA__)
+#if defined(__MUSA__)
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_NVCC
 #else
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_CLANG
@@ -80,7 +86,7 @@
 #endif // _OPENMP
 
 
-#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC) && !defined(__CUDA_ARCH__)
+#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC) && !defined(__MUSA_ARCH__)
   #define THRUST_DISABLE_MSVC_WARNING_BEGIN(x)                                \
     __pragma(warning(push))                                                   \
     __pragma(warning(disable : x))                                            \
@@ -93,7 +99,7 @@
   #define THRUST_DISABLE_MSVC_WARNING_END(x)
 #endif
 
-#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_CLANG) && !defined(__CUDA_ARCH__)
+#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_CLANG) && !defined(__MUSA_ARCH__)
   #define THRUST_IGNORE_CLANG_WARNING_IMPL(x)                                 \
     THRUST_PP_STRINGIZE(clang diagnostic ignored x)                           \
     /**/
@@ -113,7 +119,7 @@
   #define THRUST_DISABLE_CLANG_WARNING_END(x)
 #endif
 
-#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_GCC) && !defined(__CUDA_ARCH__)
+#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_GCC) && !defined(__MUSA_ARCH__)
   #define THRUST_IGNORE_GCC_WARNING_IMPL(x)                                   \
     THRUST_PP_STRINGIZE(GCC diagnostic ignored x)                             \
     /**/

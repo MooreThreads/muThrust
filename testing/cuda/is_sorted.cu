@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/sort.h>
 #include <thrust/execution_policy.h>
@@ -26,8 +32,8 @@ void TestIsSortedDevice(ExecutionPolicy exec)
   is_sorted_kernel<<<1,1>>>(exec, v.begin(), v.end(), result.begin());
 
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(false, result[0]);
@@ -36,8 +42,8 @@ void TestIsSortedDevice(ExecutionPolicy exec)
 
   is_sorted_kernel<<<1,1>>>(exec, v.begin(), v.end(), result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(true, result[0]);
@@ -62,31 +68,31 @@ void TestIsSortedCudaStreams()
   thrust::device_vector<int> v(4);
   v[0] = 0; v[1] = 5; v[2] = 8; v[3] = 0;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 0), true);
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 1), true);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 0), true);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 1), true);
   
   // the following line crashes gcc 4.3
 #if (__GNUC__ == 4) && (__GNUC_MINOR__ == 3)
   // do nothing
 #else
   // compile this line on other compilers
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 2), true);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 2), true);
 #endif // GCC
 
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 3), true);
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 4), false);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 3), true);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 4), false);
   
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 3, thrust::less<int>()),    true);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 3, thrust::less<int>()),    true);
   
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 1, thrust::greater<int>()), true);
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.begin() + 4, thrust::greater<int>()), false);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 1, thrust::greater<int>()), true);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.begin() + 4, thrust::greater<int>()), false);
   
-  ASSERT_EQUAL(thrust::is_sorted(thrust::cuda::par.on(s), v.begin(), v.end()), false);
+  ASSERT_EQUAL(thrust::is_sorted(thrust::musa::par.on(s), v.begin(), v.end()), false);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestIsSortedCudaStreams);
 

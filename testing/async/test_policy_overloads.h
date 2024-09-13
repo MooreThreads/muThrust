@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #pragma once
 
 #include <thrust/detail/config.h>
@@ -11,7 +17,7 @@
 
 #include <string>
 
-// TODO Cover these cases from testing/async_reduce.cu:
+// TODO Cover these cases from testing/async_reduce.mu:
 //   - [x] test_async_reduce_after ("after_future" in test_policy_overloads)
 //   - [ ] test_async_reduce_on_then_after (KNOWN_FAILURE, see #1195)
 //     - [ ] all the child variants (e.g. with allocator) too
@@ -110,7 +116,7 @@ private:
 
     // When a policy uses a non-default stream, the implementation should pass
     // the stream through to the output:
-    thrust::system::cuda::detail::unique_stream test_stream{};
+    thrust::system::musa::detail::unique_stream test_stream{};
     auto using_test_stream = [&test_stream](auto& e) {
       ASSERT_EQUAL(test_stream.native_handle(), e.stream().native_handle());
     };

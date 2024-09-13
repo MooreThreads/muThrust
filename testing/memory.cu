@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <iostream>
 #include <unittest/unittest.h>
 #include <thrust/memory.h>
@@ -10,7 +16,7 @@
 #include <thrust/reverse.h>
 
 // Define a new system class, as the my_system one is already used with a thrust::sort template definition
-// that calls back into sort.cu
+// that calls back into sort.mu
 class my_memory_system : public thrust::device_execution_policy<my_memory_system>
 {
   public:

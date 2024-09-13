@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/mismatch.h>
 #include <thrust/execution_policy.h>
@@ -29,8 +35,8 @@ void TestMismatchDevice(ExecutionPolicy exec)
   
   mismatch_kernel<<<1,1>>>(exec, a.begin(), a.end(), b.begin(), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(2, ((pair_type)d_result[0]).first  - a.begin());
@@ -40,8 +46,8 @@ void TestMismatchDevice(ExecutionPolicy exec)
   
   mismatch_kernel<<<1,1>>>(exec, a.begin(), a.end(), b.begin(), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(3, ((pair_type)d_result[0]).first  - a.begin());
@@ -51,8 +57,8 @@ void TestMismatchDevice(ExecutionPolicy exec)
   
   mismatch_kernel<<<1,1>>>(exec, a.begin(), a.end(), b.begin(), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(4, ((pair_type)d_result[0]).first  - a.begin());
@@ -84,23 +90,23 @@ void TestMismatchCudaStreams()
   a[2] = 3; b[2] = 4;
   a[3] = 4; b[3] = 3;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  ASSERT_EQUAL(thrust::mismatch(thrust::cuda::par.on(s), a.begin(), a.end(), b.begin()).first  - a.begin(), 2);
-  ASSERT_EQUAL(thrust::mismatch(thrust::cuda::par.on(s), a.begin(), a.end(), b.begin()).second - b.begin(), 2);
+  ASSERT_EQUAL(thrust::mismatch(thrust::musa::par.on(s), a.begin(), a.end(), b.begin()).first  - a.begin(), 2);
+  ASSERT_EQUAL(thrust::mismatch(thrust::musa::par.on(s), a.begin(), a.end(), b.begin()).second - b.begin(), 2);
 
   b[2] = 3;
   
-  ASSERT_EQUAL(thrust::mismatch(thrust::cuda::par.on(s), a.begin(), a.end(), b.begin()).first  - a.begin(), 3);
-  ASSERT_EQUAL(thrust::mismatch(thrust::cuda::par.on(s), a.begin(), a.end(), b.begin()).second - b.begin(), 3);
+  ASSERT_EQUAL(thrust::mismatch(thrust::musa::par.on(s), a.begin(), a.end(), b.begin()).first  - a.begin(), 3);
+  ASSERT_EQUAL(thrust::mismatch(thrust::musa::par.on(s), a.begin(), a.end(), b.begin()).second - b.begin(), 3);
   
   b[3] = 4;
   
-  ASSERT_EQUAL(thrust::mismatch(thrust::cuda::par.on(s), a.begin(), a.end(), b.begin()).first  - a.begin(), 4);
-  ASSERT_EQUAL(thrust::mismatch(thrust::cuda::par.on(s), a.begin(), a.end(), b.begin()).second - b.begin(), 4);
+  ASSERT_EQUAL(thrust::mismatch(thrust::musa::par.on(s), a.begin(), a.end(), b.begin()).first  - a.begin(), 4);
+  ASSERT_EQUAL(thrust::mismatch(thrust::musa::par.on(s), a.begin(), a.end(), b.begin()).second - b.begin(), 4);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestMismatchCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/tabulate.h>
 #include <thrust/functional.h>
@@ -23,8 +29,8 @@ void TestTabulateDevice(ExecutionPolicy exec)
 
   tabulate_kernel<<<1,1>>>(exec, v.begin(), v.end(), thrust::identity<T>());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(v[0], 0);
@@ -35,8 +41,8 @@ void TestTabulateDevice(ExecutionPolicy exec)
 
   tabulate_kernel<<<1,1>>>(exec, v.begin(), v.end(), -_1);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(v[0],  0);
@@ -47,8 +53,8 @@ void TestTabulateDevice(ExecutionPolicy exec)
   
   tabulate_kernel<<<1,1>>>(exec, v.begin(), v.end(), _1 * _1 * _1);
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(v[0], 0);
@@ -78,11 +84,11 @@ void TestTabulateCudaStreams()
   
   Vector v(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  thrust::tabulate(thrust::cuda::par.on(s), v.begin(), v.end(), thrust::identity<T>());
-  cudaStreamSynchronize(s);
+  thrust::tabulate(thrust::musa::par.on(s), v.begin(), v.end(), thrust::identity<T>());
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v[0], 0);
   ASSERT_EQUAL(v[1], 1);
@@ -90,8 +96,8 @@ void TestTabulateCudaStreams()
   ASSERT_EQUAL(v[3], 3);
   ASSERT_EQUAL(v[4], 4);
 
-  thrust::tabulate(thrust::cuda::par.on(s), v.begin(), v.end(), -_1);
-  cudaStreamSynchronize(s);
+  thrust::tabulate(thrust::musa::par.on(s), v.begin(), v.end(), -_1);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v[0],  0);
   ASSERT_EQUAL(v[1], -1);
@@ -99,8 +105,8 @@ void TestTabulateCudaStreams()
   ASSERT_EQUAL(v[3], -3);
   ASSERT_EQUAL(v[4], -4);
   
-  thrust::tabulate(thrust::cuda::par.on(s), v.begin(), v.end(), _1 * _1 * _1);
-  cudaStreamSynchronize(s);
+  thrust::tabulate(thrust::musa::par.on(s), v.begin(), v.end(), _1 * _1 * _1);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL(v[0], 0);
   ASSERT_EQUAL(v[1], 1);
@@ -108,7 +114,7 @@ void TestTabulateCudaStreams()
   ASSERT_EQUAL(v[3], 27);
   ASSERT_EQUAL(v[4], 64);
 
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 }
 DECLARE_UNITTEST(TestTabulateCudaStreams);
 

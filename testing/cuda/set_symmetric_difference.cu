@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/set_operations.h>
 #include <thrust/execution_policy.h>
@@ -37,8 +43,8 @@ void TestSetSymmetricDifferenceDevice(ExecutionPolicy exec)
                                            b.begin(), b.end(),
                                            result.begin(),
                                            end_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   Iterator end = end_vec[0];
 
@@ -76,19 +82,19 @@ void TestSetSymmetricDifferenceCudaStreams()
 
   Vector result(5);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Iterator end = thrust::set_symmetric_difference(thrust::cuda::par.on(s),
+  Iterator end = thrust::set_symmetric_difference(thrust::musa::par.on(s),
                                                   a.begin(), a.end(),
                                                   b.begin(), b.end(),
                                                   result.begin());
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL_QUIET(result.end(), end);
   ASSERT_EQUAL(ref, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestSetSymmetricDifferenceCudaStreams);
 

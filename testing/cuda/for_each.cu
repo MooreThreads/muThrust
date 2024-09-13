@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/for_each.h>
 #include <thrust/execution_policy.h>
@@ -21,9 +27,9 @@ struct CopyFunctorWithManyRegisters
 void TestForEachLargeRegisterFootprint()
 {
   int current_device = -1;
-  cudaGetDevice(&current_device);
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, current_device);
+  musaGetDevice(&current_device);
+  musaDeviceProp prop;
+  musaGetDeviceProperties(&prop, current_device);
 
   thrust::device_vector<int> data(NUM_REGISTERS, 12345);
 
@@ -37,9 +43,9 @@ DECLARE_UNITTEST(TestForEachLargeRegisterFootprint);
 void TestForEachNLargeRegisterFootprint()
 {
   int current_device = -1;
-  cudaGetDevice(&current_device);
-  cudaDeviceProp prop;
-  cudaGetDeviceProperties(&prop, current_device);
+  musaGetDevice(&current_device);
+  musaDeviceProp prop;
+  musaGetDeviceProperties(&prop, current_device);
 
   thrust::device_vector<int> data(NUM_REGISTERS, 12345);
 
@@ -89,8 +95,8 @@ void TestForEachDeviceSeq(const size_t n)
   thrust::for_each(h_input.begin(), h_input.end(), h_f);
   
   for_each_kernel<<<1,1>>>(thrust::seq, d_input.begin(), d_input.end(), d_f);
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
  
   ASSERT_EQUAL(h_output, d_output);
 }
@@ -121,12 +127,12 @@ void TestForEachDeviceDevice(const size_t n)
   
   for_each_kernel<<<1,1>>>(thrust::device, d_input.begin(), d_input.end(), d_f);
   {
-    cudaError_t const err = cudaGetLastError();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaGetLastError();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
  
   ASSERT_EQUAL(h_output, d_output);
@@ -165,8 +171,8 @@ void TestForEachNDeviceSeq(const size_t n)
   thrust::for_each_n(h_input.begin(), h_input.size(), h_f);
   
   for_each_n_kernel<<<1,1>>>(thrust::seq, d_input.begin(), d_input.size(), d_f);
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_output, d_output);
 }
@@ -196,8 +202,8 @@ void TestForEachNDeviceDevice(const size_t n)
   thrust::for_each_n(h_input.begin(), h_input.size(), h_f);
   
   for_each_n_kernel<<<1,1>>>(thrust::device, d_input.begin(), d_input.size(), d_f);
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
   
   ASSERT_EQUAL(h_output, d_output);
 }
@@ -206,8 +212,8 @@ DECLARE_VARIABLE_UNITTEST(TestForEachNDeviceDevice);
 
 void TestForEachCudaStreams()
 {
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
   thrust::device_vector<int> input(5);
   thrust::device_vector<int> output(7, 0);
@@ -217,9 +223,9 @@ void TestForEachCudaStreams()
   mark_present_for_each<int> f;
   f.ptr = thrust::raw_pointer_cast(output.data());
   
-  thrust::for_each(thrust::cuda::par.on(s), input.begin(), input.end(), f);
+  thrust::for_each(thrust::musa::par.on(s), input.begin(), input.end(), f);
 
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
   
   ASSERT_EQUAL(output[0], 0);
   ASSERT_EQUAL(output[1], 0);
@@ -229,7 +235,7 @@ void TestForEachCudaStreams()
   ASSERT_EQUAL(output[5], 0);
   ASSERT_EQUAL(output[6], 1);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestForEachCudaStreams);
 

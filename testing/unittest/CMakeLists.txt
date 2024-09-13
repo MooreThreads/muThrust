@@ -7,14 +7,16 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
   if ("CUDA" STREQUAL "${config_device}")
     set(framework_srcs
       testframework.cu
-      cuda/testframework.cu
+      musa/testframework.cu
     )
   else()
     # Wrap the cu file inside a .cpp file for non-CUDA builds
     thrust_wrap_cu_in_cpp(framework_srcs testframework.cu ${thrust_target})
   endif()
 
-  add_library(${framework_target} STATIC ${framework_srcs})
+  set(MUSA_LINK_LIBRARIES_KEYWORD PUBLIC)
+  musa_add_library(${framework_target} STATIC ${framework_srcs})
+  set(MUSA_LINK_LIBRARIES_KEYWORD)
   target_link_libraries(${framework_target} PUBLIC ${thrust_target})
   target_include_directories(${framework_target} PRIVATE "${Thrust_SOURCE_DIR}/testing")
   thrust_clone_target_properties(${framework_target} ${thrust_target})

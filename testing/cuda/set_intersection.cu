@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/set_operations.h>
 #include <thrust/functional.h>
@@ -35,8 +41,8 @@ void TestSetIntersectionDevice(ExecutionPolicy exec)
   thrust::device_vector<Iterator> end_vec(1);
 
   set_intersection_kernel<<<1,1>>>(exec, a.begin(), a.end(), b.begin(), b.end(), result.begin(), end_vec.begin());
-  cudaError_t const err = cudaDeviceSynchronize();
-  ASSERT_EQUAL(cudaSuccess, err);
+  musaError_t const err = musaDeviceSynchronize();
+  ASSERT_EQUAL(musaSuccess, err);
 
   Iterator end = end_vec.front();
 
@@ -74,19 +80,19 @@ void TestSetIntersectionCudaStreams()
 
   Vector result(2);
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
 
-  Iterator end = thrust::set_intersection(thrust::cuda::par.on(s),
+  Iterator end = thrust::set_intersection(thrust::musa::par.on(s),
                                           a.begin(), a.end(),
                                           b.begin(), b.end(),
                                           result.begin());
-  cudaStreamSynchronize(s);
+  musaStreamSynchronize(s);
 
   ASSERT_EQUAL_QUIET(result.end(), end);
   ASSERT_EQUAL(ref, result);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestSetIntersectionCudaStreams);
 

@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -54,7 +60,7 @@ pointer<T,DerivedPolicy> malloc(const thrust::detail::execution_policy_base<Deri
 
 // XXX WAR nvbug 992955
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
-#if CUDART_VERSION < 5000
+#if MUSART_VERSION < 5000
 
 // cudafe generates unqualified calls to free(int *volatile)
 // which get confused with thrust::free
@@ -65,7 +71,7 @@ void free(int *volatile ptr)
   ::free(ptr);
 }
 
-#endif // CUDART_VERSION
+#endif // MUSART_VERSION
 #endif // THRUST_DEVICE_COMPILER
 
 __thrust_exec_check_disable__

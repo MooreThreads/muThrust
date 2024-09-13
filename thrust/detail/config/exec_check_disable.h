@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -25,8 +31,8 @@
 // #pragma nv_exec_check_disable is only recognized by NVCC.  Having a macro
 // expand to a #pragma (rather than _Pragma) only works with NVCC's compilation
 // model, not with other compilers.
-#if defined(__CUDACC__) && !defined(__NVCOMPILER_CUDA__) && \
-    !(defined(__CUDA__) && defined(__clang__))
+#if defined(__MUSACC__) && !defined(__NVCOMPILER_CUDA__) && \
+    !(defined(__MUSA__) && defined(__clang__))
 
 #if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC
 #define __thrust_exec_check_disable__ __pragma("nv_exec_check_disable")

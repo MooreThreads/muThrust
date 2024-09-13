@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/find.h>
 #include <thrust/execution_policy.h>
@@ -63,8 +69,8 @@ void TestFindDevice(ExecutionPolicy exec)
 
   find_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), int(0), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
   
   ASSERT_EQUAL(h_iter - h_data.begin(), (iter_type)d_result[0] - d_data.begin());
@@ -77,8 +83,8 @@ void TestFindDevice(ExecutionPolicy exec)
 
     find_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), sample, d_result.begin());
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
 
     ASSERT_EQUAL(h_iter - h_data.begin(), (iter_type)d_result[0] - d_data.begin());
@@ -124,8 +130,8 @@ void TestFindIfDevice(ExecutionPolicy exec)
 
   find_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), equal_to_value_pred<int>(0), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(h_iter - h_data.begin(), (iter_type)d_result[0] - d_data.begin());
@@ -138,8 +144,8 @@ void TestFindIfDevice(ExecutionPolicy exec)
 
     find_if_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), equal_to_value_pred<int>(sample), d_result.begin());
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
 
     ASSERT_EQUAL(h_iter - h_data.begin(), (iter_type)d_result[0] - d_data.begin());
@@ -184,8 +190,8 @@ void TestFindIfNotDevice(ExecutionPolicy exec)
 
   find_if_not_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), not_equal_to_value_pred<int>(0), d_result.begin());
   {
-    cudaError_t const err = cudaDeviceSynchronize();
-    ASSERT_EQUAL(cudaSuccess, err);
+    musaError_t const err = musaDeviceSynchronize();
+    ASSERT_EQUAL(musaSuccess, err);
   }
 
   ASSERT_EQUAL(h_iter - h_data.begin(), (iter_type)d_result[0] - d_data.begin());
@@ -198,8 +204,8 @@ void TestFindIfNotDevice(ExecutionPolicy exec)
 
     find_if_not_kernel<<<1,1>>>(exec, d_data.begin(), d_data.end(), not_equal_to_value_pred<int>(sample), d_result.begin());
     {
-      cudaError_t const err = cudaDeviceSynchronize();
-      ASSERT_EQUAL(cudaSuccess, err);
+      musaError_t const err = musaDeviceSynchronize();
+      ASSERT_EQUAL(musaSuccess, err);
     }
 
     ASSERT_EQUAL(h_iter - h_data.begin(), (iter_type)d_result[0] - d_data.begin());
@@ -230,17 +236,17 @@ void TestFindCudaStreams()
   vec[3] = 3;
   vec[4] = 5;
 
-  cudaStream_t s;
-  cudaStreamCreate(&s);
+  musaStream_t s;
+  musaStreamCreate(&s);
   
-  ASSERT_EQUAL(thrust::find(thrust::cuda::par.on(s), vec.begin(), vec.end(), 0) - vec.begin(), 5);
-  ASSERT_EQUAL(thrust::find(thrust::cuda::par.on(s), vec.begin(), vec.end(), 1) - vec.begin(), 0);
-  ASSERT_EQUAL(thrust::find(thrust::cuda::par.on(s), vec.begin(), vec.end(), 2) - vec.begin(), 1);
-  ASSERT_EQUAL(thrust::find(thrust::cuda::par.on(s), vec.begin(), vec.end(), 3) - vec.begin(), 2);
-  ASSERT_EQUAL(thrust::find(thrust::cuda::par.on(s), vec.begin(), vec.end(), 4) - vec.begin(), 5);
-  ASSERT_EQUAL(thrust::find(thrust::cuda::par.on(s), vec.begin(), vec.end(), 5) - vec.begin(), 4);
+  ASSERT_EQUAL(thrust::find(thrust::musa::par.on(s), vec.begin(), vec.end(), 0) - vec.begin(), 5);
+  ASSERT_EQUAL(thrust::find(thrust::musa::par.on(s), vec.begin(), vec.end(), 1) - vec.begin(), 0);
+  ASSERT_EQUAL(thrust::find(thrust::musa::par.on(s), vec.begin(), vec.end(), 2) - vec.begin(), 1);
+  ASSERT_EQUAL(thrust::find(thrust::musa::par.on(s), vec.begin(), vec.end(), 3) - vec.begin(), 2);
+  ASSERT_EQUAL(thrust::find(thrust::musa::par.on(s), vec.begin(), vec.end(), 4) - vec.begin(), 5);
+  ASSERT_EQUAL(thrust::find(thrust::musa::par.on(s), vec.begin(), vec.end(), 5) - vec.begin(), 4);
 
-  cudaStreamDestroy(s);
+  musaStreamDestroy(s);
 }
 DECLARE_UNITTEST(TestFindCudaStreams);
 

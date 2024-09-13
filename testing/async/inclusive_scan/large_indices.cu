@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/detail/config.h>
 
 #if THRUST_CPP_DIALECT >= 2014
@@ -16,7 +22,7 @@
 
 #include <cstdint>
 
-// This test is an adaptation of TestInclusiveScanWithBigIndices from scan.cu.
+// This test is an adaptation of TestInclusiveScanWithBigIndices from scan.mu.
 
 namespace
 {

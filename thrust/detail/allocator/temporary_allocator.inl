@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -20,9 +26,9 @@
 #include <thrust/system/detail/bad_alloc.h>
 #include <cassert>
 
-#if (defined(__NVCOMPILER_CUDA__) || defined(__CUDA_ARCH__)) && \
+#if (defined(__NVCOMPILER_CUDA__) || defined(__MUSA_ARCH__)) && \
     THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#include <thrust/system/cuda/detail/terminate.h>
+#include <thrust/system/musa/detail/terminate.h>
 #endif
 
 namespace thrust
@@ -52,7 +58,7 @@ __host__ __device__
       #endif
     } else {
       #if THRUST_INCLUDE_DEVICE_CODE && THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-        thrust::system::cuda::detail::terminate_with_message("temporary_buffer::allocate: get_temporary_buffer failed");
+        thrust::system::musa::detail::terminate_with_message("temporary_buffer::allocate: get_temporary_buffer failed");
       #endif
     }
   } // end if

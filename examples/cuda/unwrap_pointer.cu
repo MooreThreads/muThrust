@@ -1,8 +1,14 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/device_ptr.h>
 #include <thrust/device_malloc.h>
 #include <thrust/device_free.h>
 #include <thrust/device_vector.h>
-#include <cuda.h>
+#include <musa.h>
 
 int main(void)
 {
@@ -15,7 +21,7 @@ int main(void)
     int * raw_ptr = thrust::raw_pointer_cast(dev_ptr);
 
     // use raw_ptr in CUDA API functions
-    cudaMemset(raw_ptr, 0, N * sizeof(int));
+    musaMemset(raw_ptr, 0, N * sizeof(int));
 
     // free memory
     thrust::device_free(dev_ptr);

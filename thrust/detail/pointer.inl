@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2018 NVIDIA Corporation
  *
@@ -104,7 +110,7 @@ namespace detail
 {
 
 // Implementation for dereference() when Reference is Element&,
-// e.g. cuda's managed_memory_pointer
+// e.g. musa's managed_memory_pointer
 template <typename Reference, typename Derived>
 __host__ __device__
 Reference pointer_dereference_impl(const Derived& ptr,

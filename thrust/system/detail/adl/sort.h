@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -29,7 +35,7 @@
 // including inside an #if 0.
 #if 0
 #include <thrust/system/cpp/detail/sort.h>
-#include <thrust/system/cuda/detail/sort.h>
+#include <thrust/system/musa/detail/sort.h>
 #include <thrust/system/omp/detail/sort.h>
 #include <thrust/system/tbb/detail/sort.h>
 #endif
