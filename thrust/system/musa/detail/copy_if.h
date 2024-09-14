@@ -104,13 +104,13 @@ namespace __copy_if {
 
     enum
     {
-      NOMINAL_4B_ITEMS_PER_THREAD = 7,
+      NOMINAL_4B_ITEMS_PER_THREAD = 4,
       ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(3, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
     };
 
     typedef PtxPolicy<128,
                       ITEMS_PER_THREAD,
-                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::BLOCK_LOAD_DIRECT,
                       cub::LOAD_DEFAULT,
                       cub::BLOCK_SCAN_WARP_SCANS>
         type;
