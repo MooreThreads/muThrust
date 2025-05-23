@@ -1,3 +1,12 @@
+# muThrust based on thrust 1.12.1
+This project includes modifications to the Thrust 1.12.1 open source software, 
+originally available under the Apache License, Version 2.0.
+Some files of 1.12.1 source code may have been modified by 
+Moore Threads Technology Co. , Ltd
+including the following change:
+- porting to musa code
+- adding musa backend in thrust/system
+
 # Thrust 1.12.1 (CUDA Toolkit 11.4)
 
 Thrust 1.12.1 is a trivial patch release that slightly changes the phrasing of
