@@ -59,10 +59,11 @@ namespace __parallel_for {
   template <class Arch, class F>
   struct Tuning;
 
+  // MUSA: Use sm30 tuning with 128 threads, 4 items per thread (matching muThrust's sm10 config)
   template <class F>
   struct Tuning<sm30, F>
   {
-    typedef PtxPolicy<256, 2> type;
+    typedef PtxPolicy<128, 4> type;
   };
 
 
@@ -121,18 +122,6 @@ namespace __parallel_for {
     }
   };    // struct ParallelForEagent
 
-  // MUSA: Match CUB's kernel declaration pattern for proper device code generation
-  template <typename F, typename Size>
-  __launch_bounds__(256) __global__
-  void ParallelForKernel(F f, Size num_items)
-  {
-    Size idx = static_cast<Size>(blockIdx.x) * blockDim.x + threadIdx.x;
-    if (idx < num_items)
-    {
-      f(idx);
-    }
-  }
-
   template <class F,
             class Size>
   THRUST_RUNTIME_FUNCTION musaError_t
@@ -143,14 +132,19 @@ namespace __parallel_for {
     if (num_items == 0)
       return musaSuccess;
 
-    const int block_size = 256;
-    Size grid_size = (num_items + block_size - 1) / block_size;
+    using core::AgentLauncher;
+    using core::AgentPlan;
 
-    // MUSA: Use doit() to match CUB's pattern
-    launcher::triple_chevron(static_cast<unsigned int>(grid_size), block_size, 0, stream)
-      .doit(ParallelForKernel<F, Size>, f, num_items);
+    bool debug_sync = THRUST_DEBUG_SYNC_FLAG;
 
-    return musaPeekAtLastError();
+    typedef AgentLauncher<ParallelForAgent<F, Size> > parallel_for_agent;
+    AgentPlan parallel_for_plan = parallel_for_agent::get_plan(stream);
+
+    parallel_for_agent pfa(parallel_for_plan, num_items, stream, "parallel_for::agent", debug_sync);
+    pfa.launch(f, num_items);
+    CUDA_CUB_RET_IF_FAIL(musaPeekAtLastError());
+
+    return musaSuccess;
   }
 }    // __parallel_for
 
@@ -166,14 +160,19 @@ parallel_for(execution_policy<Derived> &policy,
   if (count == 0)
     return;
 
-#if __THRUST_HAS_CUDART__
-  musaStream_t stream = cuda_cub::stream(policy);
-  musaError_t  status = __parallel_for::parallel_for(count, f, stream);
-  cuda_cub::throw_on_error(status, "parallel_for failed");
-#else
-  for (Size idx = 0; idx != count; ++idx)
-    f(idx);
+  if (__THRUST_HAS_CUDART__)
+  {
+    musaStream_t stream = cuda_cub::stream(policy);
+    musaError_t  status = __parallel_for::parallel_for(count, f, stream);
+    cuda_cub::throw_on_error(status, "parallel_for failed");
+  }
+  else
+  {
+#if !__THRUST_HAS_CUDART__
+    for (Size idx = 0; idx != count; ++idx)
+      f(idx);
 #endif
+  }
 }
 
 }    // namespace cuda_cub
