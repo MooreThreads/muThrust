@@ -36,7 +36,8 @@ endif()
 enable_language(CXX)
 
 # Optionally include installation rules for non-top-level builds:
-option(THRUST_ENABLE_INSTALL_RULES "Enable installation of Thrust" ${THRUST_TOPLEVEL_PROJECT})
+# 禁用安装规则以避免依赖 CUB 子模块
+option(THRUST_ENABLE_INSTALL_RULES "Enable installation of Thrust" OFF)
 if (THRUST_ENABLE_INSTALL_RULES)
   include(cmake/ThrustInstallRules.cmake)
 endif()

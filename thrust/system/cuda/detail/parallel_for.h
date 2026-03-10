@@ -121,9 +121,10 @@ namespace __parallel_for {
     }
   };    // struct ParallelForEagent
 
+  // MUSA: Match CUB's kernel declaration pattern for proper device code generation
   template <typename F, typename Size>
-  __global__ void __launch_bounds__(256)
-  ParallelForKernel(F f, Size num_items)
+  __launch_bounds__(256) __global__
+  void ParallelForKernel(F f, Size num_items)
   {
     Size idx = static_cast<Size>(blockIdx.x) * blockDim.x + threadIdx.x;
     if (idx < num_items)
@@ -145,8 +146,9 @@ namespace __parallel_for {
     const int block_size = 256;
     Size grid_size = (num_items + block_size - 1) / block_size;
 
+    // MUSA: Use doit() to match CUB's pattern
     launcher::triple_chevron(static_cast<unsigned int>(grid_size), block_size, 0, stream)
-      .doit_host(ParallelForKernel<F, Size>, f, num_items);
+      .doit(ParallelForKernel<F, Size>, f, num_items);
 
     return musaPeekAtLastError();
   }

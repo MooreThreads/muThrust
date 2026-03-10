@@ -17,6 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/system/cuda/detail/platform_macros.h>
 
 // the purpose of this header is to check for the existence of macros
 // such as __host__ and __device__, which may already be defined by thrust
@@ -35,5 +36,10 @@
 
 #endif // __HOST_DEFINES_H__
 
-#include <musa_runtime_api.h>
+// 根据平台选择运行时 API 头文件
+#if THRUST_MUSA_ENABLED
+  #include <musa_runtime_api.h>
+#else
+  #include <cuda_runtime_api.h>
+#endif
 

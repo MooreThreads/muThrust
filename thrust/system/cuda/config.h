@@ -28,6 +28,9 @@
 
 #include <thrust/detail/config.h>
 
+// 包含平台宏定义
+#include <thrust/system/cuda/detail/platform_macros.h>
+
 // We don't directly include <cub/version.cuh> since it doesn't exist in
 // older releases. This header will always pull in version info:
 #include <cub/util_namespace.cuh>
@@ -116,3 +119,30 @@ namespace cub
 using namespace CUB_NS_QUALIFIER;
 }
 THRUST_NAMESPACE_END
+
+// ----------------------------------------------------------------------------
+// CDP (CUDA Dynamic Parallelism) 配置
+// MUSA 平台暂不支持 CDP，需要在编译时禁用
+// ----------------------------------------------------------------------------
+
+// 原有 CDP 检测逻辑（仅在 CUDA 平台生效）
+#ifndef THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM
+  #if defined(__CUDACC_RDC__) && defined(__CUDACC__) && THRUST_CUDA_ENABLED
+    #if !defined(__CUDA_ARCH__) || (__CUDA_ARCH__ >= 350)
+      #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 1
+    #else
+      #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 0
+    #endif
+  #else
+    #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 0
+  #endif
+#endif
+
+// MUSA 平台强制禁用 CDP
+#if THRUST_MUSA_ENABLED
+  #ifdef THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM
+    #undef THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM
+  #endif
+  #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 0
+  #define THRUST_MUSA_DISABLE_CDP 1
+#endif

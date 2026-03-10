@@ -1,5 +1,11 @@
 
-set(THRUST_KNOWN_COMPUTE_ARCHS 35 37 50 52 53 60 61 62 70 72 75 80 86)
+# 检测是否使用 MUSA 编译器
+if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
+  set(THRUST_KNOWN_COMPUTE_ARCHS 21 30 31)
+  message(STATUS "Thrust: Using MUSA compute architectures: mp_21 mp_30 mp_31")
+else()
+  set(THRUST_KNOWN_COMPUTE_ARCHS 35 37 50 52 53 60 61 62 70 72 75 80 86)
+endif()
 
 # Split CUDA_FLAGS into 3 parts:
 #
@@ -108,11 +114,18 @@ foreach (arch IN LISTS THRUST_KNOWN_COMPUTE_ARCHS)
       )
     endif()
     set(arch_flag "-gpu=cc${arch}")
+  elseif (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
+    # MUSA 使用不同的架构标志格式
+    set(arch_flag "--offload-arch=mp_${arch}")
   else()
     set(arch_flag "-gencode arch=compute_${arch},code=sm_${arch}")
   endif()
 
-  string(APPEND compute_message " sm_${arch}")
+  if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
+    string(APPEND compute_message " mp_${arch}")
+  else()
+    string(APPEND compute_message " sm_${arch}")
+  endif()
   string(APPEND THRUST_CUDA_FLAGS_NO_RDC " ${arch_flag}")
   if (NOT arch IN_LIST no_rdc_archs)
     string(APPEND THRUST_CUDA_FLAGS_RDC " ${arch_flag}")
@@ -125,10 +138,14 @@ if (NOT "NVCXX" STREQUAL "${CMAKE_CUDA_COMPILER_ID}")
     ${option_init}
   )
   if (THRUST_ENABLE_COMPUTE_FUTURE)
-    string(APPEND THRUST_CUDA_FLAGS_BASE
-      " -gencode arch=compute_${highest_arch},code=compute_${highest_arch}"
-    )
-    string(APPEND compute_message " compute_${highest_arch}")
+    if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
+      # MUSA 不需要 compute_future
+    else()
+      string(APPEND THRUST_CUDA_FLAGS_BASE
+        " -gencode arch=compute_${highest_arch},code=compute_${highest_arch}"
+      )
+      string(APPEND compute_message " compute_${highest_arch}")
+    endif()
   endif()
 endif()
 

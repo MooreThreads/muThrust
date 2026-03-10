@@ -27,36 +27,18 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/musa/config.h>
+
+// MUSA 系统标签 - 复用 CUDA 实现
+#include <thrust/system/cuda/tag.h>
 
 THRUST_NAMESPACE_BEGIN
 
 namespace musa
 {
 
-// MUSA 系统标签
-struct tag
-{
-  __host__ __device__
-  operator thrust::device_system_tag() const
-  {
-    return thrust::device_system_tag();
-  }
-};
-
-// 设备指针标签
-struct device_ptr_tag
-{
-  __host__ __device__
-  operator thrust::device_ptr_tag() const
-  {
-    return thrust::device_ptr_tag();
-  }
-};
+// MUSA 标签是 CUDA 标签的别名
+using tag = thrust::cuda::tag;
 
 } // end namespace musa
-
-// 定义系统标签类型
-using tag_t = tag;
 
 THRUST_NAMESPACE_END

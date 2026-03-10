@@ -27,59 +27,26 @@
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/musa/config.h>
-#include <thrust/system/musa/tag.h>
-#include <thrust/detail/execution_policy.h>
+
+// MUSA 执行策略 - 复用 CUDA 实现
+#include <thrust/system/cuda/execution_policy.h>
 
 THRUST_NAMESPACE_BEGIN
 
 namespace musa
 {
 
-// 前向声明
-struct execution_policy;
+// MUSA 执行策略是 CUDA 执行策略的别名
+using execution_policy = thrust::cuda::execution_policy;
+using par_t = thrust::cuda::par_t;
 
-// MUSA 执行策略基类
-template<typename Derived>
-struct execution_policy : thrust::detail::execution_policy_base<Derived>
+// MUDA 使用 CUDA 的 par
+inline __host__ __device__
+par_t par()
 {
-  typedef thrust::musa::tag tag_type;
-  
-  __host__ __device__
-  execution_policy() : thrust::detail::execution_policy_base<Derived>() {}
-};
-
-// 具体执行策略
-struct policy : execution_policy<policy>
-{
-  __host__ __device__
-  policy() : execution_policy<policy>() {}
-};
-
-// par 执行策略（并行）
-struct par_t : execution_policy<par_t>
-{
-  __host__ __device__
-  par_t() : execution_policy<par_t>() {}
-};
-
-// seq 执行策略（串行）
-struct seq_t : execution_policy<seq_t>
-{
-  __host__ __device__
-  seq_t() : execution_policy<seq_t>() {}
-};
-
-// 全局执行策略实例
-__host__ __device__
-inline const par_t par() { return par_t(); }
-
-__host__ __device__
-inline const seq_t seq() { return seq_t(); }
+  return par_t();
+}
 
 } // end namespace musa
-
-// 定义默认执行策略
-using execution_policy_t = policy;
 
 THRUST_NAMESPACE_END

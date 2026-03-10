@@ -86,7 +86,7 @@ namespace unittest
         {
             static_assert_exception ex(filename, lineno);
 
-#ifdef __CUDA_ARCH__
+#if defined(__CUDA_ARCH__) || defined(__MUSA_ARCH__)
             *detail::device_exception = ex;
 #else
             throw ex;

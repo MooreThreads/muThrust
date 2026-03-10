@@ -231,7 +231,7 @@ public:
   __host__
   bool ready() const
   {
-    musaError_t const err = cudaStreamQuery(handle_.get());
+    musaError_t const err = musaStreamQuery(handle_.get());
 
     if (musaErrorNotReady == err)
       return false;

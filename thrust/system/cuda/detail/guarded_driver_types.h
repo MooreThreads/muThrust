@@ -17,6 +17,7 @@
 #pragma once
 
 #include <thrust/detail/config.h>
+#include <thrust/system/cuda/detail/platform_macros.h>
 
 // the purpose of this header is to #include <driver_types.h> without causing
 // warnings from redefinitions of __host__ and __device__.
@@ -46,8 +47,16 @@
 #  endif // __DRIVER_TYPES_H__
 #endif // __GNUC__
 
-
-#include <driver_types.h>
+// 根据平台选择驱动类型头文件
+// MUSA 使用相同的 driver_types.h（在 musa_runtime_api.h 中已包含）
+#if THRUST_MUSA_ENABLED
+  #include <musa_runtime_api.h>
+  // MUSA doesn't define CUDA driver types, provide aliases for compatibility
+  typedef struct MUevent_st CUevent_st;
+  typedef struct MUstream_st CUstream_st;
+#else
+  #include <driver_types.h>
+#endif
 
 
 #if !defined(__GNUC__) || ((10000 * __GNUC__ + 100 * __GNUC_MINOR__ + __GNUC_PATCHLEVEL__) >= 40500)

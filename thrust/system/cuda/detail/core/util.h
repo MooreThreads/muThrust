@@ -41,6 +41,9 @@ THRUST_NAMESPACE_BEGIN
 namespace cuda_cub {
 namespace core {
 
+// Architecture tuning selection
+// MUSA uses different architecture numbers: mp_21 (210), mp_30 (300), mp_31 (310)
+// CUDA uses: sm_35 (350), sm_52 (520), sm_60 (600)
 #ifdef _NVHPC_CUDA
 #  if (__NVCOMPILER_CUDA_ARCH__ >= 600)
 #    define THRUST_TUNING_ARCH sm60
@@ -51,7 +54,12 @@ namespace core {
 #  else
 #    define THRUST_TUNING_ARCH sm30
 #  endif
+#elif defined(__MUSA_ARCH__)
+// MUSA architecture - map to closest CUDA sm architecture for tuning
+// MUSA mp_21/mp_30/mp_31 all use sm30 tuning (lowest common denominator)
+#  define THRUST_TUNING_ARCH sm30
 #else
+// CUDA architecture
 #  if (__CUDA_ARCH__ >= 600)
 #    define THRUST_TUNING_ARCH sm60
 #  elif (__CUDA_ARCH__ >= 520)

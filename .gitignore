@@ -1,3 +1,10 @@
 discrete_voronoi.pgm
 *build*/
 .idea/
+
+# Claude Code 配置（包含敏感信息）
+.claude/
+
+# 临时测试文件
+test_*
+!test_*.cmake
