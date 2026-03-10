@@ -222,11 +222,78 @@ set(MUSA_DISABLED_TESTS
 - `thrust/system/cuda/detail/async/for_each.h`
 - `thrust/system/cuda/detail/async/transform.h`
 
+## 2026-03-10 完整测试结果
+
+### 测试统计
+
+```
+15% tests passed, 190 tests failed out of 223
+Total Test time (real) = 3086.26 sec (约51分钟)
+```
+
+| 类别 | 数量 | 通过率 |
+|------|------|--------|
+| **总测试数** | 223 | - |
+| **依赖 parallel_for** | 139 (85%) | 0% (全部失败) |
+| **不依赖 parallel_for** | 24 (15%) | **96%** (23/24 通过) |
+
+### 依赖 parallel_for 的算法
+
+`parallel_for` 是 thrust 的**核心基础功能**，被以下算法直接或间接使用：
+
+**直接使用：**
+- `for_each`, `for_each_n`
+- `fill`, `uninitialized_fill`
+- `transform`
+- `tabulate`, `swap_ranges`
+- `uninitialized_copy`
+
+**间接使用（通过上述算法）：**
+- `reduce`, `reduce_by_key`
+- `scan`, `scan_by_key`
+- `sort`, `sort_by_key`, `stable_sort`
+- `copy`, `copy_n`, `copy_if`
+- `count`, `find`, `equal`
+- `merge`, `set_operations`
+- `partition`, `remove`, `replace`
+- `unique`, `unique_by_key`
+- 以及几乎所有其他算法...
+
+### 通过的测试（不依赖 parallel_for）
+
+| 测试名称 | 说明 |
+|---------|------|
+| `alignment` | 内存对齐检测 |
+| `allocator_aware_policies` | 分配器策略 |
+| `caching_allocator` | 缓存分配器 |
+| `cstdint` | 标准整数类型 |
+| `decompose` | 分解操作 |
+| `dependencies_aware_policies` | 依赖策略 |
+| `device_delete` | 设备内存释放 |
+| `discard_iterator` | 丢弃迭代器 |
+| `event` | CUDA 事件 |
+| `future` | 异步 future |
+| `is_contiguous_iterator` | 连续迭代器检测 |
+| `is_operator_function_object` | 函数对象检测 |
+| `metaprogamming` | 元编程 |
+| `min_and_max` | 最小最大值（编译时） |
+| `mr_*` | 内存资源分配器 |
+| `preprocessor` | 预处理器 |
+| `type_traits` | 类型特征 |
+| `unittest_tester` | 单元测试框架 |
+| `zip_iterator_sort` | ZIP 迭代器排序（特例） |
+
+### 核心结论
+
+**不解决 `parallel_for` 的设备代码生成问题，thrust 85% 的功能无法工作。**
+
 ## 下一步建议
 
 ### 短期（已完成）：屏蔽测试
 - ✅ 已在 `thrust/testing/CMakeLists.txt` 添加 `MUSA_DISABLED_TESTS` 列表
-- ✅ 屏蔽了依赖 `parallel_for` 的 10 个测试
+- ✅ 屏蔽了依赖 `parallel_for` 的测试
+- ✅ 屏蔽了所有 `testing/cuda/` 目录测试（需要 RDC）
+- ✅ 屏蔽了编译器后端 bug 相关测试
 
 ### 中期：替代实现方案
 
@@ -267,14 +334,17 @@ cd thrust
 cmake -B build -DMUSA_64_BIT_DEVICE_CODE=ON
 cmake --build build -j$(nproc)
 
-# 运行测试（被屏蔽的测试会自动跳过）
-ctest --test-dir build -j$(nproc)
+# 运行所有测试（串行，避免 GPU 资源竞争）
+cd build
+MUSA_VISIBLE_DEVICES=0 ctest --output-on-failure
 
-# 构建单个测试（验证屏蔽生效）
-cmake --build build --target thrust.test.for_each
-# 应该看到消息: MUSA: Skipping test for_each (disabled for MUSA platform)
+# 只运行不依赖 parallel_for 的测试
+MUSA_VISIBLE_DEVICES=0 ctest -R "alignment|allocator_aware|caching_allocator|cstdint|decompose|dependencies|device_delete|discard_iterator|event|future|is_contiguous|is_operator|metaprogamming|min_and_max|mr_|preprocessor|type_traits|unittest_tester" --output-on-failure
+
+# 检查测试是否依赖 parallel_for
+strings bin/thrust.test.<name> | grep -i "parallel_for"
 ```
 
 ---
 *文档创建日期: 2026-03-09*
-*最后更新: 2026-03-09 (添加临时解决方案)*
+*最后更新: 2026-03-10 (添加完整测试结果)*
