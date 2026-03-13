@@ -73,170 +73,56 @@ def parse_log(log_path: str) -> Tuple[List[TestInfo], int]:
             tests.append(info)
             test_map[test_num] = info
 
-    # Parse PASS/FAIL cases for each test
-    # Support multiple formats:
-    # 1. Format: "17: 	Scan results: PASS"  -> <num>: <desc>: PASS/FAIL
-    # 2. Format: "3: 	PASS"                  -> <num>: PASS/FAIL (desc on previous line)
-    # 3. Format: "29: 	Channel 0 PASS"       -> <num>: <desc> PASS/FAIL (no colon before PASS)
-    # 4. Format: "47: 	PASSInvoking..."      -> <num>: PASS/FAIL<something>
-    # 5. Format: "51: 	 Keys PASS 	 Values PASS 	 Count PASS"  -> multi PASS/FAIL in one line
-    # 6. Thrust specific: "[test_name] PASSED/FAILED" or "PASSED/FAILED"
-    # 7. Thrust TestStats: "X out of Y tests passed"
+    # Thrust test output patterns:
+    # 1. "Running X unit tests." - total test count
+    # 2. "Totals: X failures, X known failures, X errors, and X passes." - actual counts
+    # 3. Dot notation: "....F...F.." where . = pass, F = fail
 
-    case_pattern1 = re.compile(r'^(\d+):\s+(.+):\s+(PASS|FAIL)')
-    case_pattern2 = re.compile(r'^(\d+):\s+(PASS|FAIL)$')
-    case_pattern3 = re.compile(r'^(\d+):\s+(.+?)\s+(PASS|FAIL)$')
-    case_pattern4 = re.compile(r'^(\d+):\s+(PASS|FAIL)(?=\S|$)')
-    # Thrust-specific patterns
-    thrust_pass_pattern = re.compile(r'\bPASSED\b')
-    thrust_fail_pattern = re.compile(r'\bFAILED\b')
-    # Thrust test summary: "X out of Y tests passed" or "passed X tests"
-    thrust_summary_pattern = re.compile(r'(\d+)\s+out\s+of\s+(\d+)\s+tests?\s+passed', re.IGNORECASE)
-    thrust_summary_pattern2 = re.compile(r'passed\s+(\d+)\s+tests?', re.IGNORECASE)
-
-    # Multiple PASS/FAIL on same line
-    case_pattern5 = re.compile(r'^(\d+):\s+.*\b(PASS|FAIL)\b.*\b(PASS|FAIL)\b')
-
-    # TestStats summary patterns
-    summary_pattern1 = re.compile(r'^All\s+(\d+)\s+test\s+cases?\s+passed', re.IGNORECASE)
-    summary_pattern2 = re.compile(r'^(\S+):\s+(\d+)\s+cases?\s+passed', re.IGNORECASE)
-    summary_pattern3 = re.compile(r'^(\d+):\s+(\S+):\s+(\d+)\s+cases?\s+passed')
-
-    prev_line = ""
-    current_test_num = 0
+    running_pattern = re.compile(r'^(\d+):\s+Running\s+(\d+)\s+unit\s+tests?\.')
+    totals_pattern = re.compile(r'^(\d+):\s+Totals:\s+(\d+)\s+failures?,\s+(\d+)\s+known\s+failures?,\s+(\d+)\s+errors?,\s+and\s+(\d+)\s+passes?\.')
+    failure_name_pattern = re.compile(r'^(\d+):\s+FAILURE:\s+(.+)$')
 
     for line in lines:
-        matched = False
-        test_num = 0
-        test_desc = ""
-        result = ""
-        multi_case = False
-
-        # First try format 5: multi PASS/FAIL in one line
-        match = case_pattern5.match(line)
+        # Parse "Running X unit tests."
+        match = running_pattern.match(line)
         if match:
             test_num = int(match.group(1))
-            pass_count = len(re.findall(r'\bPASS\b', line))
-            fail_count = len(re.findall(r'\bFAIL\b', line))
-            if pass_count > 0 or fail_count > 0:
-                multi_case = True
-                matched = True
-                prev_match = re.match(r'^(\d+):\s+(.+)$', prev_line)
-                if prev_match and int(prev_match.group(1)) == test_num:
-                    test_desc = prev_match.group(2).strip()
-                else:
-                    test_desc = "multi-test"
-                result = "PASS" if fail_count == 0 else "FAIL"
+            total = int(match.group(2))
+            if test_num in test_map:
+                info = test_map[test_num]
+                info.total_cases = total
+            continue
 
-        if not matched:
-            # Try format 1: <num>: <desc>: PASS/FAIL
-            match = case_pattern1.match(line)
-            if match:
-                test_num = int(match.group(1))
-                test_desc = match.group(2).strip()
-                result = match.group(3)
-                matched = True
-            else:
-                # Try format 4 first
-                match = case_pattern4.match(line)
-                if match:
-                    test_num = int(match.group(1))
-                    result = match.group(2)
-                    prev_match = re.match(r'^(\d+):\s+(.+)$', prev_line)
-                    if prev_match and int(prev_match.group(1)) == test_num:
-                        test_desc = prev_match.group(2).strip()
-                    else:
-                        test_desc = "test"
-                    matched = True
-                else:
-                    # Try format 2
-                    match = case_pattern2.match(line)
-                    if match:
-                        test_num = int(match.group(1))
-                        result = match.group(2)
-                        prev_match = re.match(r'^(\d+):\s+(.+)$', prev_line)
-                        if prev_match and int(prev_match.group(1)) == test_num:
-                            test_desc = prev_match.group(2).strip()
-                        else:
-                            test_desc = "test"
-                        matched = True
-                    else:
-                        # Try format 3
-                        match = case_pattern3.match(line)
-                        if match:
-                            test_num = int(match.group(1))
-                            test_desc = match.group(2).strip()
-                            result = match.group(3)
-                            matched = True
+        # Parse "Totals: X failures, X known failures, X errors, and X passes."
+        match = totals_pattern.match(line)
+        if match:
+            test_num = int(match.group(1))
+            failures = int(match.group(2))
+            known_failures = int(match.group(3))
+            errors = int(match.group(4))
+            passes = int(match.group(5))
+            if test_num in test_map:
+                info = test_map[test_num]
+                info.passed_cases = passes
+                info.failed_cases = failures + errors  # Count errors as failures too
+                # If total_cases wasn't set, calculate it
+                if info.total_cases == 0:
+                    info.total_cases = passes + failures + known_failures + errors
+            continue
 
-        if matched and test_num in test_map:
-            current_test_num = test_num
-            info = test_map[test_num]
-            if multi_case:
-                pass_count = len(re.findall(r'\bPASS\b', line))
-                fail_count = len(re.findall(r'\bFAIL\b', line))
-                info.total_cases += pass_count + fail_count
-                info.passed_cases += pass_count
-                info.failed_cases += fail_count
-                if fail_count > 0 and len(info.failed_details) < 10:
+        # Parse failure names for details
+        match = failure_name_pattern.match(line)
+        if match:
+            test_num = int(match.group(1))
+            failure_name = match.group(2).strip()
+            if test_num in test_map:
+                info = test_map[test_num]
+                if len(info.failed_details) < 10:
                     info.failed_details.append(TestCase(
-                        description=test_desc,
-                        error_detail=f"FAIL ({fail_count}/{pass_count + fail_count})"
+                        description=failure_name,
+                        error_detail="FAIL"
                     ))
-            else:
-                info.total_cases += 1
-                if result == "PASS":
-                    info.passed_cases += 1
-                else:
-                    info.failed_cases += 1
-                    if len(info.failed_details) < 10:
-                        info.failed_details.append(TestCase(
-                            description=test_desc,
-                            error_detail="FAIL"
-                        ))
-
-        # Handle TestStats summary patterns
-        if not matched:
-            match = summary_pattern1.match(line)
-            if match and current_test_num > 0 and current_test_num in test_map:
-                pass_count = int(match.group(1))
-                info = test_map[current_test_num]
-                info.total_cases += pass_count
-                info.passed_cases += pass_count
-                matched = True
-            else:
-                match = summary_pattern3.match(line)
-                if match:
-                    test_num = int(match.group(1))
-                    if test_num in test_map:
-                        pass_count = int(match.group(3))
-                        info = test_map[test_num]
-                        info.total_cases += pass_count
-                        info.passed_cases += pass_count
-                        matched = True
-                if not matched:
-                    match = summary_pattern2.match(line)
-                    if match and current_test_num > 0 and current_test_num in test_map:
-                        pass_count = int(match.group(2))
-                        info = test_map[current_test_num]
-                        info.total_cases += pass_count
-                        info.passed_cases += pass_count
-                        matched = True
-
-        # Thrust-specific: "X out of Y tests passed"
-        if not matched:
-            match = thrust_summary_pattern.search(line)
-            if match:
-                passed = int(match.group(1))
-                total = int(match.group(2))
-                if current_test_num > 0 and current_test_num in test_map:
-                    info = test_map[current_test_num]
-                    info.total_cases += total
-                    info.passed_cases += passed
-                    info.failed_cases += (total - passed)
-                    matched = True
-
-        prev_line = line
+            continue
 
     return tests, len(tests)
 
