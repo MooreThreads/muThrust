@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -28,23 +34,21 @@
 
 #include <musa_occupancy.h>
 #include <thrust/detail/config.h>
-#include <thrust/system/cuda/config.h>
+#include <thrust/system/musa/config.h>
 #include <thrust/type_traits/is_contiguous_iterator.h>
 #include <thrust/detail/raw_pointer_cast.h>
-#include <thrust/system/cuda/detail/util.h>
+#include <thrust/system/musa/detail/util.h>
 #include <cub/block/block_load.cuh>
 #include <cub/block/block_store.cuh>
 #include <cub/block/block_scan.cuh>
 
-THRUST_NAMESPACE_BEGIN
+namespace thrust
+{
 
 namespace cuda_cub {
 namespace core {
 
-// Architecture tuning selection
-// MUSA uses different architecture numbers: mp_21 (210), mp_30 (300), mp_31 (310)
-// CUDA uses: sm_35 (350), sm_52 (520), sm_60 (600)
-#ifdef _NVHPC_CUDA
+#ifdef __NVCOMPILER_CUDA__
 #  if (__NVCOMPILER_CUDA_ARCH__ >= 600)
 #    define THRUST_TUNING_ARCH sm60
 #  elif (__NVCOMPILER_CUDA_ARCH__ >= 520)
@@ -54,22 +58,19 @@ namespace core {
 #  else
 #    define THRUST_TUNING_ARCH sm30
 #  endif
-#elif defined(__MUSA_ARCH__)
-// MUSA architecture - map to closest CUDA sm architecture for tuning
-// MUSA mp_21/mp_30/mp_31 all use sm30 tuning (lowest common denominator)
-#  define THRUST_TUNING_ARCH sm30
 #else
-// CUDA architecture
-#  if (__CUDA_ARCH__ >= 600)
+#  if (__MUSA_ARCH__ >= 600)
 #    define THRUST_TUNING_ARCH sm60
-#  elif (__CUDA_ARCH__ >= 520)
-#    define THRUST_TUNING_ARCH sm52
-#  elif (__CUDA_ARCH__ >= 350)
-#    define THRUST_TUNING_ARCH sm35
-#  elif (__CUDA_ARCH__ >= 300)
-#    define THRUST_TUNING_ARCH sm30
-#  elif !defined (__CUDA_ARCH__)
-#    define THRUST_TUNING_ARCH sm30
+#  elif (__MUSA_ARCH__ >= 310)
+#    define THRUST_TUNING_ARCH sm31
+#  elif (__MUSA_ARCH__ >= 220)
+#    define THRUST_TUNING_ARCH sm22
+#  elif (__MUSA_ARCH__ >= 210)
+#    define THRUST_TUNING_ARCH sm21
+#  elif (__MUSA_ARCH__ >= 100)
+#    define THRUST_TUNING_ARCH sm10
+#  elif !defined (__MUSA_ARCH__)
+#    define THRUST_TUNING_ARCH sm10
 #  endif
 #endif
 
@@ -84,15 +85,17 @@ namespace core {
 
   // supported SM arch
   // ---------------------
-  struct sm30  { enum { ver = 300, warpSize = 32 }; };
-  struct sm35  { enum { ver = 350, warpSize = 32 }; };
-  struct sm52  { enum { ver = 520, warpSize = 32 }; };
+  // MUSA uses warp size of 32 for all architectures
+  struct sm10  { enum { ver = 100, warpSize = 32 }; };
+  struct sm21  { enum { ver = 210, warpSize = 32 }; };
+  struct sm22  { enum { ver = 220, warpSize = 32 }; };
+  struct sm31  { enum { ver = 310, warpSize = 32 }; };
   struct sm60  { enum { ver = 600, warpSize = 32 }; };
 
   // list of sm, checked from left to right order
   // the rightmost is the lowest sm arch supported
   // --------------------------------------------
-  typedef typelist<sm60,sm52,sm35,sm30> sm_list;
+  typedef typelist<sm60,sm31,sm22,sm21,sm10> sm_list;
 
   // lowest supported SM arch
   // --------------------------------------------------------------------------
@@ -366,7 +369,7 @@ namespace core {
       // get_agent_plan_impl::get(version), is for host code and for device
       // code without device-side kernel launches. NVCC and Feta check for
       // these situations differently.
-      #ifdef _NVHPC_CUDA
+      #ifdef __NVCOMPILER_CUDA__
         #ifdef __THRUST_HAS_CUDART__
           if (CUB_IS_DEVICE_CODE) {
             return typename get_plan<Agent>::type(typename Agent::ptx_plan());
@@ -390,10 +393,10 @@ namespace core {
 // XXX keep this dead-code for now as a gentle reminder
 //     that kernel luunch which reats plan values is the most robust
 //     mechanism to extract sm-specific tuning parameters
-// TODO: since we are unable to afford kernel launch + cudaMemcpy ON EVERY
+// TODO: since we are unable to afford kernel launch + musaMemcpy ON EVERY
 //       algorithm invocation, we need to design a good caching strategy
 //       such that when the algorithm is called multiple times, only the
-//       first invocation will invoke kernel launch + cudaMemcpy, but
+//       first invocation will invoke kernel launch + musaMemcpy, but
 //       the subsequent invocations, will just read cached values from host mem
 //       If launched from device, this is just a device-function call
 //       no caching is required.
@@ -423,7 +426,7 @@ namespace core {
   xget_agent_plan_impl(F f, musaStream_t s, void* d_ptr)
   {
     AgentPlan plan;
-#ifdef __CUDA_ARCH__
+#ifdef __MUSA_ARCH__
     plan = get_agent_plan_dev<Agent>();
 #else
     static cub::Mutex mutex;
@@ -542,7 +545,7 @@ namespace core {
         cub::CacheModifiedInputIterator<PtxPlan::LOAD_MODIFIER,
                                         value_type,
                                         size_type>,
-                                        It>::type type;
+        It>::type type;
   };    // struct Iterator
 
   template <class PtxPlan, class It>
@@ -581,13 +584,16 @@ namespace core {
             class T    = typename iterator_traits<It>::value_type>
   struct BlockLoad
   {
-    using type = cub::BlockLoad<T,
-                                PtxPlan::BLOCK_THREADS,
-                                PtxPlan::ITEMS_PER_THREAD,
-                                PtxPlan::LOAD_ALGORITHM,
-                                1,
-                                1,
-                                get_arch<PtxPlan>::type::ver>;
+    typedef cub::BlockLoad<T,
+                           PtxPlan::BLOCK_THREADS,
+                           PtxPlan::ITEMS_PER_THREAD,
+                           PtxPlan::LOAD_ALGORITHM,
+                           1,
+                           1,
+                           get_arch<PtxPlan>::type::ver>
+
+
+        type;
   };
 
   // BlockStore
@@ -598,18 +604,18 @@ namespace core {
             class T = typename iterator_traits<It>::value_type>
   struct BlockStore
   {
-    using type = cub::BlockStore<T,
-                                 PtxPlan::BLOCK_THREADS,
-                                 PtxPlan::ITEMS_PER_THREAD,
-                                 PtxPlan::STORE_ALGORITHM,
-                                 1,
-                                 1,
-                                 get_arch<PtxPlan>::type::ver>;
+    typedef cub::BlockStore<T,
+                            PtxPlan::BLOCK_THREADS,
+                            PtxPlan::ITEMS_PER_THREAD,
+                            PtxPlan::STORE_ALGORITHM,
+                            1,
+                            1,
+                            get_arch<PtxPlan>::type::ver>
+        type;
   };
-
-  // cuda_optional
+  // cuda_otional
   // --------------
-  // used for function that return cudaError_t along with the result
+  // used for function that return musaError_t along with the result
   //
   template <class T>
   class cuda_optional
@@ -769,9 +775,10 @@ namespace core {
 
 }    // namespace core
 using core::sm60;
-using core::sm52;
-using core::sm35;
-using core::sm30;
-} // namespace cuda_cub
+using core::sm31;
+using core::sm22;
+using core::sm21;
+using core::sm10;
+} // namespace cuda_
 
-THRUST_NAMESPACE_END
+} // end namespace thrust

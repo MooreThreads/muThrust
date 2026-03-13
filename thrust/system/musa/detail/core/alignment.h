@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -18,11 +24,11 @@
 
 #pragma once
 
-#include <thrust/detail/config.h>
-#include <thrust/system/musa/config.h>
+#include <thrust/system/musa/detail/util.h>
 
-THRUST_NAMESPACE_BEGIN
-namespace musa {
+namespace thrust
+{
+namespace cuda_cub {
 namespace alignment_of_detail {
 
 
@@ -70,12 +76,12 @@ struct alignment_of
 template <std::size_t Align>
 struct aligned_type;
 
-// __align__ is MUSA-specific, so guard it
-#if defined(__MUSACC_VER_MAJOR__)
+// __align__ is CUDA-specific, so guard it
+#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 
 // implementing aligned_type portably is tricky:
 
-#if defined(_MSC_VER)
+#if THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC
 // implement aligned_type with specialization because MSVC
 // requires literals as arguments to declspec(align(n))
 template <>
@@ -161,8 +167,7 @@ struct aligned_type<8192>
 {
   struct __align__(8192) type{};
 };
-
-#elif defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 3))
+#elif (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_GCC) && (THRUST_GCC_VERSION < 40300)
 // implement aligned_type with specialization because gcc 4.2
 // requires literals as arguments to __attribute__(aligned(n))
 template <>
@@ -221,7 +226,7 @@ struct aligned_type
 {
   struct __align__(Align) type{};
 };
-#endif    // _MSC_VER
+#endif    // THRUST_HOST_COMPILER
 #else
 template <std::size_t Align>
 struct aligned_type
@@ -230,7 +235,7 @@ struct aligned_type
   {
   };
 };
-#endif    // __MUSACC_VER_MAJOR__
+#endif    // THRUST_DEVICE_COMPILER
 
 
 template <std::size_t Len, std::size_t Align>
@@ -245,5 +250,6 @@ struct aligned_storage
 };
 
 
-}    // end musa
-THRUST_NAMESPACE_END
+}    // end cuda_
+
+} // end namespace thrust

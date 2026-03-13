@@ -59,7 +59,7 @@ namespace __parallel_for {
   template <class Arch, class F>
   struct Tuning;
 
-  // MUSA: Use sm30 tuning with 128 threads, 4 items per thread (matching muThrust's sm10 config)
+  // MUSA: Use sm30 tuning with 128 threads, 4 items per thread
   template <class F>
   struct Tuning<sm30, F>
   {

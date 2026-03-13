@@ -32,55 +32,73 @@
  ******************************************************************************/
 #pragma once
 
-#include <thrust/detail/config.h>
 
-#if defined(__MUSACC__) || defined(__NVCOMPILER_CUDA__)
-#  if !defined(__MUSA_ARCH__) || (__MUSA_ARCH__>= 350 && defined(__MUSACC_RDC__))
-#    define __THRUST_HAS_CUDART__ 1
-#    define THRUST_RUNTIME_FUNCTION __host__ __device__ __forceinline__
-#  else
-#    define __THRUST_HAS_CUDART__ 0
-#    define THRUST_RUNTIME_FUNCTION __host__ __forceinline__
-#  endif
-#else
-#  define __THRUST_HAS_CUDART__ 0
-#  define THRUST_RUNTIME_FUNCTION __host__ __forceinline__
-#endif
+#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
+#include <thrust/system/musa/detail/execution_policy.h>
 
-#ifdef __MUSA_ARCH__
-#define THRUST_DEVICE_CODE
-#endif
+namespace thrust
+{
+namespace cuda_cub {
 
-#ifdef THRUST_AGENT_ENTRY_NOINLINE
-#define THRUST_AGENT_ENTRY_INLINE_ATTR __noinline__
-#else
-#define THRUST_AGENT_ENTRY_INLINE_ATTR __forceinline__
-#endif
+template <class Derived, class ItemsIt, class ResultIt>
+ResultIt __host__ __device__
+reverse_copy(execution_policy<Derived> &policy,
+             ItemsIt                    first,
+             ItemsIt                    last,
+             ResultIt                   result);
 
-#define THRUST_DEVICE_FUNCTION __device__ __forceinline__
-#define THRUST_HOST_FUNCTION __host__     __forceinline__
-#define THRUST_FUNCTION __host__ __device__ __forceinline__
-#if 0
-#define THRUST_ARGS(...) __VA_ARGS__
-#define THRUST_STRIP_PARENS(X) X
-#define THRUST_AGENT_ENTRY(ARGS) THRUST_FUNCTION static void entry(THRUST_STRIP_PARENS(THRUST_ARGS ARGS))
-#else
-#define THRUST_AGENT_ENTRY(...) THRUST_AGENT_ENTRY_INLINE_ATTR __device__ static void entry(__VA_ARGS__)
-#endif
+template <class Derived, class ItemsIt>
+void __host__ __device__
+reverse(execution_policy<Derived> &policy,
+        ItemsIt                    first,
+        ItemsIt                    last);
 
-#ifdef THRUST_DEBUG_SYNC
-#define THRUST_DEBUG_SYNC_FLAG true
-#else
-#define THRUST_DEBUG_SYNC_FLAG false
-#endif
+}    // namespace cuda_cub
+} // end namespace thrust
 
-#define THRUST_CUB_NS_PREFIX namespace thrust {   namespace cuda_cub {
-#define THRUST_CUB_NS_POSTFIX }  }
+#include <thrust/advance.h>
+#include <thrust/distance.h>
+#include <thrust/system/musa/detail/swap_ranges.h>
+#include <thrust/system/musa/detail/copy.h>
+#include <thrust/iterator/reverse_iterator.h>
 
-#ifndef THRUST_IGNORE_CUB_VERSION_CHECK
-#include <thrust/version.h>
-#include <cub/util_namespace.cuh> // This includes <cub/version.cuh> in newer releases.
-#if THRUST_VERSION != CUB_VERSION
-#error The version of CUB in your include path is not compatible with this release of Thrust. CUB is now included in the CUDA Toolkit, so you no longer need to use your own checkout of CUB. Define THRUST_IGNORE_CUB_VERSION_CHECK to ignore this.
-#endif
+namespace thrust
+{
+namespace cuda_cub {
+
+template <class Derived,
+          class ItemsIt,
+          class ResultIt>
+ResultIt __host__ __device__
+reverse_copy(execution_policy<Derived> &policy,
+             ItemsIt                    first,
+             ItemsIt                    last,
+             ResultIt                   result)
+{
+  return cuda_cub::copy(policy,
+                        thrust::make_reverse_iterator(last),
+                        thrust::make_reverse_iterator(first),
+                        result);
+}
+
+template <class Derived,
+          class ItemsIt>
+void __host__ __device__
+reverse(execution_policy<Derived> &policy,
+        ItemsIt                    first,
+        ItemsIt                    last)
+{
+  typedef typename thrust::iterator_difference<ItemsIt>::type difference_type;
+
+  // find the midpoint of [first,last)
+  difference_type N = thrust::distance(first, last);
+  ItemsIt mid(first);
+  thrust::advance(mid, N / 2);
+
+  cuda_cub::swap_ranges(policy, first, mid, thrust::make_reverse_iterator(last));
+}
+
+
+}    // namespace cuda_cub
+} // end namespace thrust
 #endif

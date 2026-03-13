@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -26,27 +32,59 @@
  ******************************************************************************/
 #pragma once
 
+// histogram
+// sort (radix-sort, merge-sort)
+
 #include <thrust/detail/config.h>
+#include <thrust/system/musa/detail/execution_policy.h>
+#include <thrust/system/musa/detail/par.h>
 
-// MUSA 执行策略 - 复用 CUDA 实现
-#include <thrust/system/cuda/execution_policy.h>
+// pass
+// ----------------
+#include <thrust/system/musa/detail/adjacent_difference.h>
+#include <thrust/system/musa/detail/copy.h>
+#include <thrust/system/musa/detail/copy_if.h>
+#include <thrust/system/musa/detail/count.h>
+#include <thrust/system/musa/detail/equal.h>
+#include <thrust/system/musa/detail/extrema.h>
+#include <thrust/system/musa/detail/fill.h>
+#include <thrust/system/musa/detail/find.h>
+#include <thrust/system/musa/detail/for_each.h>
+#include <thrust/system/musa/detail/gather.h>
+#include <thrust/system/musa/detail/generate.h>
+#include <thrust/system/musa/detail/inner_product.h>
+#include <thrust/system/musa/detail/mismatch.h>
+#include <thrust/system/musa/detail/partition.h>
+#include <thrust/system/musa/detail/reduce_by_key.h>
+#include <thrust/system/musa/detail/remove.h>
+#include <thrust/system/musa/detail/replace.h>
+#include <thrust/system/musa/detail/reverse.h>
+#include <thrust/system/musa/detail/scatter.h>
+#include <thrust/system/musa/detail/swap_ranges.h>
+#include <thrust/system/musa/detail/tabulate.h>
+#include <thrust/system/musa/detail/transform.h>
+#include <thrust/system/musa/detail/transform_reduce.h>
+#include <thrust/system/musa/detail/transform_scan.h>
+#include <thrust/system/musa/detail/uninitialized_copy.h>
+#include <thrust/system/musa/detail/uninitialized_fill.h>
+#include <thrust/system/musa/detail/unique.h>
+#include <thrust/system/musa/detail/unique_by_key.h>
 
-THRUST_NAMESPACE_BEGIN
+// fail
+// ----------------
+// fails with mixed types
+#include <thrust/system/musa/detail/reduce.h>
 
-namespace musa
-{
+// mixed types are not compiling, commented in testing/scan.mu
+#include <thrust/system/musa/detail/scan.h>
 
-// MUSA 执行策略是 CUDA 执行策略的别名
-using execution_policy = thrust::cuda::execution_policy;
-using par_t = thrust::cuda::par_t;
+// stubs passed
+// ----------------
+#include <thrust/system/musa/detail/binary_search.h>
+#include <thrust/system/musa/detail/merge.h>
+#include <thrust/system/musa/detail/scan_by_key.h>
+#include <thrust/system/musa/detail/set_operations.h>
+#include <thrust/system/musa/detail/sort.h>
 
-// MUDA 使用 CUDA 的 par
-inline __host__ __device__
-par_t par()
-{
-  return par_t();
-}
+// work in progress
 
-} // end namespace musa
-
-THRUST_NAMESPACE_END

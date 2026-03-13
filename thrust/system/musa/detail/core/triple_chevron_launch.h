@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -20,22 +26,22 @@
  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  ******************************************************************************/
 #pragma once
 
 #include <thrust/detail/config.h>
-#include <thrust/system/musa/config.h>
 #include <thrust/system/musa/detail/core/alignment.h>
+#include <thrust/system/musa/detail/guarded_cuda_runtime_api.h>
 #include <cassert>
 
-THRUST_NAMESPACE_BEGIN
 
-namespace musa {
-namespace detail {
-namespace core {
+namespace thrust
+{
+
+namespace cuda_cub {
 namespace launcher {
 
   struct triple_chevron
@@ -56,7 +62,15 @@ namespace launcher {
           shared_mem(shared_mem_),
           stream(stream_) {}
 
-    // 主机端 kernel 启动（支持 1-16 个参数）
+#if 0
+    template<class K, class... Args>
+    musaError_t __host__
+    doit_host(K k, Args const&... args) const
+    {
+      k<<<grid, block, shared_mem, stream>>>(args...);
+      return musaPeekAtLastError();
+    }
+#else
     template <class K, class _0>
     musaError_t __host__
     doit_host(K k, _0 x0) const
@@ -169,8 +183,8 @@ namespace launcher {
       k<<<grid, block, shared_mem, stream>>>(x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD,xE,xF);
       return musaPeekAtLastError();
     }
+#endif
 
-    // 设备端参数对齐计算
     template<class T>
     size_t __device__
     align_up(size_t offset) const
@@ -179,7 +193,16 @@ namespace launcher {
       return alignment * ((offset + (alignment - 1))/ alignment);
     }
 
-    // 设备端参数包大小计算（支持 1-16 个参数）
+#if 0
+    size_t __device__ argument_pack_size(size_t size) const { return size; }
+    template <class Arg, class... Args>
+    size_t __device__
+    argument_pack_size(size_t size, Arg const& arg, Args const&... args) const
+    {
+      size = align_up<Arg>(size);
+      return argument_pack_size(size + sizeof(Arg), args...);
+    }
+#else
     template <class Arg>
     size_t __device__
     argument_pack_size(size_t size, Arg) const
@@ -282,8 +305,8 @@ namespace launcher {
     {
       return argument_pack_size(align_up<Arg>(size) + sizeof(Arg), x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF);
     }
+#endif /* variadic */
 
-    // 设备端参数复制
     template <class Arg>
     size_t __device__ copy_arg(char* buffer, size_t offset, Arg arg) const
     {
@@ -293,7 +316,15 @@ namespace launcher {
       return offset + sizeof(Arg);
     }
 
-    // 设备端参数填充（支持 1-16 个参数）
+#if 0
+    void __device__ fill_arguments(char*, size_t) const {}
+    template<class Arg, class... Args>
+    void __device__
+    fill_arguments(char* buffer, size_t offset, Arg const& arg, Args const& ... args) const
+    {
+      fill_arguments(buffer, copy_arg(buffer, offset, arg), args...);
+    }
+#else
     template<class Arg>
     void __device__
     fill_arguments(char* buffer, size_t offset, Arg arg) const
@@ -396,14 +427,29 @@ namespace launcher {
     {
       fill_arguments(buffer, copy_arg(buffer, offset, arg), x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF);
     }
+#endif /* variadic */
 
-    // 设备端 kernel 启动（CDP）- MUSA 暂不支持
+#if 0
+    template<class K, class... Args>
+    musaError_t __device__
+    doit_device(K k, Args const&... args) const
+    {
+      musaError_t status = musaErrorNotSupported;
+#if __THRUST_HAS_CUDART__
+      const size_t size = argument_pack_size(0,args...);
+      void *param_buffer = musaGetParameterBuffer(64,size);
+      fill_arguments((char*)param_buffer, 0, args...);
+      status = launch_device(k, param_buffer);
+#endif
+      return status;
+    }
+#else
     template<class K, class _0>
     musaError_t __device__
     doit_device(K k, _0 x0) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0);
@@ -419,7 +465,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1);
@@ -436,7 +482,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2);
@@ -454,7 +500,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3);
@@ -473,7 +519,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4);
@@ -493,7 +539,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5);
@@ -514,7 +560,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6);
@@ -536,7 +582,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7);
@@ -559,7 +605,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8);
@@ -583,7 +629,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9);
@@ -608,7 +654,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA);
@@ -634,7 +680,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB);
@@ -661,7 +707,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC);
@@ -689,7 +735,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC,_xD xD) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD);
@@ -718,7 +764,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC,_xD xD, _xE xE) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD,xE);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD,xE);
@@ -748,7 +794,7 @@ namespace launcher {
     doit_device(K k, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC,_xD xD, _xE xE, _xF xF) const
     {
       musaError_t status = musaErrorNotSupported;
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       const size_t size = argument_pack_size(0,x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD,xE,xF);
       void *param_buffer = musaGetParameterBuffer(64,size);
       fill_arguments((char*)param_buffer, 0, x0,x1,x2,x3,x4,x5,x6,x7,x8,x9,xA,xB,xC,xD,xE,xF);
@@ -774,13 +820,13 @@ namespace launcher {
 #endif
       return status;
     }
+#endif /* variadic */
 
-    // 设备端 launch_device - MUSA 暂不支持 CDP
     template <class K>
     musaError_t __device__
     launch_device(K k, void* buffer) const
     {
-#if __THRUST_HAS_MUSART__
+#if __THRUST_HAS_CUDART__
       return musaLaunchDevice((void*)k,
                               buffer,
                               dim3(grid),
@@ -794,18 +840,26 @@ namespace launcher {
 #endif
     }
 
-    // 根据编译环境选择主机端或设备端启动
-#if defined(_NVHPC_CUDA)
+
+#if defined(__NVCOMPILER_CUDA__)
 #  define THRUST_TRIPLE_LAUNCHER_HOSTDEVICE(...) \
       (__builtin_is_device_code() ?              \
           doit_device(__VA_ARGS__) : doit_host(__VA_ARGS__))
-#elif defined(__CUDA_ARCH__) || defined(__MUSA_ARCH__)
+#elif defined(__MUSA_ARCH__)
 #  define THRUST_TRIPLE_LAUNCHER_HOSTDEVICE doit_device
 #else
 #  define THRUST_TRIPLE_LAUNCHER_HOSTDEVICE doit_host
 #endif
 
-    // doit 方法（支持 1-16 个参数）
+#if 0
+    __thrust_exec_check_disable__
+    template <class K, class... Args>
+    musaError_t THRUST_FUNCTION
+    doit(K k, Args const&... args) const
+    {
+      return THRUST_TRIPLE_LAUNCHER_HOSTDEVICE(k, args...);
+    }
+#else
     __thrust_exec_check_disable__
     template <class K, class _0>
     musaError_t THRUST_FUNCTION
@@ -918,12 +972,11 @@ namespace launcher {
     {
       return THRUST_TRIPLE_LAUNCHER_HOSTDEVICE(k, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE, xF);
     }
+#endif
 #undef THRUST_TRIPLE_LAUNCHER_HOSTDEVICE
   }; // struct triple_chevron
 
 }    // namespace launcher
-}    // namespace core
-}    // namespace detail
-}    // namespace musa
+}    // namespace cuda_
 
-THRUST_NAMESPACE_END
+} // end namespace thrust

@@ -32,55 +32,66 @@
  ******************************************************************************/
 #pragma once
 
-#include <thrust/detail/config.h>
+#include <thrust/detail/seq.h>
+#include <thrust/system/musa/detail/par.h>
 
-#if defined(__MUSACC__) || defined(__NVCOMPILER_CUDA__)
-#  if !defined(__MUSA_ARCH__) || (__MUSA_ARCH__>= 350 && defined(__MUSACC_RDC__))
-#    define __THRUST_HAS_CUDART__ 1
-#    define THRUST_RUNTIME_FUNCTION __host__ __device__ __forceinline__
-#  else
-#    define __THRUST_HAS_CUDART__ 0
-#    define THRUST_RUNTIME_FUNCTION __host__ __forceinline__
-#  endif
-#else
-#  define __THRUST_HAS_CUDART__ 0
-#  define THRUST_RUNTIME_FUNCTION __host__ __forceinline__
-#endif
+namespace thrust
+{
+namespace cuda_cub {
 
-#ifdef __MUSA_ARCH__
-#define THRUST_DEVICE_CODE
-#endif
+template <int PAR>
+struct has_par : thrust::detail::true_type {};
 
-#ifdef THRUST_AGENT_ENTRY_NOINLINE
-#define THRUST_AGENT_ENTRY_INLINE_ATTR __noinline__
-#else
-#define THRUST_AGENT_ENTRY_INLINE_ATTR __forceinline__
-#endif
+template <>
+struct has_par<0> : thrust::detail::false_type {};
 
-#define THRUST_DEVICE_FUNCTION __device__ __forceinline__
-#define THRUST_HOST_FUNCTION __host__     __forceinline__
-#define THRUST_FUNCTION __host__ __device__ __forceinline__
+template<class Policy>
+struct cvt_to_seq_impl
+{
+  typedef thrust::detail::seq_t seq_t;
+
+  static seq_t __host__ __device__
+  doit(Policy&)
+  {
+    return seq_t();
+  }
+};    // cvt_to_seq_impl
+
 #if 0
-#define THRUST_ARGS(...) __VA_ARGS__
-#define THRUST_STRIP_PARENS(X) X
-#define THRUST_AGENT_ENTRY(ARGS) THRUST_FUNCTION static void entry(THRUST_STRIP_PARENS(THRUST_ARGS ARGS))
+template <class Allocator>
+struct cvt_to_seq_impl<
+    thrust::detail::execute_with_allocator<Allocator,
+                                           execute_on_stream_base> >
+{
+  typedef thrust::detail::execute_with_allocator<Allocator,
+                                                 execute_on_stream_base>
+      Policy;
+  typedef thrust::detail::execute_with_allocator<
+      Allocator,
+      thrust::system::detail::sequential::execution_policy>
+      seq_t;
+
+
+  static seq_t __host__ __device__
+  doit(Policy& policy)
+  {
+    return seq_t(policy.m_alloc);
+  }
+};    // specialization of struct cvt_to_seq_impl
+#endif
+
+template <class Policy>
+typename cvt_to_seq_impl<Policy>::seq_t __host__ __device__
+cvt_to_seq(Policy& policy)
+{
+  return cvt_to_seq_impl<Policy>::doit(policy);
+}
+
+#if __THRUST_HAS_CUDART__
+#define THRUST_CUDART_DISPATCH par
 #else
-#define THRUST_AGENT_ENTRY(...) THRUST_AGENT_ENTRY_INLINE_ATTR __device__ static void entry(__VA_ARGS__)
+#define THRUST_CUDART_DISPATCH seq
 #endif
 
-#ifdef THRUST_DEBUG_SYNC
-#define THRUST_DEBUG_SYNC_FLAG true
-#else
-#define THRUST_DEBUG_SYNC_FLAG false
-#endif
-
-#define THRUST_CUB_NS_PREFIX namespace thrust {   namespace cuda_cub {
-#define THRUST_CUB_NS_POSTFIX }  }
-
-#ifndef THRUST_IGNORE_CUB_VERSION_CHECK
-#include <thrust/version.h>
-#include <cub/util_namespace.cuh> // This includes <cub/version.cuh> in newer releases.
-#if THRUST_VERSION != CUB_VERSION
-#error The version of CUB in your include path is not compatible with this release of Thrust. CUB is now included in the CUDA Toolkit, so you no longer need to use your own checkout of CUB. Define THRUST_IGNORE_CUB_VERSION_CHECK to ignore this.
-#endif
-#endif
+} // namespace cuda_
+} // end namespace thrust
