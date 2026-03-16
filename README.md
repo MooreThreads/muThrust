@@ -1,3 +1,102 @@
+# 测试方法
+
+## 快速开始
+
+确保已安装 Python 和 Ninja，然后直接运行 `build_thrust.sh`：
+
+```bash
+./build_thrust.sh
+```
+
+## build_thrust.sh 用法详解
+
+### 命令
+
+```bash
+./build_thrust.sh [选项] [命令]
+```
+
+**命令：**
+- 无参数：执行完整流程（清理、编译、测试、生成报告）
+- `build`：仅编译，不运行测试
+- `clean`：仅清理 build 目录
+
+### 选项
+
+| 选项 | 说明 | 默认值 |
+|------|------|--------|
+| `-j, --jobs N` | 编译并行数 | `nproc` (CPU 核心数) |
+| `-T, --test-jobs N` | 测试并行数 | 1 |
+| `-g, --gpus DEVICES` | 设置 MUSA_VISIBLE_DEVICES | 所有 GPU 可见 |
+| `-a, --arch ARCH` | MUSA 目标架构 | `mp_31` |
+| `-n, --no-clean` | 不删除 build 目录（增量编译） | 否 |
+| `-E, --exclude RE` | 排除匹配正则表达式的测试 | `namespace_wrapped\|unittest\|test__cpp_complex` |
+| `-h, --help` | 显示帮助信息 | - |
+
+### 架构选择
+
+MUSA 架构决定了编译目标硬件：
+
+| 架构 | 对应硬件 | PTX 版本 | 说明 |
+|------|----------|----------|------|
+| `mp_22` | S4000 系列 | 220 | Warp 128 线程 |
+| `mp_31` | S5000 系列 | 310 | Warp 32 线程 |
+
+**重要：** 编译时必须指定正确的目标架构，否则运行时会报 "invalid device function" 错误。
+
+### 环境变量
+
+所有参数均可通过环境变量设置，命令行参数优先级更高：
+
+| 环境变量 | 说明 |
+|----------|------|
+| `THRUST_JOBS` | 编译并行数 |
+| `THRUST_TEST_JOBS` | 测试并行数 |
+| `THRUST_MUSA_ARCH` | MUSA 目标架构 |
+| `THRUST_MUSA_DEVICES` | 设置 MUSA_VISIBLE_DEVICES |
+| `THRUST_NO_CLEAN` | 设置为 1 不删除 build 目录 |
+| `THRUST_EXCLUDE_TESTS` | 排除匹配正则表达式的测试 |
+| `THRUST_BUILD_ONLY` | 设置为 1 仅编译不测试 |
+
+### 示例
+
+```bash
+# 完整流程：清理、编译、测试、生成报告
+./build_thrust.sh
+
+# 仅编译（不测试）
+./build_thrust.sh build
+
+# 增量编译并测试
+./build_thrust.sh -n
+
+# 为 S4000 (mp_22) 编译
+./build_thrust.sh -a mp_22 build
+
+# 使用 8 个并行测试，指定 GPU 0-7
+./build_thrust.sh -T 8 -g 0,1,2,3,4,5,6,7
+
+# 使用环境变量配置
+export THRUST_MUSA_ARCH=mp_22
+export THRUST_TEST_JOBS=4
+./build_thrust.sh
+
+# 排除特定测试
+./build_thrust.sh -E "reduce|sort"
+
+# 取消默认排除（运行所有测试）
+./build_thrust.sh -E ""
+```
+
+### 输出文件
+
+- `test_verbose.log`：详细测试输出日志
+- `test_report.md`：Markdown 格式的测试报告
+
+如有问题，请联系 MingXu。
+
+<hr>
+
 # Thrust: The C++ Parallel Algorithms Library
 
 <table><tr>
