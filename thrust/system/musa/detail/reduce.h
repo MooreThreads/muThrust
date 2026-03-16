@@ -117,7 +117,7 @@ namespace __reduce {
     typedef PtxPolicy<128,
                       CUB_MAX(1, 24 / SCALE_FACTOR_4B),
                       4,
-                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                      cub::BLOCK_REDUCE_RAKING,
                       cub::LOAD_DEFAULT,
                       cub::GRID_MAPPING_RAKE>
         type;

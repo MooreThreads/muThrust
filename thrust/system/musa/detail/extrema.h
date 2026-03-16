@@ -136,8 +136,11 @@ namespace __extrema {
       pair_type const &lhs_min = get<0>(lhs);
       pair_type const &rhs_max = get<1>(rhs);
       pair_type const &lhs_max = get<1>(lhs);
-      return thrust::make_tuple(arg_min_t(predicate)(lhs_min, rhs_min),
-                                arg_max_t(predicate)(lhs_max, rhs_max));
+
+      auto result = thrust::make_tuple(arg_min_t(predicate)(lhs_min, rhs_min),
+                                       arg_max_t(predicate)(lhs_max, rhs_max));
+
+      return result;
     }
 
     struct duplicate_tuple
@@ -225,7 +228,7 @@ namespace __extrema {
       int max_blocks          = reduce_device_occupancy * sm_oversubscription;
 
       cub::GridEvenShare<Size> even_share;
-      even_share.DispatchInit(num_items, max_blocks,
+      even_share.DispatchInit(static_cast<int>(num_items), max_blocks,
                               reduce_plan.items_per_tile);
 
       // we will launch at most "max_blocks" blocks in a grid
@@ -271,7 +274,7 @@ namespace __extrema {
 
         // if not enough to fill the device with threadblocks
         // then fill the device with threadblocks
-        reduce_grid_size = static_cast<int>(min(num_tiles, static_cast<size_t>(reduce_device_occupancy)));
+        reduce_grid_size = static_cast<int>((min)(num_tiles, static_cast<size_t>(reduce_device_occupancy)));
 
         typedef AgentLauncher<__reduce::DrainAgent<Size> > drain_agent;
         AgentPlan drain_plan = drain_agent::get_plan();
@@ -390,6 +393,7 @@ namespace __extrema {
 
     IndexType num_items = static_cast<IndexType>(thrust::distance(first, last));
 
+
     typedef tuple<ItemsIt, counting_iterator_t<IndexType> > iterator_tuple;
     typedef zip_iterator<iterator_tuple> zip_iterator;
 
@@ -397,7 +401,7 @@ namespace __extrema {
 
 
     typedef ArgFunctor<InputType, IndexType, BinaryPred> arg_min_t;
-    typedef tuple<InputType, IndexType> T;
+    typedef typename arg_min_t::pair_type T;
 
     zip_iterator begin = make_zip_iterator(iter_tuple);
 
@@ -406,6 +410,7 @@ namespace __extrema {
                        num_items,
                        arg_min_t(binary_pred),
                        (T *)(NULL));
+    (void)result;
     return first + thrust::get<1>(result);
   }
 

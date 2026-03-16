@@ -108,13 +108,25 @@ namespace __reduce {
       SCALE_FACTOR_1B = sizeof(T),
     };
 
-    typedef PtxPolicy<256,
-                      CUB_MAX(1, 20 / SCALE_FACTOR_4B),
-                      2,
-                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-                      cub::LOAD_DEFAULT,
-                      cub::GRID_MAPPING_RAKE>
-        type;
+    // MUSA: Use BLOCK_REDUCE_RAKING for large types (>16 bytes) to avoid
+    // shared memory layout issues in BlockRakingLayout with partial tiles.
+    // BLOCK_REDUCE_WARP_REDUCTIONS has issues with uninitialized thread data
+    // when num_items < BLOCK_THREADS for types with padding (e.g., 24-byte tuples).
+    typedef typename thrust::detail::conditional<
+      (sizeof(T) > 16),
+      PtxPolicy<128,
+                CUB_MAX(1, 24 / SCALE_FACTOR_4B),
+                4,
+                cub::BLOCK_REDUCE_RAKING,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>,
+      PtxPolicy<256,
+                CUB_MAX(1, 20 / SCALE_FACTOR_4B),
+                2,
+                cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>
+    >::type type;
   }; // Tuning sm30
 
   template <class T>
@@ -138,9 +150,22 @@ namespace __reduce {
                       cub::GRID_MAPPING_DYNAMIC>
         ReducePolicy4B;
 
-    typedef typename thrust::detail::conditional<(sizeof(T) < 4),
-                                                 ReducePolicy1B,
-                                                 ReducePolicy4B>::type type;
+    // MUSA: For large types (>16 bytes), use BLOCK_REDUCE_RAKING from sm30
+    // to avoid shared memory layout issues with partial tiles.
+    typedef PtxPolicy<128,
+                      CUB_MAX(1, 24 / Tuning::SCALE_FACTOR_4B),
+                      4,
+                      cub::BLOCK_REDUCE_RAKING,
+                      cub::LOAD_LDG,
+                      cub::GRID_MAPPING_DYNAMIC>
+        ReducePolicyLarge;
+
+    typedef typename thrust::detail::conditional<
+      (sizeof(T) > 16),
+      ReducePolicyLarge,
+      typename thrust::detail::conditional<(sizeof(T) < 4),
+                                           ReducePolicy1B,
+                                           ReducePolicy4B>::type>::type type;
   };    // Tuning sm35
 
   template <class InputIt,
