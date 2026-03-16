@@ -41,26 +41,36 @@ thrust_declare_test_restrictions(future            CPP.CUDA OMP.CUDA TBB.CUDA)
 # for CUDA.
 thrust_declare_test_restrictions(unittest_static_assert CPP.CPP CPP.CUDA)
 
-# MUSA: Tests that depend on parallel_for are temporarily disabled.
-# MUSA compiler cannot properly generate device code for template __global__
-# functions defined in headers and called indirectly via launcher/triple_chevron.
-# TODO: Re-enable when MUSA compiler issue is resolved or alternative implementation.
+# MUSA: Tests that depend on parallel_for have been fixed by using direct kernel
+# launch in agent_launcher.h instead of function pointer-based launch.
+# Remaining disabled tests have other issues (see comments below).
 set(MUSA_DISABLED_TESTS
-  # Tests that use parallel_for directly or indirectly:
-  for_each
-  fill
-  transform
-  swap_ranges
-  tabulate
-  uninitialized_copy
-  uninitialized_fill
-  tuple_algorithms
-  # Async tests also use parallel_for:
-  async_for_each
-  async_transform
   # Tests that hit MUSA compiler backend bugs (large vector types):
   scan
   stable_sort_large
+  # Additional tests failing due to MUSA cross-translation-unit template issues:
+  # extrema tests: custom_numeric comparison issues
+  max_element
+  min_element
+  minmax_element
+  # scan/sort tests
+  pair_scan
+  pair_scan_by_key
+  pair_sort
+  # partition tests
+  is_partitioned
+  partition_point
+  partition
+  # reduce_by_key: device code generation issue
+  reduce_by_key
+  # iterator tests
+  reverse_iterator
+  transform_input_output_iterator
+  transform_output_iterator
+  transform_scan
+  # set operations
+  set_intersection_key_value
+  set_union_key_value
 )
 
 ## thrust_add_test
