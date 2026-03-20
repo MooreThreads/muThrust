@@ -109,13 +109,12 @@ public:
         return *this;
     }
 
-    // cast to void * instead of bool to fool overload resolution
-    // WTB C++11 explicit conversion operators
+    // MUSA: Use explicit operator bool() instead of operator void*()
+    // to avoid issues with MUSA compiler handling tuple comparisons
     __host__ __device__
-    operator void *() const
+    explicit operator bool() const
     {
-        // static cast first to avoid MSVC warning C4312
-        return reinterpret_cast<void *>(static_cast<std::size_t>(value[0]));
+        return value[0] != 0;
     }
 
 #define DEFINE_OPERATOR(op)                                         \

@@ -214,7 +214,7 @@ namespace __merge {
   };
 
   template<class TSize>
-  struct Tuning<sm10,TSize>
+  struct Tuning<mp21,TSize>
   {
     const static int INPUT_SIZE = TSize::value;
     enum

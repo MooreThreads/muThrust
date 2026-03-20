@@ -357,13 +357,13 @@ struct transform_input_iterator_t
   __host__ __device__ __forceinline__ reference operator*() const
   {
     typename thrust::iterator_value<InputIt>::type x = *input;
-    return op(x);
+    return static_cast<reference>(op(x));
   }
   /// Indirection
   __host__ __device__ __forceinline__ reference operator*()
   {
     typename thrust::iterator_value<InputIt>::type x = *input;
-    return op(x);
+    return static_cast<reference>(op(x));
   }
 
   /// Addition

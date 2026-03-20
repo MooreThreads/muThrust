@@ -98,7 +98,7 @@ namespace __copy_if {
   struct Tuning;
 
   template<class T>
-  struct Tuning<sm10, T>
+  struct Tuning<mp21, T>
   {
     const static int INPUT_SIZE = sizeof(T);
 

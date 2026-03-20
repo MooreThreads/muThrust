@@ -1,8 +1,8 @@
 
 # 检测是否使用 MUSA 编译器
 if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
-  set(THRUST_KNOWN_COMPUTE_ARCHS 21 30 31)
-  message(STATUS "Thrust: Using MUSA compute architectures: mp_21 mp_30 mp_31")
+  set(THRUST_KNOWN_COMPUTE_ARCHS 21 22 31)
+  message(STATUS "Thrust: Using MUSA compute architectures: mp_21 mp_22 mp_31")
 else()
   set(THRUST_KNOWN_COMPUTE_ARCHS 35 37 50 52 53 60 61 62 70 72 75 80 86)
 endif()

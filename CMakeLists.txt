@@ -13,7 +13,6 @@ project(Thrust NONE)
 # MUSA Configuration
 list(APPEND CMAKE_MODULE_PATH /usr/local/musa/cmake)
 find_package(MUSA REQUIRED)
-set(MUSA_MCC_FLAGS --offload-arch=mp_31)
 
 
 # Determine whether Thrust is the top-level project or included into

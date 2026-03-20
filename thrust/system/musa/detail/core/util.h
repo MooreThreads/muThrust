@@ -59,18 +59,14 @@ namespace core {
 #    define THRUST_TUNING_ARCH sm30
 #  endif
 #else
-#  if (__MUSA_ARCH__ >= 600)
-#    define THRUST_TUNING_ARCH sm60
-#  elif (__MUSA_ARCH__ >= 310)
-#    define THRUST_TUNING_ARCH sm31
+#  if (__MUSA_ARCH__ >= 310)
+#    define THRUST_TUNING_ARCH mp31
 #  elif (__MUSA_ARCH__ >= 220)
-#    define THRUST_TUNING_ARCH sm22
+#    define THRUST_TUNING_ARCH mp22
 #  elif (__MUSA_ARCH__ >= 210)
-#    define THRUST_TUNING_ARCH sm21
-#  elif (__MUSA_ARCH__ >= 100)
-#    define THRUST_TUNING_ARCH sm10
+#    define THRUST_TUNING_ARCH mp21
 #  elif !defined (__MUSA_ARCH__)
-#    define THRUST_TUNING_ARCH sm10
+#    define THRUST_TUNING_ARCH mp21  // 默认使用最低架构
 #  endif
 #endif
 
@@ -83,19 +79,17 @@ namespace core {
 
   // -------------------------------------
 
-  // supported SM arch
+  // supported MP arch
   // ---------------------
-  // MUSA uses warp size of 32 for all architectures
-  struct sm10  { enum { ver = 100, warpSize = 32 }; };
-  struct sm21  { enum { ver = 210, warpSize = 32 }; };
-  struct sm22  { enum { ver = 220, warpSize = 32 }; };
-  struct sm31  { enum { ver = 310, warpSize = 32 }; };
-  struct sm60  { enum { ver = 600, warpSize = 32 }; };
+  // MUSA uses warp size of 32 for mp31, and 128 for mp21/mp22
+  struct mp21  { enum { ver = 210, warpSize = 128 }; };
+  struct mp22  { enum { ver = 220, warpSize = 128 }; };
+  struct mp31  { enum { ver = 310, warpSize = 32 }; };
 
-  // list of sm, checked from left to right order
-  // the rightmost is the lowest sm arch supported
+  // list of mp, checked from left to right order
+  // the rightmost is the lowest mp arch supported
   // --------------------------------------------
-  typedef typelist<sm60,sm31,sm22,sm21,sm10> sm_list;
+  typedef typelist<mp31,mp22,mp21> mp_list;
 
   // lowest supported SM arch
   // --------------------------------------------------------------------------
@@ -112,7 +106,7 @@ namespace core {
     typedef SM type;
   };
 
-  typedef typename lowest_supported_sm_arch_impl<_,sm_list>::type lowest_supported_sm_arch;
+  typedef typename lowest_supported_sm_arch_impl<_,mp_list>::type lowest_supported_sm_arch;
 
   // metafunction to match next viable PtxPlan specialization
   // --------------------------------------------------------------------------
@@ -125,7 +119,7 @@ namespace core {
   template <template <class> class, class>
   struct specialize_plan_impl_match;
 
-  // we loop through the sm_list
+  // we loop through the mp_list
   template <template <class> class P, class SM, class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
   struct specialize_plan_impl_loop<P, SM, typelist<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> >
        : specialize_plan_impl_loop<P, SM, typelist<    _1, _2, _3, _4, _5, _6, _7, _8, _9> > {};
@@ -153,10 +147,10 @@ namespace core {
   template <template <class> class P, class SM>
   struct has_sm_tuning : has_sm_tuning_impl<SM, typename P<lowest_supported_sm_arch>::tuning > {};
 
-  // once first match is found in sm_list, all remaining sm are possible
+  // once first match is found in mp_list, all remaining mp are possible
   // candidate for tuning, so pick the first available
-  //   if the plan P has SM-level tuning then pick it,
-  //   otherwise move on to the next sm in the sm_list
+  //   if the plan P has MP-level tuning then pick it,
+  //   otherwise move on to the next mp in the mp_list
   template <template <class> class P, class SM, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
   struct specialize_plan_impl_match<P, typelist<SM, _1, _2, _3, _4, _5, _6, _7, _8, _9> >
       : thrust::detail::conditional<
@@ -168,10 +162,10 @@ namespace core {
     struct specialize_plan_msvc10_war
     {
       // if Plan has tuning type, this means it has SM-specific tuning
-      // so loop through sm_list to find match,
+      // so loop through mp_list to find match,
       // otherwise just specialize on provided SM
       typedef thrust::detail::conditional<has_tuning_t<Plan<lowest_supported_sm_arch> >::value,
-                                  specialize_plan_impl_loop<Plan, SM, sm_list>,
+                                  specialize_plan_impl_loop<Plan, SM, mp_list>,
                                   Plan<SM> >
           type;
     };
@@ -251,7 +245,7 @@ namespace core {
     };
 
     template <class Agent, size_t MAX_SHMEM>
-    struct has_enough_shmem : has_enough_shmem_impl<true, Agent, MAX_SHMEM, sm_list>
+    struct has_enough_shmem : has_enough_shmem_impl<true, Agent, MAX_SHMEM, mp_list>
     {
     };
 
@@ -376,7 +370,7 @@ namespace core {
           } else
         #endif
         {
-          return get_agent_plan_impl<Agent, sm_list>::get(ptx_version);
+          return get_agent_plan_impl<Agent, mp_list>::get(ptx_version);
         }
       #else
         #if (CUB_PTX_ARCH > 0) && defined(__THRUST_HAS_CUDART__)
@@ -385,7 +379,7 @@ namespace core {
           // We're on device, use default policy
           return Plan(typename Agent::ptx_plan());
         #else
-          return get_agent_plan_impl<Agent, sm_list>::get(ptx_version);
+          return get_agent_plan_impl<Agent, mp_list>::get(ptx_version);
         #endif
       #endif
     }
@@ -774,11 +768,9 @@ namespace core {
 
 
 }    // namespace core
-using core::sm60;
-using core::sm31;
-using core::sm22;
-using core::sm21;
-using core::sm10;
+using core::mp31;
+using core::mp22;
+using core::mp21;
 } // namespace cuda_
 
 } // end namespace thrust

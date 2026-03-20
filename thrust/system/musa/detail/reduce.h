@@ -104,7 +104,7 @@ namespace __reduce {
   struct Tuning;
 
   template <class T>
-  struct Tuning<sm10, T>
+  struct Tuning<mp21, T>
   {
     enum
     {

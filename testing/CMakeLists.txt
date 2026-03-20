@@ -49,10 +49,7 @@ set(MUSA_DISABLED_TESTS
   scan
   stable_sort_large
   # Additional tests failing due to MUSA cross-translation-unit template issues:
-  # extrema tests: custom_numeric comparison issues
-  max_element
-  min_element
-  minmax_element
+  # extrema tests: INVESTIGATING - temporarily enabled
   # scan/sort tests
   pair_scan
   pair_scan_by_key

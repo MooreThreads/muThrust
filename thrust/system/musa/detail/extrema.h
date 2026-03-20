@@ -338,7 +338,7 @@ namespace __extrema {
             debug_sync));
     cuda_cub::throw_on_error(status, "extrema failed on 1st step");
 
-    size_t allocation_sizes[2] = {sizeof(T*), temp_storage_bytes};
+    size_t allocation_sizes[2] = {sizeof(T), temp_storage_bytes};
     void * allocations[2]      = {NULL, NULL};
 
     size_t storage_size = 0;

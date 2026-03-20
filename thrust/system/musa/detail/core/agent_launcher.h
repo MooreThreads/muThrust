@@ -765,154 +765,143 @@ namespace core {
       sync();
     }
 #else
+    // MUSA FIX: Use direct kernel launch instead of function pointers
+    // Function pointers to __global__ functions don't work properly on MUSA
+    // for large parameter types.
     template <class _0>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0) = _kernel_agent_vshmem<Agent, _0>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0);
+      print_info(_kernel_agent_vshmem<Agent, _0>);
+      _kernel_agent_vshmem<Agent, _0><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0);
+      musaPeekAtLastError();
     }
     template <class _0, class _1>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1) = _kernel_agent_vshmem<Agent, _0, _1>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1>);
+      _kernel_agent_vshmem<Agent, _0, _1><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2) = _kernel_agent_vshmem<Agent, _0, _1, _2>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8>;
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB,_xC xC) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB,_xC xC,_xD xD) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD, class _xE>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB,_xC xC,_xD xD,_xE xE) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, shmem_size, stream)
-          .doit(ptr, vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE);
+      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE>);
+      _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE);
+      musaPeekAtLastError();
     }
 
     ////////////////////////////////////////////////////////
@@ -924,150 +913,135 @@ namespace core {
     launch_impl(thrust::detail::true_type, _0 x0) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0) = _kernel_agent<Agent, _0>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0);
+      print_info(_kernel_agent<Agent, _0>);
+      _kernel_agent<Agent, _0><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0);
+      musaPeekAtLastError();
     }
     template <class _0, class _1>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0, _1) = _kernel_agent<Agent, _0, _1>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1);
+      print_info(_kernel_agent<Agent, _0, _1>);
+      _kernel_agent<Agent, _0, _1><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2) = _kernel_agent<Agent, _0, _1, _2>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2);
+      print_info(_kernel_agent<Agent, _0, _1, _2>);
+      _kernel_agent<Agent, _0, _1, _2><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3) = _kernel_agent<Agent, _0, _1, _2,_3>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3>);
+      _kernel_agent<Agent, _0, _1, _2, _3><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4) = _kernel_agent<Agent, _0, _1, _2,_3,_4>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6, x7);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6, x7, x8);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC, _xD xD) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD);
+      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD, class _xE>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC, _xD xD, _xE xE) const
     {
       assert(has_shmem && vshmem == NULL);
-      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD,_xE) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD,_xE>;
-      print_info(ptr);
-      launcher::triple_chevron(grid, plan.block_threads, plan.shared_memory_size, stream)
-          .doit(ptr,x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE);
+      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE>);
+      _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE);
+      musaPeekAtLastError();
     }
 
     ////////////////////////////////////////////////////////

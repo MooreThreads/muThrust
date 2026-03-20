@@ -159,7 +159,7 @@ namespace __merge_sort {
   struct Tuning;
 
   template<class T>
-  struct Tuning<sm10,T>
+  struct Tuning<mp21,T>
   {
     enum
     {

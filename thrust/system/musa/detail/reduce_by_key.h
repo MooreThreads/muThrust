@@ -106,7 +106,7 @@ namespace __reduce_by_key {
   struct Tuning;
 
   template <class Key, class Value>
-  struct Tuning<sm10, Key, Value>
+  struct Tuning<mp21, Key, Value>
   {
     enum
     {

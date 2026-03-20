@@ -48,7 +48,7 @@ show_help() {
   -j, --jobs N      编译并行数 (默认: $(nproc))
   -T, --test-jobs N 测试并行数 (默认: 1)
   -g, --gpus DEVICES 设置 MUSA_VISIBLE_DEVICES (如: 0,1,2,3)
-  -a, --arch ARCH   MUSA 目标架构 (默认: mp_31, 支持: mp_22, mp_31)
+  -a, --arch ARCH   MUSA 目标架构 (默认: mp_31, 支持: mp_21, mp_22, mp_31)
   -n, --no-clean    不删除 build 目录 (增量编译)
   -E, --exclude RE  排除匹配正则表达式的测试 (默认: ${EXCLUDE_TESTS})
                     传空字符串 "" 可取消默认排除
@@ -63,6 +63,7 @@ show_help() {
   6. 生成 markdown 报告
 
 架构说明:
+  mp_21  - S3000 系列 (PTX 210, Warp 128 线程)
   mp_22  - S4000 系列 (PTX 220, Warp 128 线程)
   mp_31  - S5000 系列 (PTX 310, Warp 32 线程)
 
