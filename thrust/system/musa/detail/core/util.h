@@ -59,13 +59,15 @@ namespace core {
 #    define THRUST_TUNING_ARCH sm30
 #  endif
 #else
-#  if (__MUSA_ARCH__ >= 310)
+// MUSA: Use CUB_PTX_ARCH which is correctly set via CUB_MUSA_ARCH
+// Note: __MUSA_ARCH__ is defined as 1 in device code, not the arch version
+#  if (CUB_PTX_ARCH >= 310)
 #    define THRUST_TUNING_ARCH mp31
-#  elif (__MUSA_ARCH__ >= 220)
+#  elif (CUB_PTX_ARCH >= 220)
 #    define THRUST_TUNING_ARCH mp22
-#  elif (__MUSA_ARCH__ >= 210)
+#  elif (CUB_PTX_ARCH >= 210)
 #    define THRUST_TUNING_ARCH mp21
-#  elif !defined (__MUSA_ARCH__)
+#  else
 #    define THRUST_TUNING_ARCH mp21  // 默认使用最低架构
 #  endif
 #endif

@@ -192,3 +192,27 @@ endforeach()
 
 # By default RDC is not used:
 set(CMAKE_CUDA_FLAGS "${THRUST_CUDA_FLAGS_BASE} ${THRUST_CUDA_FLAGS_NO_RDC}")
+
+# MUSA: Set CUB_MUSA_ARCH for correct warp size calculation
+# The architecture values are: mp21=210, mp22=220, mp31=310
+if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
+  # Find the highest enabled architecture
+  set(CUB_MUSA_ARCH_VALUE 310)  # Default to highest
+  foreach(arch IN LISTS THRUST_KNOWN_COMPUTE_ARCHS)
+    if(THRUST_ENABLE_COMPUTE_${arch})
+      if(arch EQUAL 31)
+        set(CUB_MUSA_ARCH_VALUE 310)
+      elseif(arch EQUAL 22)
+        set(CUB_MUSA_ARCH_VALUE 220)
+      elseif(arch EQUAL 21)
+        set(CUB_MUSA_ARCH_VALUE 210)
+      endif()
+    endif()
+  endforeach()
+
+  # Add the definition for both host and device code
+  add_compile_definitions(CUB_MUSA_ARCH=${CUB_MUSA_ARCH_VALUE})
+  # Also define MUSA_ARCH_LIST for namespace magic (must match CUB_MUSA_ARCH)
+  add_compile_definitions(MUSA_ARCH_LIST=${CUB_MUSA_ARCH_VALUE})
+  message(STATUS "Thrust: CUB_MUSA_ARCH set to ${CUB_MUSA_ARCH_VALUE}")
+endif()
