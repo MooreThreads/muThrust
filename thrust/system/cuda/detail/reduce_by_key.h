@@ -186,6 +186,38 @@ namespace __reduce_by_key {
         type;
   };    // Tuning sm52
 
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architecture: mp21
+  template <class Key, class Value>
+  struct Tuning<mp21, Key, Value>
+  {
+    enum
+    {
+      MAX_INPUT_BYTES      = mpl::max<size_t, sizeof(Key), sizeof(Value)>::value,
+      COMBINED_INPUT_BYTES = sizeof(Key) + sizeof(Value),
+
+      NOMINAL_4B_ITEMS_PER_THREAD = 6,
+
+      ITEMS_PER_THREAD = mpl::min<
+          int,
+          NOMINAL_4B_ITEMS_PER_THREAD,
+          mpl::max<
+              int,
+              1,
+              ((NOMINAL_4B_ITEMS_PER_THREAD * 8) +
+               COMBINED_INPUT_BYTES - 1) /
+                  COMBINED_INPUT_BYTES>::value>::value,
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };
+#endif // __MUSACC_VER_MAJOR__
+
   template <class KeysInputIt,
             class ValuesInputIt,
             class KeysOutputIt,

@@ -168,6 +168,72 @@ namespace __reduce {
                                            ReducePolicy4B>::type>::type type;
   };    // Tuning sm35
 
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architectures: mp21, mp22, mp31
+  template <class T>
+  struct Tuning<mp21, T>
+  {
+    enum
+    {
+      // Relative size of T type to a 4-byte word
+      SCALE_FACTOR_4B = (sizeof(T) + 3) / 4,
+      // Relative size of T type to a 1-byte word
+      SCALE_FACTOR_1B = sizeof(T),
+    };
+
+    // MUSA MP_21: Use WARP_REDUCTIONS for 128-warp compatibility
+    typedef PtxPolicy<128,
+                      CUB_MAX(1, 8),
+                      1,
+                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                      cub::LOAD_DEFAULT,
+                      cub::GRID_MAPPING_RAKE>
+        type;
+  };
+
+  template <class T>
+  struct Tuning<mp22, T>
+  {
+    enum
+    {
+      // Relative size of T type to a 4-byte word
+      SCALE_FACTOR_4B = (sizeof(T) + 3) / 4,
+      // Relative size of T type to a 1-byte word
+      SCALE_FACTOR_1B = sizeof(T),
+    };
+
+    // MUSA MP_22: Conservative settings for 128-warp
+    typedef PtxPolicy<256,
+                      CUB_MAX(1, 16),
+                      2,
+                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                      cub::LOAD_DEFAULT,
+                      cub::GRID_MAPPING_RAKE>
+        type;
+  };
+
+  template <class T>
+  struct Tuning<mp31, T>
+  {
+    enum
+    {
+      // Relative size of T type to a 4-byte word
+      SCALE_FACTOR_4B = (sizeof(T) + 3) / 4,
+      // Relative size of T type to a 1-byte word
+      SCALE_FACTOR_1B = sizeof(T),
+    };
+
+    // MUSA MP_31: Optimized for 32-warp
+    typedef PtxPolicy<256,
+                      CUB_MAX(1, 20),
+                      4,
+                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                      cub::LOAD_LDG,
+                      cub::GRID_MAPPING_DYNAMIC>
+        type;
+  };
+#endif // __MUSACC_VER_MAJOR__
+
   template <class InputIt,
             class OutputIt,
             class T,

@@ -286,6 +286,28 @@ namespace __merge {
         type;
   };    // Tuning sm350
 
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architecture: mp21
+  template<class TSize>
+  struct Tuning<mp21,TSize>
+  {
+    const static int INPUT_SIZE = TSize::value;
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 7,
+      ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
+                                          INPUT_SIZE>::value
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_STORE_WARP_TRANSPOSE>
+        type;
+  };
+#endif // __MUSACC_VER_MAJOR__
+
 
   template<size_t VALUE>
   struct integer_constant : thrust::detail::integral_constant<size_t, VALUE> {};

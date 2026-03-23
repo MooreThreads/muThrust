@@ -306,6 +306,90 @@ namespace __set_operations {
         type;
   }; // tuning sm60
 
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architectures: mp21, mp22, mp31
+  template<class T, class U>
+  struct Tuning<mp21,T,U>
+  {
+    enum
+    {
+      MAX_INPUT_BYTES             = mpl::max<size_t, sizeof(T), sizeof(U)>::value,
+      COMBINED_INPUT_BYTES        = sizeof(T),
+      NOMINAL_4B_ITEMS_PER_THREAD = 7,
+      ITEMS_PER_THREAD            = mpl::min<
+          int,
+          NOMINAL_4B_ITEMS_PER_THREAD,
+          mpl::max<
+              int,
+              1,
+              static_cast<int>(((NOMINAL_4B_ITEMS_PER_THREAD * 4) +
+               COMBINED_INPUT_BYTES - 1) /
+                  COMBINED_INPUT_BYTES)>::value>::value,
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };
+
+  template<class T, class U>
+  struct Tuning<mp22,T,U>
+  {
+    enum
+    {
+      MAX_INPUT_BYTES             = mpl::max<size_t, sizeof(T), sizeof(U)>::value,
+      COMBINED_INPUT_BYTES        = sizeof(T),
+      NOMINAL_4B_ITEMS_PER_THREAD = 7,
+      ITEMS_PER_THREAD            = mpl::min<
+          int,
+          NOMINAL_4B_ITEMS_PER_THREAD,
+          mpl::max<
+              int,
+              1,
+              static_cast<int>(((NOMINAL_4B_ITEMS_PER_THREAD * 4) +
+               COMBINED_INPUT_BYTES - 1) /
+                  COMBINED_INPUT_BYTES)>::value>::value,
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };
+
+  template<class T, class U>
+  struct Tuning<mp31,T,U>
+  {
+    enum
+    {
+      MAX_INPUT_BYTES             = mpl::max<size_t, sizeof(T), sizeof(U)>::value,
+      COMBINED_INPUT_BYTES        = sizeof(T),
+      NOMINAL_4B_ITEMS_PER_THREAD = 15,
+      ITEMS_PER_THREAD            = mpl::min<
+          int,
+          NOMINAL_4B_ITEMS_PER_THREAD,
+          mpl::max<
+              int,
+              1,
+              static_cast<int>(((NOMINAL_4B_ITEMS_PER_THREAD * 4) +
+               COMBINED_INPUT_BYTES - 1) /
+                  COMBINED_INPUT_BYTES)>::value>::value,
+    };
+
+    typedef PtxPolicy<256,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };
+#endif // __MUSACC_VER_MAJOR__
+
   template <class KeysIt1,
             class KeysIt2,
             class ValuesIt1,

@@ -66,6 +66,27 @@ namespace __parallel_for {
     typedef PtxPolicy<128, 4> type;
   };
 
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architectures: mp21, mp22, mp31
+  // All use 128 threads, 4 items per thread
+  template <class F>
+  struct Tuning<mp21, F>
+  {
+    typedef PtxPolicy<128, 4> type;
+  };
+
+  template <class F>
+  struct Tuning<mp22, F>
+  {
+    typedef PtxPolicy<128, 4> type;
+  };
+
+  template <class F>
+  struct Tuning<mp31, F>
+  {
+    typedef PtxPolicy<128, 4> type;
+  };
+#endif
 
   template <class F,
             class Size>

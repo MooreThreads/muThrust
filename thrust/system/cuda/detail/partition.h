@@ -110,6 +110,28 @@ namespace __partition {
         type;
   };    // Tuning<300>
 
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architecture: mp21
+  template<class T>
+  struct Tuning<mp21, T>
+  {
+    const static int INPUT_SIZE = sizeof(T);
+
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 7,
+      ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(3, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };
+#endif // __MUSACC_VER_MAJOR__
+
   template<int T>
   struct __tag{};
 

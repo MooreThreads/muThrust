@@ -42,8 +42,8 @@ namespace cuda_cub {
 namespace core {
 
 // Architecture tuning selection
-// MUSA uses different architecture numbers: mp_21 (210), mp_30 (300), mp_31 (310)
-// CUDA uses: sm_35 (350), sm_52 (520), sm_60 (600)
+// MUSA uses different architecture numbers: mp_21 (210), mp_22 (220), mp_31 (310)
+// CUDA uses: sm_30 (300), sm_35 (350), sm_52 (520), sm_60 (600)
 #ifdef _NVHPC_CUDA
 #  if (__NVCOMPILER_CUDA_ARCH__ >= 600)
 #    define THRUST_TUNING_ARCH sm60
@@ -54,10 +54,18 @@ namespace core {
 #  else
 #    define THRUST_TUNING_ARCH sm30
 #  endif
-#elif defined(__MUSA_ARCH__)
-// MUSA architecture - map to closest CUDA sm architecture for tuning
-// MUSA mp_21/mp_30/mp_31 all use sm30 tuning (lowest common denominator)
-#  define THRUST_TUNING_ARCH sm30
+#elif defined(__MUSACC_VER_MAJOR__)
+// MUSA: Use CUB_PTX_ARCH which is correctly set via CUB_MUSA_ARCH
+// Note: __MUSA_ARCH__ is defined as 1 in device code, not the arch version
+#  if (CUB_PTX_ARCH >= 310)
+#    define THRUST_TUNING_ARCH mp31
+#  elif (CUB_PTX_ARCH >= 220)
+#    define THRUST_TUNING_ARCH mp22
+#  elif (CUB_PTX_ARCH >= 210)
+#    define THRUST_TUNING_ARCH mp21
+#  else
+#    define THRUST_TUNING_ARCH mp21  // Default to lowest architecture
+#  endif
 #else
 // CUDA architecture
 #  if (__CUDA_ARCH__ >= 600)
@@ -82,17 +90,28 @@ namespace core {
 
   // -------------------------------------
 
-  // supported SM arch
+  // supported SM/MP arch
   // ---------------------
+  // CUDA architectures
   struct sm30  { enum { ver = 300, warpSize = 32 }; };
   struct sm35  { enum { ver = 350, warpSize = 32 }; };
   struct sm52  { enum { ver = 520, warpSize = 32 }; };
   struct sm60  { enum { ver = 600, warpSize = 32 }; };
 
-  // list of sm, checked from left to right order
-  // the rightmost is the lowest sm arch supported
+  // MUSA architectures
+  // mp21/mp22 have warp size of 128, mp31 has warp size of 32
+  struct mp21  { enum { ver = 210, warpSize = 128 }; };
+  struct mp22  { enum { ver = 220, warpSize = 128 }; };
+  struct mp31  { enum { ver = 310, warpSize = 32 }; };
+
+  // list of sm/mp, checked from left to right order
+  // the rightmost is the lowest arch supported
   // --------------------------------------------
+#if defined(__MUSACC_VER_MAJOR__)
+  typedef typelist<mp31,mp22,mp21> sm_list;
+#else
   typedef typelist<sm60,sm52,sm35,sm30> sm_list;
+#endif
 
   // lowest supported SM arch
   // --------------------------------------------------------------------------
@@ -772,6 +791,9 @@ using core::sm60;
 using core::sm52;
 using core::sm35;
 using core::sm30;
+using core::mp31;
+using core::mp22;
+using core::mp21;
 } // namespace cuda_cub
 
 THRUST_NAMESPACE_END
