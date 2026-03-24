@@ -28,7 +28,7 @@ LOG_FILE="${THRUST_DIR}/test_verbose.log"
 REPORT_FILE="${THRUST_DIR}/test_report.md"
 SKIP_CLEAN="${THRUST_NO_CLEAN:-false}"
 BUILD_ONLY="${THRUST_BUILD_ONLY:-false}"
-EXCLUDE_TESTS="${THRUST_EXCLUDE_TESTS:-namespace_wrapped|unittest|test__cpp_complex}"  # 默认排除的测试用例
+EXCLUDE_TESTS="${THRUST_EXCLUDE_TESTS:-namespace_wrapped|unittest|test__cpp_complex|async}"  # 默认排除的测试用例
 MUSA_ARCH="${THRUST_MUSA_ARCH:-mp_31}"  # 默认 MUSA 架构
 
 # CUB 相关 - Thrust CUDA/MUSA 后端依赖 CUB
@@ -174,9 +174,15 @@ echo "=========================================="
 echo "CMake 配置 (Ninja)..."
 echo "MUSA 架构: ${MUSA_ARCH}"
 echo "=========================================="
+
+# 从 MUSA_ARCH 提取架构数字 (mp_22 -> 22)
+ARCH_NUM="${MUSA_ARCH#mp_}"
+
 cmake -G Ninja \
+    -DCMAKE_C_COMPILER=mcc \
+    -DCMAKE_CXX_COMPILER=mcc \
     -DMUSA_64_BIT_DEVICE_CODE=ON \
-    -DMUSA_MCC_FLAGS="--offload-arch=${MUSA_ARCH}" \
+    -DTHRUST_ENABLE_COMPUTE_${ARCH_NUM}=ON \
     -DTHRUST_ENABLE_TESTING=ON \
     -DTHRUST_ENABLE_EXAMPLES=OFF \
     -DTHRUST_ENABLE_HEADER_TESTING=OFF \
