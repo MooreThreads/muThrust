@@ -1,3 +1,4 @@
 [submodule "cub"]
 	path = dependencies/cub
-	url = ../cub.git
+	url = git@sh-code.mthreads.com:sw/muAlg.git
+	branch = develop-1.17

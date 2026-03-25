@@ -14,6 +14,7 @@
 #include <thrust/iterator/detail/device_system_tag.h>
 #include <thrust/iterator/detail/iterator_facade_category.h>
 
+#include <cinttypes>
 #include <cstdint>
 
 // This test is an adaptation of TestInclusiveScanWithBigIndices from scan.cu.
@@ -81,7 +82,7 @@ struct assert_sequence_iterator
   {
     if (val != expected)
     {
-      printf("Error: expected %lld, got %lld\n", expected, val);
+      printf("Error: expected %" PRId64 ", got %" PRId64 "\n", expected, val);
 
       *unexpected_value = true;
     }

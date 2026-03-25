@@ -96,6 +96,41 @@ function(thrust_build_compiler_targets)
 
     # This complains about functions in CUDA system headers when used with nvcc.
     append_option_if_available("-Wno-unused-function" cxx_compile_options)
+
+    # MUSA compiler warnings that are safe to suppress
+    # Check if using MUSA by looking for musa compiler or musa in the compiler path
+    if (DEFINED CMAKE_MUSA_COMPILER OR
+        "${CMAKE_CXX_COMPILER}" MATCHES "musa" OR
+        "${CMAKE_CXX_COMPILER}" MATCHES "mcc")
+      # MUSA/Clang specific warnings to suppress:
+      # -Wunused-parameter: Many intentionally unused parameters in template code
+      # -Wunknown-pragmas: NVIDIA-specific pragmas not recognized by MUSA
+      # -Wsign-compare: Intentional signed/unsigned comparisons
+      # -Wsizeof-array-div: False positives for template metaprogramming
+      # -Wunused-variable: Some variables only used in CUDA paths, not MUSA
+      # -Wunused-local-typedef: Unused typedef aliases in template metaprogramming
+      # -Wreorder-ctor: Constructor initialization order (code style issue)
+      # -Wgnu-anonymous-struct: GNU anonymous struct extension (CUDA compatibility)
+      # -Wmisleading-indentation: Indentation style warnings
+      # -Wsometimes-uninitialized: False positives for conditional initialization
+      # -Wdeprecated-declarations: Using deprecated CUDA APIs in MUSA context
+      # -Wpass-failed: Optimization transformation failures (loop unrolling, etc.)
+      list(APPEND cxx_compile_options
+        "-Wno-unused-parameter"
+        "-Wno-unknown-pragmas"
+        "-Wno-sign-compare"
+        "-Wno-sizeof-array-div"
+        "-Wno-unused-variable"
+        "-Wno-unused-local-typedef"
+        "-Wno-reorder-ctor"
+        "-Wno-gnu-anonymous-struct"
+        "-Wno-misleading-indentation"
+        "-Wno-sometimes-uninitialized"
+        "-Wno-deprecated-declarations"
+        "-Wno-pass-failed"
+      )
+      message(STATUS "Thrust: MUSA compiler detected: Suppressing selected warnings")
+    endif()
   endif()
 
   if ("GNU" STREQUAL "${CMAKE_CXX_COMPILER_ID}")

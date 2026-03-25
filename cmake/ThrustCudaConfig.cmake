@@ -77,6 +77,10 @@ set(option_init OFF)
 if ("NVCXX" STREQUAL "${CMAKE_CUDA_COMPILER_ID}")
   set(option_init ON)
 endif()
+# MUSA: Default to disabling all architectures, user must explicitly enable
+if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
+  set(option_init ON)
+endif()
 option(THRUST_DISABLE_ARCH_BY_DEFAULT
   "If ON, then all compute architectures are disabled on the initial CMake run."
   ${option_init}
@@ -197,9 +201,11 @@ set(CMAKE_CUDA_FLAGS "${THRUST_CUDA_FLAGS_BASE} ${THRUST_CUDA_FLAGS_NO_RDC}")
 # The architecture values are: mp21=210, mp22=220, mp31=310
 if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
   # Find the highest enabled architecture
-  set(CUB_MUSA_ARCH_VALUE 310)  # Default to highest
+  set(CUB_MUSA_ARCH_VALUE 0)
+  set(enabled_archs "")
   foreach(arch IN LISTS THRUST_KNOWN_COMPUTE_ARCHS)
     if(THRUST_ENABLE_COMPUTE_${arch})
+      list(APPEND enabled_archs ${arch})
       if(arch EQUAL 31)
         set(CUB_MUSA_ARCH_VALUE 310)
       elseif(arch EQUAL 22)
@@ -209,6 +215,15 @@ if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
       endif()
     endif()
   endforeach()
+
+  # Warn if multiple architectures are enabled
+  list(LENGTH enabled_archs num_enabled)
+  if(num_enabled GREATER 1)
+    message(WARNING "Multiple MUSA architectures enabled: ${enabled_archs}. "
+      "CUB_MUSA_ARCH will be set to the highest (${CUB_MUSA_ARCH_VALUE}). "
+      "This may cause runtime issues on lower architectures. "
+      "Consider enabling only one architecture.")
+  endif()
 
   # Add the definition for both host and device code
   add_compile_definitions(CUB_MUSA_ARCH=${CUB_MUSA_ARCH_VALUE})

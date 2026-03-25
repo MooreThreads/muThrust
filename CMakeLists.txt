@@ -11,8 +11,7 @@ endif()
 
 project(Thrust NONE)
 # MUSA Configuration
-list(APPEND CMAKE_MODULE_PATH /usr/local/musa/cmake)
-find_package(MUSA REQUIRED)
+include(cmake/SimpleMUSA.cmake)
 
 
 # Determine whether Thrust is the top-level project or included into
