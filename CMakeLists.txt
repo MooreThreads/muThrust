@@ -9,7 +9,10 @@ if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
   cmake_policy(SET CMP0104 OLD)
 endif()
 
-project(Thrust NONE)
+set( CMAKE_INSTALL_PREFIX "/usr/local/musa" CACHE PATH
+    "Install path prefix, prepended onto install directories" )
+set ( VERSION_STRING "1.17.0" )
+project(Thrust VERSION ${VERSION_STRING})
 # MUSA Configuration
 include(cmake/SimpleMUSA.cmake)
 
@@ -24,6 +27,8 @@ endif()
 
 # This must be done before any languages are enabled:
 if (THRUST_TOPLEVEL_PROJECT)
+  include(./module_version/generate_version_query.cmake)
+  add_version_query(${VERSION_STRING})
   include(cmake/ThrustCompilerHacks.cmake)
 endif()
 
