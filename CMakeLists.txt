@@ -33,9 +33,13 @@ endif()
 # GNUInstallDirs CMake module.
 enable_language(CXX)
 
+# Set default installation prefix for MUSA
+if (NOT DEFINED CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "/usr/local/musa" CACHE PATH "Installation prefix" FORCE)
+endif()
+
 # Optionally include installation rules for non-top-level builds:
-# 禁用安装规则以避免依赖 CUB 子模块
-option(THRUST_ENABLE_INSTALL_RULES "Enable installation of Thrust" OFF)
+option(THRUST_ENABLE_INSTALL_RULES "Enable installation of Thrust" ON)
 if (THRUST_ENABLE_INSTALL_RULES)
   include(cmake/ThrustInstallRules.cmake)
 endif()
@@ -50,9 +54,9 @@ endif()
 # We use 3.17 features when building our tests, etc.
 cmake_minimum_required(VERSION 3.17)
 
-option(THRUST_ENABLE_HEADER_TESTING "Test that all public headers compile." "ON")
-option(THRUST_ENABLE_TESTING "Build Thrust testing suite." "ON")
-option(THRUST_ENABLE_EXAMPLES "Build Thrust examples." "ON")
+option(THRUST_ENABLE_HEADER_TESTING "Test that all public headers compile." "OFF")
+option(THRUST_ENABLE_TESTING "Build Thrust testing suite." "OFF")
+option(THRUST_ENABLE_EXAMPLES "Build Thrust examples." "OFF")
 option(THRUST_ENABLE_BENCHMARKS "Build Thrust runtime benchmarks." "OFF")
 option(THRUST_INCLUDE_CUB_CMAKE "Build CUB tests and examples. (Requires CUDA)." "OFF")
 
