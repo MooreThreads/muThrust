@@ -155,24 +155,7 @@ if [ "$DO_CLEAN" = true ]; then
     exit 0
 fi
 
-# 1. 检查 CUB 是否已安装
-if [ -d "${CUB_DIR}" ] && [ "$(ls -A ${CUB_DIR} 2>/dev/null)" ]; then
-    echo "CUB 已存在: ${CUB_DIR}"
-    NEED_INIT_SUBMODULES=false
-else
-    echo "CUB 未安装，将通过 git submodule 初始化"
-    NEED_INIT_SUBMODULES=true
-fi
-
-cd "${THRUST_DIR}"
-
-# 更新 git 子模块
-if [ "$NEED_INIT_SUBMODULES" = true ]; then
-    echo "更新 git 子模块..."
-    git submodule update --init --recursive
-fi
-
-# 2. 清理 build 目录
+# 1. 清理 build 目录
 if [ "$SKIP_CLEAN" = false ] && [ -d "${BUILD_DIR}" ]; then
     echo "删除 build 目录..."
     rm -rf "${BUILD_DIR}"

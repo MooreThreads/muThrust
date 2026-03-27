@@ -4,4 +4,4 @@
 	branch = develop-1.17
 [submodule "module_version"]
 	path = module_version
-	url = git@sh-code.mthreads.com:sw/module_version.git
+	url = ../module_version.git
