@@ -185,6 +185,10 @@ check_and_install_cub
 
 cd "${THRUST_DIR}"
 
+# 更新 git 子模块
+echo "更新 git 子模块..."
+git submodule update --init --recursive
+
 # 2. 清理 build 目录
 if [ "$SKIP_CLEAN" = false ] && [ -d "${BUILD_DIR}" ]; then
     echo "删除 build 目录..."
