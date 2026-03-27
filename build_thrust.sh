@@ -32,8 +32,6 @@ LOG_FILE=""
 REPORT_FILE=""
 
 # CUB 相关 - Thrust CUDA/MUSA 后端依赖 CUB
-CUB_REPO="git@sh-code.mthreads.com:sw/muAlg.git"
-CUB_BRANCH="develop-1.17"
 CUB_DIR="${THRUST_DIR}/dependencies/cub/cub"
 
 show_help() {
@@ -85,29 +83,6 @@ show_help() {
   THRUST_EXCLUDE_TESTS 排除匹配正则表达式的测试
   THRUST_BUILD_ONLY    设置为 1 仅编译不测试
 EOF
-}
-
-check_and_install_cub() {
-    # Thrust 依赖 CUB 在 dependencies/cub/cub 目录 (thrust/cub 符号链接指向这里)
-    if [ -d "${CUB_DIR}" ] && [ "$(ls -A ${CUB_DIR} 2>/dev/null)" ]; then
-        echo "CUB 已存在: ${CUB_DIR}"
-        return 0
-    fi
-
-    echo "检测到 CUB 未安装，正在从 ${CUB_REPO} 下载..."
-
-    TEMP_DIR=$(mktemp -d)
-    trap "rm -rf ${TEMP_DIR}" EXIT
-
-    cd "${TEMP_DIR}"
-    git clone --depth 1 --branch "${CUB_BRANCH}" "${CUB_REPO}" muAlg
-
-    echo "正在安装 CUB 到 ${CUB_DIR}..."
-    mkdir -p "${THRUST_DIR}/dependencies/cub"
-    cp -r muAlg/cub "${THRUST_DIR}/dependencies/cub/"
-
-    echo "CUB 安装完成"
-    cd "${THRUST_DIR}"
 }
 
 # 解析参数
@@ -180,14 +155,22 @@ if [ "$DO_CLEAN" = true ]; then
     exit 0
 fi
 
-# 1. 检查并安装 cub
-check_and_install_cub
+# 1. 检查 CUB 是否已安装
+if [ -d "${CUB_DIR}" ] && [ "$(ls -A ${CUB_DIR} 2>/dev/null)" ]; then
+    echo "CUB 已存在: ${CUB_DIR}"
+    NEED_INIT_SUBMODULES=false
+else
+    echo "CUB 未安装，将通过 git submodule 初始化"
+    NEED_INIT_SUBMODULES=true
+fi
 
 cd "${THRUST_DIR}"
 
 # 更新 git 子模块
-echo "更新 git 子模块..."
-git submodule update --init --recursive
+if [ "$NEED_INIT_SUBMODULES" = true ]; then
+    echo "更新 git 子模块..."
+    git submodule update --init --recursive
+fi
 
 # 2. 清理 build 目录
 if [ "$SKIP_CLEAN" = false ] && [ -d "${BUILD_DIR}" ]; then
