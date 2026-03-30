@@ -114,14 +114,23 @@ namespace __reduce {
       SCALE_FACTOR_1B = sizeof(T),
     };
 
-    // MUSA MP_21: Use WARP_REDUCTIONS for 128-warp compatibility
-    typedef PtxPolicy<128,
-                      CUB_MAX(1, 8),
-                      1,
-                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-                      cub::LOAD_DEFAULT,
-                      cub::GRID_MAPPING_RAKE>
-        type;
+    // MUSA MP_21: For large types (>16 bytes), use BLOCK_REDUCE_RAKING to avoid
+    // shared memory layout issues with partial tiles (128-warp architecture).
+    typedef typename thrust::detail::conditional<
+      (sizeof(T) > 16),
+      PtxPolicy<128,
+                CUB_MAX(1, 8),
+                1,
+                cub::BLOCK_REDUCE_RAKING,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>,
+      PtxPolicy<128,
+                CUB_MAX(1, 8),
+                1,
+                cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>
+    >::type type;
   };
 
   template <class T>
@@ -135,14 +144,23 @@ namespace __reduce {
       SCALE_FACTOR_1B = sizeof(T),
     };
 
-    // MUSA MP_22: Conservative settings for 128-warp
-    typedef PtxPolicy<256,
-                      CUB_MAX(1, 16),
-                      2,
-                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-                      cub::LOAD_DEFAULT,
-                      cub::GRID_MAPPING_RAKE>
-        type;
+    // MUSA MP_22: For large types (>16 bytes), use BLOCK_REDUCE_RAKING to avoid
+    // shared memory layout issues with partial tiles (128-warp architecture).
+    typedef typename thrust::detail::conditional<
+      (sizeof(T) > 16),
+      PtxPolicy<128,
+                CUB_MAX(1, 24),
+                4,
+                cub::BLOCK_REDUCE_RAKING,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>,
+      PtxPolicy<256,
+                CUB_MAX(1, 16),
+                2,
+                cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>
+    >::type type;
   };
 
   template <class T>
@@ -156,14 +174,24 @@ namespace __reduce {
       SCALE_FACTOR_1B = sizeof(T),
     };
 
-    // MUSA MP_31: Optimized for 32-warp
-    typedef PtxPolicy<256,
-                      CUB_MAX(1, 20),
-                      4,
-                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-                      cub::LOAD_LDG,
-                      cub::GRID_MAPPING_DYNAMIC>
-        type;
+    // MUSA MP_31: For large types (>16 bytes), use BLOCK_REDUCE_RAKING to avoid
+    // shared memory layout issues with partial tiles. This matches the fix from
+    // commit 14f011845 for CUDA sm30/sm35 architectures.
+    typedef typename thrust::detail::conditional<
+      (sizeof(T) > 16),
+      PtxPolicy<128,
+                CUB_MAX(1, 24),
+                4,
+                cub::BLOCK_REDUCE_RAKING,
+                cub::LOAD_LDG,
+                cub::GRID_MAPPING_DYNAMIC>,
+      PtxPolicy<256,
+                CUB_MAX(1, 20),
+                4,
+                cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                cub::LOAD_LDG,
+                cub::GRID_MAPPING_DYNAMIC>
+    >::type type;
   };
 
   // template <class T>
@@ -431,7 +459,7 @@ namespace __reduce {
         // Partial tile
         int thread_offset = threadIdx.x;
 
-        // Read first item
+        // Read first item (only for threads with valid items)
         if ((IS_FIRST_TILE) && (thread_offset < valid_items))
         {
           thread_aggregate = load_it[block_offset + thread_offset];
