@@ -186,7 +186,6 @@ namespace __extrema {
 
     musaError_t status = musaSuccess;
 
-
     if (num_items <= reduce_plan.items_per_tile)
     {
       size_t vshmem_size = core::vshmem_size(reduce_plan.shared_memory_size, 1);

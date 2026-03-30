@@ -92,7 +92,12 @@ public:
     __host__ __device__
     custom_numeric(const custom_numeric & other)
     {
-        fill(other.value[0]);
+        // Fix: Copy all 5 elements instead of only value[0]
+        // to ensure complete object initialization for large types (sizeof > 16)
+        for (int i = 0; i < 5; ++i)
+        {
+            value[i] = other.value[i];
+        }
     }
 
     __host__ __device__
@@ -105,7 +110,12 @@ public:
     __host__ __device__
     custom_numeric & operator=(const custom_numeric & other)
     {
-        fill(other.value[0]);
+        // Fix: Copy all 5 elements instead of only value[0]
+        // to ensure complete object assignment for large types (sizeof > 16)
+        for (int i = 0; i < 5; ++i)
+        {
+            value[i] = other.value[i];
+        }
         return *this;
     }
 
