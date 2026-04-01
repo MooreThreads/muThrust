@@ -57,6 +57,8 @@ MUSA 架构决定了编译目标硬件：
 | `THRUST_NO_CLEAN` | 设置为 1 不删除 build 目录 |
 | `THRUST_EXCLUDE_TESTS` | 排除匹配正则表达式的测试 |
 | `THRUST_BUILD_ONLY` | 设置为 1 仅编译不测试 |
+| `Thrust_DIR` | 指定 `thrust-config.cmake` 所在目录，用于测试 toolkit 安装版 Thrust |
+| `CUB_DIR` | 指定 `cub-config.cmake` 所在目录，用于测试 toolkit 安装版 CUB |
 
 ### 示例
 
@@ -86,6 +88,23 @@ export THRUST_TEST_JOBS=4
 
 # 取消默认排除（运行所有测试）
 ./build_thrust.sh -E ""
+```
+
+## Test Thrust Toolkit
+
+默认情况下，`build_thrust.sh` 测试的是当前仓库中的 Thrust 源码。
+如果目标是验证交付给用户的 toolkit 版本，需要显式指定 toolkit 中安装的
+`Thrust` 和 `CUB` CMake 配置目录。
+
+### 仅编译验证 toolkit 版本
+
+```bash
+export PATH=/usr/local/musa/bin:$PATH
+cd muThrust
+
+Thrust_DIR=/usr/local/musa/lib64/cmake/thrust \
+CUB_DIR=/usr/local/musa/lib64/cmake/cub \
+./build_thrust.sh build
 ```
 
 ### 输出文件
@@ -348,4 +367,3 @@ Thrust is distributed under the [Apache License v2.0 with LLVM Exceptions];
 [Apache License v2.0 with LLVM Exceptions]: https://llvm.org/LICENSE.txt
 [Apache License v2.0]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [Boost License v1.0]: https://www.boost.org/LICENSE_1_0.txt
-

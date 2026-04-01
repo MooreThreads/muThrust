@@ -32,7 +32,14 @@ LOG_FILE=""
 REPORT_FILE=""
 
 # CUB 相关 - Thrust CUDA/MUSA 后端依赖 CUB
-CUB_DIR="${THRUST_DIR}/dependencies/cub/cub"
+CUB_CMAKE_ARG=""
+if [ -n "${CUB_DIR:-}" ]; then
+    CUB_CMAKE_ARG="-DCUB_DIR=${CUB_DIR}"
+fi
+THRUST_CMAKE_ARG=""
+if [ -n "${Thrust_DIR:-}" ]; then
+    THRUST_CMAKE_ARG="-DThrust_DIR=${Thrust_DIR}"
+fi
 
 show_help() {
     cat << EOF
@@ -173,6 +180,8 @@ ARCH_NUM="${MUSA_ARCH#mp_}"
 
 cmake -G Ninja \
     -DCMAKE_CXX_COMPILER=mcc \
+    ${THRUST_CMAKE_ARG} \
+    ${CUB_CMAKE_ARG} \
     -DMUSA_64_BIT_DEVICE_CODE=ON \
     -DMUSA_ARCH=${MUSA_ARCH} \
     -DTHRUST_DISABLE_ARCH_BY_DEFAULT=ON \
