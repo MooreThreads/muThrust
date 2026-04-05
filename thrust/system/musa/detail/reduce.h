@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,6 +26,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/system/musa/config.h>
@@ -54,8 +49,7 @@
 
 #include <cub/util_math.cuh>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
 // forward declare generic reduce
 // to circumvent circular dependency
@@ -70,7 +64,7 @@ reduce(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        T                                                           init,
        BinaryFunction                                              binary_op);
 
-namespace cuda_cub {
+namespace musa_cub {
 
 namespace __reduce {
 
@@ -103,6 +97,79 @@ namespace __reduce {
   template<class,class>
   struct Tuning;
 
+  template <class T>
+  struct Tuning<sm30, T>
+  {
+    enum
+    {
+      // Relative size of T type to a 4-byte word
+      SCALE_FACTOR_4B = (sizeof(T) + 3) / 4,
+      // Relative size of T type to a 1-byte word
+      SCALE_FACTOR_1B = sizeof(T),
+    };
+
+    // MUSA: Use BLOCK_REDUCE_RAKING for large types (>16 bytes) to avoid
+    // shared memory layout issues in BlockRakingLayout with partial tiles.
+    // BLOCK_REDUCE_WARP_REDUCTIONS has issues with uninitialized thread data
+    // when num_items < BLOCK_THREADS for types with padding (e.g., 24-byte tuples).
+    typedef typename thrust::detail::conditional<
+      (sizeof(T) > 16),
+      PtxPolicy<128,
+                CUB_MAX(1, 24 / SCALE_FACTOR_4B),
+                4,
+                cub::BLOCK_REDUCE_RAKING,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>,
+      PtxPolicy<256,
+                CUB_MAX(1, 20 / SCALE_FACTOR_4B),
+                2,
+                cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                cub::LOAD_DEFAULT,
+                cub::GRID_MAPPING_RAKE>
+    >::type type;
+  }; // Tuning sm30
+
+  template <class T>
+  struct Tuning<sm35, T> : Tuning<sm30,T>
+  {
+    // ReducePolicy1B (GTX Titan: 228.7 GB/s @ 192M 1B items)
+    typedef PtxPolicy<128,
+                      CUB_MAX(1, 24 / Tuning::SCALE_FACTOR_1B),
+                      4,
+                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                      cub::LOAD_LDG,
+                      cub::GRID_MAPPING_DYNAMIC>
+        ReducePolicy1B;
+
+    // ReducePolicy4B types (GTX Titan: 255.1 GB/s @ 48M 4B items)
+    typedef PtxPolicy<256,
+                      CUB_MAX(1, 20 / Tuning::SCALE_FACTOR_4B),
+                      4,
+                      cub::BLOCK_REDUCE_WARP_REDUCTIONS,
+                      cub::LOAD_LDG,
+                      cub::GRID_MAPPING_DYNAMIC>
+        ReducePolicy4B;
+
+    // MUSA: For large types (>16 bytes), use BLOCK_REDUCE_RAKING from sm30
+    // to avoid shared memory layout issues with partial tiles.
+    typedef PtxPolicy<128,
+                      CUB_MAX(1, 24 / Tuning::SCALE_FACTOR_4B),
+                      4,
+                      cub::BLOCK_REDUCE_RAKING,
+                      cub::LOAD_LDG,
+                      cub::GRID_MAPPING_DYNAMIC>
+        ReducePolicyLarge;
+
+    typedef typename thrust::detail::conditional<
+      (sizeof(T) > 16),
+      ReducePolicyLarge,
+      typename thrust::detail::conditional<(sizeof(T) < 4),
+                                           ReducePolicy1B,
+                                           ReducePolicy4B>::type>::type type;
+  };    // Tuning sm35
+
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architectures: mp21, mp22, mp31
   template <class T>
   struct Tuning<mp21, T>
   {
@@ -193,52 +260,7 @@ namespace __reduce {
                 cub::GRID_MAPPING_DYNAMIC>
     >::type type;
   };
-
-  // template <class T>
-  // struct Tuning<sm30, T>
-  // {
-  //   enum
-  //   {
-  //     // Relative size of T type to a 4-byte word
-  //     SCALE_FACTOR_4B = (sizeof(T) + 3) / 4,
-  //     // Relative size of T type to a 1-byte word
-  //     SCALE_FACTOR_1B = sizeof(T),
-  //   };
-
-  //   typedef PtxPolicy<256,
-  //                     CUB_MAX(1, 20 / SCALE_FACTOR_4B),
-  //                     2,
-  //                     cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-  //                     cub::LOAD_DEFAULT,
-  //                     cub::GRID_MAPPING_RAKE>
-  //       type;
-  // }; // Tuning sm30
-
-  // template <class T>
-  // struct Tuning<sm35, T> : Tuning<sm30,T>
-  // {
-  //   // ReducePolicy1B (GTX Titan: 228.7 GB/s @ 192M 1B items)
-  //   typedef PtxPolicy<128,
-  //                     CUB_MAX(1, 24 / Tuning::SCALE_FACTOR_1B),
-  //                     4,
-  //                     cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-  //                     cub::LOAD_LDG,
-  //                     cub::GRID_MAPPING_DYNAMIC>
-  //       ReducePolicy1B;
-
-  //   // ReducePolicy4B types (GTX Titan: 255.1 GB/s @ 48M 4B items)
-  //   typedef PtxPolicy<256,
-  //                     CUB_MAX(1, 20 / Tuning::SCALE_FACTOR_4B),
-  //                     4,
-  //                     cub::BLOCK_REDUCE_WARP_REDUCTIONS,
-  //                     cub::LOAD_LDG,
-  //                     cub::GRID_MAPPING_DYNAMIC>
-  //       ReducePolicy4B;
-
-  //   typedef typename thrust::detail::conditional<(sizeof(T) < 4),
-  //                                                ReducePolicy1B,
-  //                                                ReducePolicy4B>::type type;
-  // };    // Tuning sm35
+#endif // __MUSACC_VER_MAJOR__
 
   template <class InputIt,
             class OutputIt,
@@ -802,7 +824,7 @@ namespace __reduce {
     using core::AgentPlan;
     using core::AgentLauncher;
     using core::get_agent_plan;
-    using core::cuda_optional;
+    using core::musa_optional;
 
     typedef typename detail::make_unsigned_special<Size>::type UnsignedSize;
 
@@ -837,11 +859,11 @@ namespace __reduce {
     else
     {
       // regular size
-      cuda_optional<int> sm_count = core::get_sm_count();
+      musa_optional<int> sm_count = core::get_sm_count();
       CUDA_CUB_RET_IF_FAIL(sm_count.status());
 
       // reduction will not use more cta counts than requested
-      cuda_optional<int> max_blocks_per_sm =
+      musa_optional<int> max_blocks_per_sm =
           reduce_agent::
               template get_max_blocks_per_sm<InputIt,
                                              OutputIt,
@@ -905,7 +927,7 @@ namespace __reduce {
 
         // if not enough to fill the device with threadblocks
         // then fill the device with threadblocks
-        reduce_grid_size = static_cast<int>(min(num_tiles, static_cast<size_t>(reduce_device_occupancy)));
+        reduce_grid_size = static_cast<int>((min)(num_tiles, static_cast<size_t>(reduce_device_occupancy)));
 
         typedef AgentLauncher<DrainAgent<Size> > drain_agent;
         AgentPlan drain_plan = drain_agent::get_plan();
@@ -961,7 +983,7 @@ namespace __reduce {
       return init;
 
     size_t       temp_storage_bytes = 0;
-    musaStream_t stream             = cuda_cub::stream(policy);
+    musaStream_t stream             = musa_cub::stream(policy);
     bool         debug_sync         = THRUST_DEBUG_SYNC_FLAG;
 
     musaError_t status;
@@ -974,7 +996,7 @@ namespace __reduce {
                        reinterpret_cast<T*>(NULL),
                        stream,
                        debug_sync);
-    cuda_cub::throw_on_error(status, "reduce failed on 1st step");
+    musa_cub::throw_on_error(status, "reduce failed on 1st step");
 
     size_t allocation_sizes[2] = {sizeof(T*), temp_storage_bytes};
     void * allocations[2]      = {NULL, NULL};
@@ -984,7 +1006,7 @@ namespace __reduce {
                                  storage_size,
                                  allocations,
                                  allocation_sizes);
-    cuda_cub::throw_on_error(status, "reduce failed on 1st alias_storage");
+    musa_cub::throw_on_error(status, "reduce failed on 1st alias_storage");
 
     // Allocate temporary storage.
     thrust::detail::temporary_array<thrust::detail::uint8_t, Derived>
@@ -995,7 +1017,7 @@ namespace __reduce {
                                  storage_size,
                                  allocations,
                                  allocation_sizes);
-    cuda_cub::throw_on_error(status, "reduce failed on 2nd alias_storage");
+    musa_cub::throw_on_error(status, "reduce failed on 2nd alias_storage");
 
     T* d_result = thrust::detail::aligned_reinterpret_cast<T*>(allocations[0]);
 
@@ -1008,12 +1030,12 @@ namespace __reduce {
                        d_result,
                        stream,
                        debug_sync);
-    cuda_cub::throw_on_error(status, "reduce failed on 2nd step");
+    musa_cub::throw_on_error(status, "reduce failed on 2nd step");
 
-    status = cuda_cub::synchronize(policy);
-    cuda_cub::throw_on_error(status, "reduce failed to synchronize");
+    status = musa_cub::synchronize(policy);
+    musa_cub::throw_on_error(status, "reduce failed to synchronize");
 
-    T result = cuda_cub::get_value(policy, d_result);
+    T result = musa_cub::get_value(policy, d_result);
 
     return result;
   }
@@ -1033,7 +1055,7 @@ T reduce_n_impl(execution_policy<Derived>& policy,
                 T                          init,
                 BinaryOp                   binary_op)
 {
-  musaStream_t stream = cuda_cub::stream(policy);
+  musaStream_t stream = musa_cub::stream(policy);
   musaError_t status;
 
   // Determine temporary device storage requirements.
@@ -1049,7 +1071,7 @@ T reduce_n_impl(execution_policy<Derived>& policy,
     (NULL, tmp_size, first, reinterpret_cast<T*>(NULL),
         num_items_fixed, binary_op, init, stream,
         THRUST_DEBUG_SYNC_FLAG));
-  cuda_cub::throw_on_error(status, "after reduction step 1");
+  musa_cub::throw_on_error(status, "after reduction step 1");
 
   // Allocate temporary storage.
 
@@ -1064,7 +1086,7 @@ T reduce_n_impl(execution_policy<Derived>& policy,
   // `static_cast` to `void*`.
   //
   // The array was dynamically allocated, so we assume that it's suitably
-  // aligned for any type of data. `malloc`/`musaMalloc`/`new`/`std::allocator`
+  // aligned for any type of data. `malloc`/`cudaMalloc`/`new`/`std::allocator`
   // make this guarantee.
   T* ret_ptr = thrust::detail::aligned_reinterpret_cast<T*>(tmp.data().get());
   void* tmp_ptr = static_cast<void*>((tmp.data() + sizeof(T)).get());
@@ -1077,12 +1099,12 @@ T reduce_n_impl(execution_policy<Derived>& policy,
     (tmp_ptr, tmp_size, first, ret_ptr,
         num_items_fixed, binary_op, init, stream,
         THRUST_DEBUG_SYNC_FLAG));
-  cuda_cub::throw_on_error(status, "after reduction step 2");
+  musa_cub::throw_on_error(status, "after reduction step 2");
 
   // Synchronize the stream and get the value.
 
-  cuda_cub::throw_on_error(cuda_cub::synchronize(policy),
-    "reduce failed to synchronize");
+  status = musa_cub::synchronize(policy);
+  musa_cub::throw_on_error(status, "reduce failed to synchronize");
 
   // `tmp.begin()` yields a `normal_iterator`, which dereferences to a
   // `reference`, which has an `operator&` that returns a `pointer`, which
@@ -1090,9 +1112,9 @@ T reduce_n_impl(execution_policy<Derived>& policy,
   // `static_cast` to `void*`.
   //
   // The array was dynamically allocated, so we assume that it's suitably
-  // aligned for any type of data. `malloc`/`musaMalloc`/`new`/`std::allocator`
+  // aligned for any type of data. `malloc`/`cudaMalloc`/`new`/`std::allocator`
   // make this guarantee.
-  return thrust::cuda_cub::get_value(policy,
+  return thrust::musa_cub::get_value(policy,
     thrust::detail::aligned_reinterpret_cast<T*>(tmp.data().get()));
 }
 
@@ -1116,7 +1138,7 @@ T reduce_n(execution_policy<Derived>& policy,
            BinaryOp                   binary_op)
 {
   if (__THRUST_HAS_CUDART__)
-    return thrust::cuda_cub::detail::reduce_n_impl(
+    return thrust::musa_cub::detail::reduce_n_impl(
       policy, first, num_items, init, binary_op);
 
   #if !__THRUST_HAS_CUDART__
@@ -1136,7 +1158,7 @@ T reduce(execution_policy<Derived> &policy,
   typedef typename iterator_traits<InputIt>::difference_type size_type;
   // FIXME: Check for RA iterator.
   size_type num_items = static_cast<size_type>(thrust::distance(first, last));
-  return cuda_cub::reduce_n(policy, first, num_items, init, binary_op);
+  return musa_cub::reduce_n(policy, first, num_items, init, binary_op);
 }
 
 template <class Derived,
@@ -1148,7 +1170,7 @@ T reduce(execution_policy<Derived> &policy,
          InputIt                    last,
          T                          init)
 {
-  return cuda_cub::reduce(policy, first, last, init, plus<T>());
+  return musa_cub::reduce(policy, first, last, init, plus<T>());
 }
 
 template <class Derived,
@@ -1160,13 +1182,13 @@ reduce(execution_policy<Derived> &policy,
        InputIt                    last)
 {
   typedef typename iterator_traits<InputIt>::value_type value_type;
-  return cuda_cub::reduce(policy, first, last, value_type(0));
+  return musa_cub::reduce(policy, first, last, value_type(0));
 }
 
 
-} // namespace cuda_cub
+} // namespace musa_cub
 
-} // end namespace thrust
+THRUST_NAMESPACE_END
 
 #include <thrust/memory.h>
 #include <thrust/reduce.h>

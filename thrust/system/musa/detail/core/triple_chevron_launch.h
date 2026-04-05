@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -38,10 +32,9 @@
 #include <cassert>
 
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
-namespace cuda_cub {
+namespace musa_cub {
 namespace launcher {
 
   struct triple_chevron
@@ -841,11 +834,11 @@ namespace launcher {
     }
 
 
-#if defined(__NVCOMPILER_CUDA__)
+#if defined(_NVHPC_CUDA)
 #  define THRUST_TRIPLE_LAUNCHER_HOSTDEVICE(...) \
       (__builtin_is_device_code() ?              \
           doit_device(__VA_ARGS__) : doit_host(__VA_ARGS__))
-#elif defined(__MUSA_ARCH__)
+#elif defined(__CUDA_ARCH__) || defined(__MUSA_ARCH__)
 #  define THRUST_TRIPLE_LAUNCHER_HOSTDEVICE doit_device
 #else
 #  define THRUST_TRIPLE_LAUNCHER_HOSTDEVICE doit_host
@@ -977,6 +970,6 @@ namespace launcher {
   }; // struct triple_chevron
 
 }    // namespace launcher
-}    // namespace cuda_
+}    // namespace musa_cub
 
-} // end namespace thrust
+THRUST_NAMESPACE_END

@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /*
  *  Copyright 2008-2020 NVIDIA Corporation
  *
@@ -32,79 +26,80 @@
 #include <thrust/detail/pointer.h>
 #include <thrust/detail/reference.h>
 
-namespace thrust { namespace cuda_cub
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub
 {
 
-/*! \p musa::pointer stores a pointer to an object allocated in memory
- *  accessible by the \p musa system. This type provides type safety when
- *  dispatching algorithms on ranges resident in \p musa memory.
+/*! \p cuda::pointer stores a pointer to an object allocated in memory
+ *  accessible by the \p cuda system. This type provides type safety when
+ *  dispatching algorithms on ranges resident in \p cuda memory.
  *
- *  \p musa::pointer has pointer semantics: it may be dereferenced and
+ *  \p cuda::pointer has pointer semantics: it may be dereferenced and
  *  manipulated with pointer arithmetic.
  *
- *  \p musa::pointer can be created with the function \p musa::malloc, or by
+ *  \p cuda::pointer can be created with the function \p cuda::malloc, or by
  *  explicitly calling its constructor with a raw pointer.
  *
- *  The raw pointer encapsulated by a \p musa::pointer may be obtained by eiter
+ *  The raw pointer encapsulated by a \p cuda::pointer may be obtained by eiter
  *  its <tt>get</tt> member function or the \p raw_pointer_cast function.
  *
- *  \note \p musa::pointer is not a "smart" pointer; it is the programmer's
- *        responsibility to deallocate memory pointed to by \p musa::pointer.
+ *  \note \p cuda::pointer is not a "smart" pointer; it is the programmer's
+ *        responsibility to deallocate memory pointed to by \p cuda::pointer.
  *
  *  \tparam T specifies the type of the pointee.
  *
- *  \see musa::malloc
- *  \see musa::free
+ *  \see cuda::malloc
+ *  \see cuda::free
  *  \see raw_pointer_cast
  */
 template <typename T>
 using pointer = thrust::pointer<
   T,
-  thrust::cuda_cub::tag,
-  thrust::tagged_reference<T, thrust::cuda_cub::tag>
+  thrust::musa_cub::tag,
+  thrust::tagged_reference<T, thrust::musa_cub::tag>
 >;
 
-/*! \p musa::universal_pointer stores a pointer to an object allocated in
- *  memory accessible by the \p musa system and host systems.
+/*! \p cuda::universal_pointer stores a pointer to an object allocated in
+ *  memory accessible by the \p cuda system and host systems.
  *
- *  \p musa::universal_pointer has pointer semantics: it may be dereferenced
+ *  \p cuda::universal_pointer has pointer semantics: it may be dereferenced
  *  and manipulated with pointer arithmetic.
  *
- *  \p musa::universal_pointer can be created with \p musa::universal_allocator
+ *  \p cuda::universal_pointer can be created with \p cuda::universal_allocator
  *  or by explicitly calling its constructor with a raw pointer.
  *
- *  The raw pointer encapsulated by a \p musa::universal_pointer may be
+ *  The raw pointer encapsulated by a \p cuda::universal_pointer may be
  *  obtained by eiter its <tt>get</tt> member function or the \p
  *  raw_pointer_cast function.
  *
- *  \note \p musa::universal_pointer is not a "smart" pointer; it is the
+ *  \note \p cuda::universal_pointer is not a "smart" pointer; it is the
  *        programmer's responsibility to deallocate memory pointed to by
- *        \p musa::universal_pointer.
+ *        \p cuda::universal_pointer.
  *
  *  \tparam T specifies the type of the pointee.
  *
- *  \see musa::universal_allocator
+ *  \see cuda::universal_allocator
  *  \see raw_pointer_cast
  */
 template <typename T>
 using universal_pointer = thrust::pointer<
   T,
-  thrust::cuda_cub::tag,
+  thrust::musa_cub::tag,
   typename std::add_lvalue_reference<T>::type
 >;
 
-/*! \p musa::reference is a wrapped reference to an object stored in memory
- *  accessible by the \p musa system. \p musa::reference is the type of the
- *  result of dereferencing a \p musa::pointer.
+/*! \p cuda::reference is a wrapped reference to an object stored in memory
+ *  accessible by the \p cuda system. \p cuda::reference is the type of the
+ *  result of dereferencing a \p cuda::pointer.
  *
  *  \tparam T Specifies the type of the referenced object.
  *
- *  \see musa::pointer
+ *  \see cuda::pointer
  */
 template <typename T>
-using reference = thrust::tagged_reference<T, thrust::cuda_cub::tag>;
+using reference = thrust::tagged_reference<T, thrust::musa_cub::tag>;
 
-} // namespace cuda_cub
+} // namespace musa_cub
 
 /*! \addtogroup system_backends Systems
  *  \ingroup system
@@ -114,16 +109,16 @@ using reference = thrust::tagged_reference<T, thrust::cuda_cub::tag>;
 /*! \namespace thrust::system::musa
  *  \brief \p thrust::system::musa is the namespace containing functionality
  *  for allocating, manipulating, and deallocating memory available to Thrust's
- *  CUDA backend system. The identifiers are provided in a separate namespace
- *  underneath <tt>thrust::system</tt> for import convenience but are also
+ *  MUSA backend system. The identifiers are provided in a separate namespace
+ *  underneath \p thrust::system for import convenience but are also
  *  aliased in the top-level <tt>thrust::musa</tt> namespace for easy access.
  *
  */
 namespace system { namespace musa
 {
-using thrust::cuda_cub::pointer;
-using thrust::cuda_cub::universal_pointer;
-using thrust::cuda_cub::reference;
+using thrust::musa_cub::pointer;
+using thrust::musa_cub::universal_pointer;
+using thrust::musa_cub::reference;
 }} // namespace system::musa
 /*! \}
  */
@@ -133,10 +128,10 @@ using thrust::cuda_cub::reference;
  */
 namespace musa
 {
-using thrust::cuda_cub::pointer;
-using thrust::cuda_cub::universal_pointer;
-using thrust::cuda_cub::reference;
+using thrust::musa_cub::pointer;
+using thrust::musa_cub::universal_pointer;
+using thrust::musa_cub::reference;
 } // namespace musa
 
-} // namespace thrust
+THRUST_NAMESPACE_END
 

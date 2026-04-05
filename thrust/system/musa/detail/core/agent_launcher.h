@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,8 +26,11 @@
  ******************************************************************************/
 #pragma once
 
-#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/detail/config.h>
+
+#include <cub/detail/device_synchronize.cuh>
+
+#if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/system/musa/detail/guarded_cuda_runtime_api.h>
 #include <thrust/system/musa/detail/core/triple_chevron_launch.h>
 #include <thrust/system/musa/detail/core/util.h>
@@ -48,13 +45,12 @@ template<int...> class ID_impl;
 template<int... I> class Foo { ID_impl<I...> t;};
 #endif
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 namespace core {
 
 
-#if defined(__MUSA_ARCH__) || defined(__NVCOMPILER_CUDA__)
+#if defined(__CUDA_ARCH__) || defined(__MUSA_ARCH__) || defined(__MUSACC__) || defined(_NVHPC_CUDA)
 #if 0
   template <class Agent, class... Args>
   void __global__
@@ -492,10 +488,10 @@ namespace core {
       // http://nvbugs/1772071
       // XXX may be it is too string of a requirements, consider relaxing it in
       // the future
-#ifdef __MUSACC_RDC__
+#ifdef __CUDACC_RDC__
       return core::get_agent_plan<Agent>(s, d_ptr);
 #else
-      core::cuda_optional<int> ptx_version = core::get_ptx_version();
+      core::musa_optional<int> ptx_version = core::get_ptx_version();
       //CUDA_CUB_RET_IF_FAIL(ptx_version.status());
       return get_agent_plan<Agent>(ptx_version);
 #endif
@@ -511,7 +507,7 @@ namespace core {
     typename core::get_plan<Agent>::type static get_plan(musaStream_t , void* d_ptr = 0)
     {
       THRUST_UNUSED_VAR(d_ptr);
-      core::cuda_optional<int> ptx_version = core::get_ptx_version();
+      core::musa_optional<int> ptx_version = core::get_ptx_version();
       return get_agent_plan<Agent>(ptx_version);
     }
 
@@ -527,7 +523,7 @@ namespace core {
       {
         if (THRUST_IS_DEVICE_CODE) {
           #if THRUST_INCLUDE_DEVICE_CODE
-            musaDeviceSynchronize();
+            cub::detail::device_synchronize();
           #endif
         } else {
           #if THRUST_INCLUDE_HOST_CODE
@@ -538,16 +534,16 @@ namespace core {
     }
 
     template<class K>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     max_blocks_per_sm_impl(K k, int block_threads)
     {
       int occ;
       musaError_t status = cub::MaxSmOccupancy(occ, k, block_threads);
-      return cuda_optional<int>(status == musaSuccess ? occ : -1, status);
+      return musa_optional<int>(status == musaSuccess ? occ : -1, status);
     }
 
     template <class K>
-    cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    musa_optional<int> THRUST_RUNTIME_FUNCTION
     max_sm_occupancy(K k) const
     {
       return max_blocks_per_sm_impl(k, plan.block_threads);
@@ -561,8 +557,8 @@ namespace core {
     {
       if (debug_sync)
       {
-        cuda_optional<int> occ = max_sm_occupancy(k);
-        core::cuda_optional<int> ptx_version = core::get_ptx_version();
+        musa_optional<int> occ = max_sm_occupancy(k);
+        core::musa_optional<int> ptx_version = core::get_ptx_version();
         if (count > 0)
         {
           _CubLog("Invoking %s<<<%u, %d, %d, %lld>>>(), %llu items total, %d items per thread, %d SM occupancy, %d vshmem size, %d ptx_version \n",
@@ -599,112 +595,112 @@ namespace core {
 
 #if 0
     template<class... Args>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       return max_blocks_per_sm_impl(_kernel_agent<Agent, Args...>, plan.block_threads);
     }
 #else
     template<class _0>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0) = _kernel_agent<Agent, _0>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0, _1) = _kernel_agent<Agent, _0, _1>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2) = _kernel_agent<Agent, _0, _1, _2>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3) = _kernel_agent<Agent, _0, _1, _2,_3>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4) = _kernel_agent<Agent, _0, _1, _2,_3,_4>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD>;
       return max_blocks_per_sm_impl(ptr, plan.block_threads);
     }
     template<class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD, class _xE>
-    static cuda_optional<int> THRUST_RUNTIME_FUNCTION
+    static musa_optional<int> THRUST_RUNTIME_FUNCTION
     get_max_blocks_per_sm(AgentPlan plan)
     {
       void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD,_xE) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD,_xE>;
@@ -752,7 +748,7 @@ namespace core {
     launch(Args... args) const
     {
 #if __THRUST__TEMPLATE_DEBUG
-#ifdef __MUSA_ARCH__
+#ifdef __CUDA_ARCH__
       typedef typename Foo<
         shm1::v1,
         shm1::v2,
@@ -765,143 +761,141 @@ namespace core {
       sync();
     }
 #else
-    // MUSA FIX: Use direct kernel launch instead of function pointers
-    // Function pointers to __global__ functions don't work properly on MUSA
-    // for large parameter types.
     template <class _0>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0>);
+      // MUSA: Use function pointer for occupancy calculation only
+      void (*ptr)(char*, _0) = _kernel_agent_vshmem<Agent, _0>;
+      print_info(ptr);
+      // MUSA: Direct kernel launch instead of function pointer launch
       _kernel_agent_vshmem<Agent, _0><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0);
-      musaPeekAtLastError();
     }
     template <class _0, class _1>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1>);
+      void (*ptr)(char*, _0, _1) = _kernel_agent_vshmem<Agent, _0, _1>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2>);
+      void (*ptr)(char*, _0, _1, _2) = _kernel_agent_vshmem<Agent, _0, _1, _2>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3>);
+      void (*ptr)(char*, _0, _1, _2, _3) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8>;
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB,_xC xC) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB,_xC xC,_xD xD) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD, class _xE>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::false_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9,_xA xA,_xB xB,_xC xC,_xD xD,_xE xE) const
     {
       assert((has_shmem && vshmem == NULL) || (!has_shmem && vshmem != NULL && shmem_size == 0));
-      print_info(_kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE>);
+      void (*ptr)(char*, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE) = _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE>;
+      print_info(ptr);
       _kernel_agent_vshmem<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE><<<grid, plan.block_threads, shmem_size, stream>>>(vshmem, x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE);
-      musaPeekAtLastError();
     }
 
     ////////////////////////////////////////////////////////
@@ -913,135 +907,135 @@ namespace core {
     launch_impl(thrust::detail::true_type, _0 x0) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0>);
+      void (*ptr)(_0) = _kernel_agent<Agent, _0>;
+      print_info(ptr);
       _kernel_agent<Agent, _0><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0);
-      musaPeekAtLastError();
     }
     template <class _0, class _1>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1>);
+      void (*ptr)(_0, _1) = _kernel_agent<Agent, _0, _1>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2>);
+      void (*ptr)(_0,_1,_2) = _kernel_agent<Agent, _0, _1, _2>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3>);
+      void (*ptr)(_0,_1,_2,_3) = _kernel_agent<Agent, _0, _1, _2,_3>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4>);
+      void (*ptr)(_0,_1,_2,_3,_4) = _kernel_agent<Agent, _0, _1, _2,_3,_4>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC, _xD xD) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD);
-      musaPeekAtLastError();
     }
     template <class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9, class _xA, class _xB, class _xC, class _xD, class _xE>
     void THRUST_RUNTIME_FUNCTION
     launch_impl(thrust::detail::true_type, _0 x0, _1 x1, _2 x2, _3 x3, _4 x4, _5 x5, _6 x6, _7 x7, _8 x8, _9 x9, _xA xA, _xB xB, _xC xC, _xD xD, _xE xE) const
     {
       assert(has_shmem && vshmem == NULL);
-      print_info(_kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE>);
+      void (*ptr)(_0,_1,_2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD,_xE) = _kernel_agent<Agent, _0, _1, _2,_3,_4,_5,_6,_7,_8,_9,_xA,_xB,_xC,_xD,_xE>;
+      print_info(ptr);
       _kernel_agent<Agent, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _xA, _xB, _xC, _xD, _xE><<<grid, plan.block_threads, plan.shared_memory_size, stream>>>(x0, x1, x2, x3, x4, x5, x6, x7, x8, x9, xA, xB, xC, xD, xE);
-      musaPeekAtLastError();
     }
 
     ////////////////////////////////////////////////////////
@@ -1160,5 +1154,5 @@ namespace core {
 
 }    // namespace core
 }
-} // end namespace thrust
+THRUST_NAMESPACE_END
 #endif

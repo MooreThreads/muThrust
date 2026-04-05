@@ -4,11 +4,11 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
 
   set(framework_target ${config_prefix}.test.framework)
 
-  if ("CUDA" STREQUAL "${config_device}")
+  if ("MUSA" STREQUAL "${config_device}")
     # MUSA: 使用 musa_add_library 而不是 add_library
     set(framework_srcs
       testframework.cu
-      cuda/testframework.cu
+      musa/testframework.cu
     )
     musa_add_library(${framework_target} STATIC ${framework_srcs})
   else()

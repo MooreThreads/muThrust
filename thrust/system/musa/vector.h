@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -22,7 +16,7 @@
 
 /*! \file thrust/system/musa/vector.h
  *  \brief A dynamically-sizable array of elements which reside in memory available to
- *         Thrust's CUDA system.
+ *         Thrust's MUSA system.
  */
 
 #pragma once
@@ -32,63 +26,64 @@
 #include <thrust/detail/vector_base.h>
 #include <vector>
 
-namespace thrust { namespace cuda_cub
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub
 {
 
-/*! \p musa::vector is a container that supports random access to elements,
+/*! \p cuda::vector is a container that supports random access to elements,
  *  constant time removal of elements at the end, and linear time insertion
  *  and removal of elements at the beginning or in the middle. The number of
- *  elements in a \p musa::vector may vary dynamically; memory management is
- *  automatic. The elements contained in a \p musa::vector reside in memory
- *  accessible by the \p musa system.
+ *  elements in a \p cuda::vector may vary dynamically; memory management is
+ *  automatic. The elements contained in a \p cuda::vector reside in memory
+ *  accessible by the \p cuda system.
  *
- *  \tparam T The element type of the \p musa::vector.
- *  \tparam Allocator The allocator type of the \p musa::vector.
- *          Defaults to \p musa::allocator.
+ *  \tparam T The element type of the \p cuda::vector.
+ *  \tparam Allocator The allocator type of the \p cuda::vector.
+ *          Defaults to \p cuda::allocator.
  *
  *  \see https://en.cppreference.com/w/cpp/container/vector
  *  \see host_vector For the documentation of the complete interface which is
- *                   shared by \p musa::vector
+ *                   shared by \p cuda::vector
  *  \see device_vector
  *  \see universal_vector
  */
 template <typename T, typename Allocator = thrust::system::musa::allocator<T>>
 using vector = thrust::detail::vector_base<T, Allocator>;
 
-/*! \p musa::universal_vector is a container that supports random access to
+/*! \p cuda::universal_vector is a container that supports random access to
  *  elements, constant time removal of elements at the end, and linear time
  *  insertion and removal of elements at the beginning or in the middle. The
- *  number of elements in a \p musa::universal_vector may vary dynamically;
+ *  number of elements in a \p cuda::universal_vector may vary dynamically;
  *  memory management is automatic. The elements contained in a
- *  \p musa::universal_vector reside in memory accessible by the \p musa system
+ *  \p cuda::universal_vector reside in memory accessible by the \p cuda system
  *  and host systems.
  *
- *  \tparam T The element type of the \p musa::universal_vector.
- *  \tparam Allocator The allocator type of the \p musa::universal_vector.
- *          Defaults to \p musa::universal_allocator.
+ *  \tparam T The element type of the \p cuda::universal_vector.
+ *  \tparam Allocator The allocator type of the \p cuda::universal_vector.
+ *          Defaults to \p cuda::universal_allocator.
  *
  *  \see https://en.cppreference.com/w/cpp/container/vector
  *  \see host_vector For the documentation of the complete interface which is
- *                   shared by \p musa::universal_vector
+ *                   shared by \p cuda::universal_vector
  *  \see device_vector
  *  \see universal_vector
  */
 template <typename T, typename Allocator = thrust::system::musa::universal_allocator<T>>
 using universal_vector = thrust::detail::vector_base<T, Allocator>;
 
-} // namespace cuda_cub
+} // namespace musa_cub
 
 namespace system { namespace musa
 {
-using thrust::cuda_cub::vector;
-using thrust::cuda_cub::universal_vector;
+using thrust::musa_cub::vector;
+using thrust::musa_cub::universal_vector;
 }}
 
 namespace musa
 {
-using thrust::cuda_cub::vector;
-using thrust::cuda_cub::universal_vector;
+using thrust::musa_cub::vector;
+using thrust::musa_cub::universal_vector;
 }
 
-} // namespace thrust
+THRUST_NAMESPACE_END
 

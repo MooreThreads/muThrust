@@ -111,11 +111,11 @@ DEFINE_STATEFUL_ASYNC_TRANSFORM_UNARY_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -131,11 +131,11 @@ DEFINE_STATEFUL_ASYNC_TRANSFORM_UNARY_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.

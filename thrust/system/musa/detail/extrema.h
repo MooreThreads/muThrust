@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /*******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,22 +26,24 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/system/musa/config.h>
 #include <thrust/system/musa/detail/reduce.h>
 
 #include <thrust/detail/cstdint.h>
+#include <thrust/detail/get_iterator_value.h>
 #include <thrust/detail/temporary_array.h>
 #include <thrust/extrema.h>
 #include <thrust/pair.h>
 #include <thrust/distance.h>
+#include <thrust/transform_reduce.h>
 
 #include <cub/util_math.cuh>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 namespace __extrema {
 
@@ -60,7 +56,7 @@ namespace __extrema {
     __host__ __device__
     arg_min_f(Predicate p) : predicate(p) {}
 
-    pair_type __device__
+    pair_type __host__ __device__
     operator()(pair_type const &lhs, pair_type const &rhs)
     {
       InputType const &rhs_value = get<0>(rhs);
@@ -91,7 +87,7 @@ namespace __extrema {
     __host__ __device__
     arg_max_f(Predicate p) : predicate(p) {}
 
-    pair_type __device__
+    pair_type __host__ __device__
     operator()(pair_type const &lhs, pair_type const &rhs)
     {
       InputType const &rhs_value = get<0>(rhs);
@@ -113,6 +109,54 @@ namespace __extrema {
     }
   };    // struct arg_max_f
 
+  template <class ItemsIt, class InputType, class IndexType, class Predicate>
+  struct arg_min_index_f
+  {
+    ItemsIt items;
+    Predicate predicate;
+
+    __host__ __device__
+    arg_min_index_f(ItemsIt items, Predicate p) : items(items), predicate(p) {}
+
+    IndexType __host__ __device__
+    operator()(IndexType lhs, IndexType rhs)
+    {
+      InputType lhs_value = *(items + lhs);
+      InputType rhs_value = *(items + rhs);
+
+      if (predicate(lhs_value, rhs_value))
+        return lhs;
+      else if (predicate(rhs_value, lhs_value))
+        return rhs;
+
+      return lhs < rhs ? lhs : rhs;
+    }
+  };    // struct arg_min_index_f
+
+  template <class ItemsIt, class InputType, class IndexType, class Predicate>
+  struct arg_max_index_f
+  {
+    ItemsIt items;
+    Predicate predicate;
+
+    __host__ __device__
+    arg_max_index_f(ItemsIt items, Predicate p) : items(items), predicate(p) {}
+
+    IndexType __host__ __device__
+    operator()(IndexType lhs, IndexType rhs)
+    {
+      InputType lhs_value = *(items + lhs);
+      InputType rhs_value = *(items + rhs);
+
+      if (predicate(lhs_value, rhs_value))
+        return rhs;
+      else if (predicate(rhs_value, lhs_value))
+        return lhs;
+
+      return lhs < rhs ? lhs : rhs;
+    }
+  };    // struct arg_max_index_f
+
   template<class InputType, class IndexType, class Predicate>
   struct arg_minmax_f
   {
@@ -129,7 +173,7 @@ namespace __extrema {
     {
     }
 
-    two_pairs_type __device__
+    two_pairs_type __host__ __device__
     operator()(two_pairs_type const &lhs, two_pairs_type const &rhs)
     {
       pair_type const &rhs_min = get<0>(rhs);
@@ -145,7 +189,7 @@ namespace __extrema {
 
     struct duplicate_tuple
     {
-      __device__ two_pairs_type
+      __host__ __device__ two_pairs_type
       operator()(pair_type const &t)
       {
         return thrust::make_tuple(t, t);
@@ -171,7 +215,7 @@ namespace __extrema {
     using core::AgentPlan;
     using core::AgentLauncher;
     using core::get_agent_plan;
-    using core::cuda_optional;
+    using core::musa_optional;
 
     typedef typename detail::make_unsigned_special<Size>::type UnsignedSize;
 
@@ -205,11 +249,11 @@ namespace __extrema {
     else
     {
       // regular size
-      cuda_optional<int> sm_count = core::get_sm_count();
+      musa_optional<int> sm_count = core::get_sm_count();
       CUDA_CUB_RET_IF_FAIL(sm_count.status());
 
       // reduction will not use more cta counts than requested
-      cuda_optional<int> max_blocks_per_sm =
+      musa_optional<int> max_blocks_per_sm =
           reduce_agent::
               template get_max_blocks_per_sm<InputIt,
                                              OutputIt,
@@ -227,7 +271,7 @@ namespace __extrema {
       int max_blocks          = reduce_device_occupancy * sm_oversubscription;
 
       cub::GridEvenShare<Size> even_share;
-      even_share.DispatchInit(static_cast<int>(num_items), max_blocks,
+      even_share.DispatchInit(num_items, max_blocks,
                               reduce_plan.items_per_tile);
 
       // we will launch at most "max_blocks" blocks in a grid
@@ -327,7 +371,7 @@ namespace __extrema {
             T*)
   {
     size_t       temp_storage_bytes = 0;
-    musaStream_t stream             = cuda_cub::stream(policy);
+    musaStream_t stream             = musa_cub::stream(policy);
     bool         debug_sync         = THRUST_DEBUG_SYNC_FLAG;
 
     musaError_t status;
@@ -335,7 +379,7 @@ namespace __extrema {
         (NULL, temp_storage_bytes, first, num_items_fixed,
             binary_op, reinterpret_cast<T*>(NULL), stream,
             debug_sync));
-    cuda_cub::throw_on_error(status, "extrema failed on 1st step");
+    musa_cub::throw_on_error(status, "extrema failed on 1st step");
 
     size_t allocation_sizes[2] = {sizeof(T), temp_storage_bytes};
     void * allocations[2]      = {NULL, NULL};
@@ -345,7 +389,7 @@ namespace __extrema {
                                  storage_size,
                                  allocations,
                                  allocation_sizes);
-    cuda_cub::throw_on_error(status, "extrema failed on 1st alias storage");
+    musa_cub::throw_on_error(status, "extrema failed on 1st alias storage");
 
     // Allocate temporary storage.
     thrust::detail::temporary_array<thrust::detail::uint8_t, Derived>
@@ -356,7 +400,7 @@ namespace __extrema {
                                  storage_size,
                                  allocations,
                                  allocation_sizes);
-    cuda_cub::throw_on_error(status, "extrema failed on 2nd alias storage");
+    musa_cub::throw_on_error(status, "extrema failed on 2nd alias storage");
 
     T* d_result = thrust::detail::aligned_reinterpret_cast<T*>(allocations[0]);
 
@@ -364,12 +408,12 @@ namespace __extrema {
         (allocations[1], temp_storage_bytes, first,
             num_items_fixed, binary_op, d_result, stream,
             debug_sync));
-    cuda_cub::throw_on_error(status, "extrema failed on 2nd step");
+    musa_cub::throw_on_error(status, "extrema failed on 2nd step");
 
-    status = cuda_cub::synchronize(policy);
-    cuda_cub::throw_on_error(status, "extrema failed to synchronize");
+    status = musa_cub::synchronize(policy);
+    musa_cub::throw_on_error(status, "extrema failed to synchronize");
 
-    T result = cuda_cub::get_value(policy, d_result);
+    T result = musa_cub::get_value(policy, d_result);
 
     return result;
   }
@@ -392,7 +436,6 @@ namespace __extrema {
 
     IndexType num_items = static_cast<IndexType>(thrust::distance(first, last));
 
-
     typedef tuple<ItemsIt, counting_iterator_t<IndexType> > iterator_tuple;
     typedef zip_iterator<iterator_tuple> zip_iterator;
 
@@ -400,7 +443,7 @@ namespace __extrema {
 
 
     typedef ArgFunctor<InputType, IndexType, BinaryPred> arg_min_t;
-    typedef typename arg_min_t::pair_type T;
+    typedef tuple<InputType, IndexType> T;
 
     zip_iterator begin = make_zip_iterator(iter_tuple);
 
@@ -409,7 +452,6 @@ namespace __extrema {
                        num_items,
                        arg_min_t(binary_pred),
                        (T *)(NULL));
-    (void)result;
     return first + thrust::get<1>(result);
   }
 
@@ -428,24 +470,35 @@ min_element(execution_policy<Derived> &policy,
             ItemsIt                    last,
             BinaryPred                 binary_pred)
 {
-  ItemsIt ret = first;
   if (__THRUST_HAS_CUDART__)
   {
-    ret = __extrema::element<__extrema::arg_min_f>(policy,
-                                                   first,
-                                                   last,
-                                                   binary_pred);
+    if (first == last)
+      return last;
+
+    typedef typename iterator_traits<ItemsIt>::value_type      InputType;
+    typedef typename iterator_traits<ItemsIt>::difference_type IndexType;
+
+    IndexType num_items = static_cast<IndexType>(thrust::distance(first, last));
+    IndexType result = thrust::reduce(
+      policy,
+      counting_iterator_t<IndexType>(0),
+      counting_iterator_t<IndexType>(0) + num_items,
+      IndexType(0),
+      __extrema::arg_min_index_f<ItemsIt, InputType, IndexType, BinaryPred>(
+        first,
+        binary_pred));
+
+    return first + result;
   }
   else
   {
 #if !__THRUST_HAS_CUDART__
-    ret = thrust::min_element(cvt_to_seq(derived_cast(policy)),
-                              first,
-                              last,
-                              binary_pred);
+    return thrust::min_element(cvt_to_seq(derived_cast(policy)),
+                               first,
+                               last,
+                               binary_pred);
 #endif
   }
-  return ret;
 }
 
 template <class Derived,
@@ -456,7 +509,7 @@ min_element(execution_policy<Derived> &policy,
             ItemsIt                    last)
 {
   typedef typename iterator_value<ItemsIt>::type value_type;
-  return cuda_cub::min_element(policy, first, last, less<value_type>());
+  return musa_cub::min_element(policy, first, last, less<value_type>());
 }
 
 /// max element
@@ -471,24 +524,35 @@ max_element(execution_policy<Derived> &policy,
             ItemsIt                    last,
             BinaryPred                 binary_pred)
 {
-  ItemsIt ret = first;
   if (__THRUST_HAS_CUDART__)
   {
-    ret = __extrema::element<__extrema::arg_max_f>(policy,
-                                                   first,
-                                                   last,
-                                                   binary_pred);
+    if (first == last)
+      return last;
+
+    typedef typename iterator_traits<ItemsIt>::value_type      InputType;
+    typedef typename iterator_traits<ItemsIt>::difference_type IndexType;
+
+    IndexType num_items = static_cast<IndexType>(thrust::distance(first, last));
+    IndexType result = thrust::reduce(
+      policy,
+      counting_iterator_t<IndexType>(0),
+      counting_iterator_t<IndexType>(0) + num_items,
+      IndexType(0),
+      __extrema::arg_max_index_f<ItemsIt, InputType, IndexType, BinaryPred>(
+        first,
+        binary_pred));
+
+    return first + result;
   }
   else
   {
 #if !__THRUST_HAS_CUDART__
-    ret = thrust::max_element(cvt_to_seq(derived_cast(policy)),
-                              first,
-                              last,
-                              binary_pred);
+    return thrust::max_element(cvt_to_seq(derived_cast(policy)),
+                               first,
+                               last,
+                               binary_pred);
 #endif
   }
-  return ret;
 }
 
 template <class Derived,
@@ -499,7 +563,7 @@ max_element(execution_policy<Derived> &policy,
             ItemsIt                    last)
 {
   typedef typename iterator_value<ItemsIt>::type value_type;
-  return cuda_cub::max_element(policy, first, last, less<value_type>());
+  return musa_cub::max_element(policy, first, last, less<value_type>());
 }
 
 /// minmax element
@@ -514,52 +578,23 @@ minmax_element(execution_policy<Derived> &policy,
                ItemsIt                    last,
                BinaryPred                 binary_pred)
 {
-  pair<ItemsIt, ItemsIt> ret = thrust::make_pair(first, first);
-
   if (__THRUST_HAS_CUDART__)
   {
     if (first == last)
       return thrust::make_pair(last, last);
 
-    typedef typename iterator_traits<ItemsIt>::value_type      InputType;
-    typedef typename iterator_traits<ItemsIt>::difference_type IndexType;
-
-    IndexType num_items = static_cast<IndexType>(thrust::distance(first, last));
-
-
-    typedef tuple<ItemsIt, counting_iterator_t<IndexType> > iterator_tuple;
-    typedef zip_iterator<iterator_tuple> zip_iterator;
-
-    iterator_tuple iter_tuple = thrust::make_tuple(first, counting_iterator_t<IndexType>(0));
-
-
-    typedef __extrema::arg_minmax_f<InputType, IndexType, BinaryPred> arg_minmax_t;
-    typedef typename arg_minmax_t::two_pairs_type  two_pairs_type;
-    typedef typename arg_minmax_t::duplicate_tuple duplicate_t;
-    typedef transform_input_iterator_t<two_pairs_type,
-                                       zip_iterator,
-                                       duplicate_t>
-        transform_t;
-
-    zip_iterator   begin  = make_zip_iterator(iter_tuple);
-    two_pairs_type result = __extrema::extrema(policy,
-                                               transform_t(begin, duplicate_t()),
-                                               num_items,
-                                               arg_minmax_t(binary_pred),
-                                               (two_pairs_type *)(NULL));
-    ret = thrust::make_pair(first + get<1>(get<0>(result)),
-                    first + get<1>(get<1>(result)));
+    return thrust::make_pair(musa_cub::min_element(policy, first, last, binary_pred),
+                             musa_cub::max_element(policy, first, last, binary_pred));
   }
   else
   {
 #if !__THRUST_HAS_CUDART__
-    ret = thrust::minmax_element(cvt_to_seq(derived_cast(policy)),
-                                 first,
-                                 last,
-                                 binary_pred);
+    return thrust::minmax_element(cvt_to_seq(derived_cast(policy)),
+                                  first,
+                                  last,
+                                  binary_pred);
 #endif
   }
-  return ret;
 }
 
 template <class Derived,
@@ -570,10 +605,10 @@ minmax_element(execution_policy<Derived> &policy,
                ItemsIt                    last)
 {
   typedef typename iterator_value<ItemsIt>::type value_type;
-  return cuda_cub::minmax_element(policy, first, last, less<value_type>());
+  return musa_cub::minmax_element(policy, first, last, less<value_type>());
 }
 
 
-} // namespace cuda_cub
-} // end namespace thrust
+} // namespace musa_cub
+THRUST_NAMESPACE_END
 #endif

@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,6 +26,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/system/musa/config.h>
@@ -49,8 +44,7 @@
 
 #include <cub/util_math.cuh>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 // XXX declare generic copy_if interface
 // to avoid circulular dependency from thrust/copy.h
 template <typename DerivedPolicy, typename InputIterator, typename OutputIterator, typename Predicate>
@@ -72,7 +66,7 @@ __host__ __device__
             OutputIterator                                              result,
             Predicate                                                   pred);
 
-namespace cuda_cub {
+namespace musa_cub {
 
 namespace __copy_if {
 
@@ -98,6 +92,66 @@ namespace __copy_if {
   struct Tuning;
 
   template<class T>
+  struct Tuning<sm52, T>
+  {
+    const static int INPUT_SIZE = sizeof(T);
+
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 9,
+      ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(1, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_LDG,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };    // Tuning<350>
+
+
+  template<class T>
+  struct Tuning<sm35, T>
+  {
+    const static int INPUT_SIZE = sizeof(T);
+
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 10,
+      ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(1, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_LDG,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };    // Tuning<350>
+
+  template<class T>
+  struct Tuning<sm30, T>
+  {
+    const static int INPUT_SIZE = sizeof(T);
+
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 7,
+      ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(3, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };    // Tuning<300>
+
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architecture: mp21
+  template<class T>
   struct Tuning<mp21, T>
   {
     const static int INPUT_SIZE = sizeof(T);
@@ -115,64 +169,7 @@ namespace __copy_if {
                       cub::BLOCK_SCAN_WARP_SCANS>
         type;
   };
-
-  // template<class T>
-  // struct Tuning<sm52, T>
-  // {
-  //   const static int INPUT_SIZE = sizeof(T);
-
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 9,
-  //     ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(1, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
-  //   };
-
-  //   typedef PtxPolicy<128,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_LDG,
-  //                     cub::BLOCK_SCAN_WARP_SCANS>
-  //       type;
-  // };    // Tuning<350>
-
-
-  // template<class T>
-  // struct Tuning<sm35, T>
-  // {
-  //   const static int INPUT_SIZE = sizeof(T);
-
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 10,
-  //     ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(1, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
-  //   };
-
-  //   typedef PtxPolicy<128,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_LDG,
-  //                     cub::BLOCK_SCAN_WARP_SCANS>
-  //       type;
-  // };    // Tuning<350>
-
-  // template<class T>
-  // struct Tuning<sm30, T>
-  // {
-  //   const static int INPUT_SIZE = sizeof(T);
-
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 7,
-  //     ITEMS_PER_THREAD            = CUB_MIN(NOMINAL_4B_ITEMS_PER_THREAD, CUB_MAX(3, (NOMINAL_4B_ITEMS_PER_THREAD * 4 / sizeof(T)))),
-  //   };
-
-  //   typedef PtxPolicy<128,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_DEFAULT,
-  //                     cub::BLOCK_SCAN_WARP_SCANS>
-  //       type;
-  // };    // Tuning<300>
+#endif // __MUSACC_VER_MAJOR__
 
   struct no_stencil_tag_    {};
   typedef no_stencil_tag_* no_stencil_tag;
@@ -732,7 +729,7 @@ namespace __copy_if {
 
     size_type    num_items          = static_cast<size_type>(thrust::distance(first, last));
     size_t       temp_storage_bytes = 0;
-    musaStream_t stream             = cuda_cub::stream(policy);
+    musaStream_t stream             = musa_cub::stream(policy);
     bool         debug_sync         = THRUST_DEBUG_SYNC_FLAG;
 
     if (num_items == 0)
@@ -749,7 +746,7 @@ namespace __copy_if {
                        num_items,
                        stream,
                        debug_sync);
-    cuda_cub::throw_on_error(status, "copy_if failed on 1st step");
+    musa_cub::throw_on_error(status, "copy_if failed on 1st step");
 
     size_t allocation_sizes[2] = {sizeof(size_type), temp_storage_bytes};
     void * allocations[2]      = {NULL, NULL};
@@ -760,7 +757,7 @@ namespace __copy_if {
                                  storage_size,
                                  allocations,
                                  allocation_sizes);
-    cuda_cub::throw_on_error(status, "copy_if failed on 1st alias_storage");
+    musa_cub::throw_on_error(status, "copy_if failed on 1st alias_storage");
 
     // Allocate temporary storage.
     thrust::detail::temporary_array<thrust::detail::uint8_t, Derived>
@@ -771,7 +768,7 @@ namespace __copy_if {
                                  storage_size,
                                  allocations,
                                  allocation_sizes);
-    cuda_cub::throw_on_error(status, "copy_if failed on 2nd alias_storage");
+    musa_cub::throw_on_error(status, "copy_if failed on 2nd alias_storage");
 
     size_type* d_num_selected_out
       = thrust::detail::aligned_reinterpret_cast<size_type*>(allocations[0]);
@@ -786,10 +783,10 @@ namespace __copy_if {
                        num_items,
                        stream,
                        debug_sync);
-    cuda_cub::throw_on_error(status, "copy_if failed on 2nd step");
+    musa_cub::throw_on_error(status, "copy_if failed on 2nd step");
 
-    status = cuda_cub::synchronize(policy);
-    cuda_cub::throw_on_error(status, "copy_if failed to synchronize");
+    status = musa_cub::synchronize(policy);
+    musa_cub::throw_on_error(status, "copy_if failed to synchronize");
 
     size_type num_selected = get_value(policy, d_num_selected_out);
 
@@ -877,8 +874,8 @@ copy_if(execution_policy<Derived> &policy,
   return ret;
 }    // func copy_if
 
-}    // namespace cuda_cub
-} // end namespace thrust
+}    // namespace musa_cub
+THRUST_NAMESPACE_END
 
 #include <thrust/copy.h>
 #endif

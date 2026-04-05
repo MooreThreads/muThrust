@@ -16,5 +16,55 @@
 
 #pragma once
 
-// MUSA uses the same guarded driver types logic as CUDA
-#include <thrust/system/cuda/detail/guarded_driver_types.h>
+#include <thrust/detail/config.h>
+#include <thrust/system/musa/detail/platform_macros.h>
+
+// the purpose of this header is to #include <driver_types.h> without causing
+// warnings from redefinitions of __host__ and __device__.
+// carefully save their definitions and restore them
+// can't tell exactly when push_macro & pop_macro were introduced to gcc; assume 4.5.0
+
+
+#if !defined(__GNUC__) || ((10000 * __GNUC__ + 100 * __GNUC_MINOR__ + __GNUC_PATCHLEVEL__) >= 40500)
+#  ifdef __host__
+#    pragma push_macro("__host__")
+#    undef __host__
+#    define THRUST_HOST_NEEDS_RESTORATION
+#  endif
+#  ifdef __device__
+#    pragma push_macro("__device__")
+#    undef __device__
+#    define THRUST_DEVICE_NEEDS_RESTORATION
+#  endif
+#else // GNUC pre 4.5.0
+#  if !defined(__DRIVER_TYPES_H__)
+#    ifdef __host__
+#      undef __host__
+#    endif
+#    ifdef __device__
+#      undef __device__
+#    endif
+#  endif // __DRIVER_TYPES_H__
+#endif // __GNUC__
+// 根据平台选择驱动类型头文件
+// MUSA 使用相同的 driver_types.h（在 musa_runtime_api.h 中已包含）
+#if THRUST_MUSA_ENABLED
+  #include <musa_runtime_api.h>
+  // MUSA doesn't define MUSA driver types, provide aliases for compatibility
+  typedef struct MUevent_st CUevent_st;
+  typedef struct MUstream_st CUstream_st;
+#else
+  #include <driver_types.h>
+#endif
+
+
+#if !defined(__GNUC__) || ((10000 * __GNUC__ + 100 * __GNUC_MINOR__ + __GNUC_PATCHLEVEL__) >= 40500)
+#  ifdef THRUST_HOST_NEEDS_RESTORATION
+#    pragma pop_macro("__host__")
+#    undef THRUST_HOST_NEEDS_RESTORATION
+#  endif
+#  ifdef THRUST_DEVICE_NEEDS_RESTORATION
+#    pragma pop_macro("__device__")
+#    undef THRUST_DEVICE_NEEDS_RESTORATION
+#  endif
+#endif // __GNUC__

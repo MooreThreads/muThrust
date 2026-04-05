@@ -36,9 +36,9 @@
   #include "tbb_algos.h"
 #endif
 
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
   #include <thrust/system_error.h>      // For `thrust::system_error`
-  #include <thrust/system/cuda/error.h> // For `thrust::cuda_category`
+  #include <thrust/system/musa/error.h> // For `thrust::musa_category`
 #endif
 
 // We don't use THRUST_PP_STRINGIZE and THRUST_PP_CAT because they are new, and
@@ -768,10 +768,10 @@ struct sort_tester
     void operator()()
     {
       thrust::sort(this->input.begin(), this->input.end());
-      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
         musaError_t err = musaDeviceSynchronize();
         if (err != musaSuccess)
-          throw thrust::error_code(err, thrust::cuda_category());
+          throw thrust::error_code(err, thrust::musa_category());
       #endif
     }
   };
@@ -812,10 +812,10 @@ struct transform_inplace_tester
           this->input.begin(), this->input.end(), this->input.begin()
         , thrust::negate<T>()
       );
-      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
         musaError_t err = musaDeviceSynchronize();
         if (err != musaSuccess)
-          throw thrust::error_code(err, thrust::cuda_category());
+          throw thrust::error_code(err, thrust::musa_category());
       #endif
     }
   };
@@ -853,10 +853,10 @@ struct inclusive_scan_inplace_tester
       thrust::inclusive_scan(
           this->input.begin(), this->input.end(), this->input.begin()
       );
-      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
         musaError_t err = musaDeviceSynchronize();
         if (err != musaSuccess)
-          throw thrust::error_code(err, thrust::cuda_category());
+          throw thrust::error_code(err, thrust::musa_category());
       #endif
     }
   };
@@ -890,10 +890,10 @@ struct copy_tester
     void operator()()
     {
       thrust::copy(this->input.begin(), this->input.end(), this->input.begin());
-      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
         musaError_t err = musaDeviceSynchronize();
         if (err != musaSuccess)
-          throw thrust::error_code(err, thrust::cuda_category());
+          throw thrust::error_code(err, thrust::musa_category());
       #endif
     }
   };
@@ -930,10 +930,10 @@ struct shuffle_tester
     void operator()()
     {
       thrust::shuffle(this->input.begin(), this->input.end(), this->g);
-      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+      #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
         musaError_t err = musaDeviceSynchronize();
         if (err != musaSuccess)
-          throw thrust::error_code(err, thrust::cuda_category());
+          throw thrust::error_code(err, thrust::musa_category());
       #endif
     }
   };
@@ -1244,8 +1244,8 @@ int main(int argc, char** argv)
   test_tbb();
   #endif
 
-  #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-    // Set the CUDA device to use for the benchmark - `0` by default.
+  #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
+    // Set the MUSA device to use for the benchmark - `0` by default.
 
     int device = std::atoi(clp("device", "0").c_str());
     // `std::atoi` returns 0 if the conversion fails.

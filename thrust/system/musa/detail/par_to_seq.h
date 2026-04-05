@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,12 +26,13 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
+
 #include <thrust/detail/seq.h>
 #include <thrust/system/musa/detail/par.h>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 template <int PAR>
 struct has_par : thrust::detail::true_type {};
@@ -93,5 +88,5 @@ cvt_to_seq(Policy& policy)
 #define THRUST_CUDART_DISPATCH seq
 #endif
 
-} // namespace cuda_
-} // end namespace thrust
+} // namespace musa_cub
+THRUST_NAMESPACE_END

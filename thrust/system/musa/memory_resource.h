@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /*
  *  Copyright 2018-2020 NVIDIA Corporation
  *
@@ -21,10 +15,12 @@
  */
 
 /*! \file musa/memory_resource.h
- *  \brief Memory resources for the CUDA system.
+ *  \brief Memory resources for the MUSA system.
  */
 
 #pragma once
+
+#include <thrust/detail/config.h>
 
 #include <thrust/mr/memory_resource.h>
 #include <thrust/system/musa/detail/guarded_cuda_runtime_api.h>
@@ -35,8 +31,7 @@
 
 #include <thrust/mr/host_memory_resource.h>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
 namespace system
 {
@@ -47,11 +42,11 @@ namespace musa
 namespace detail
 {
 
-    typedef musaError_t (*allocation_fn)(void **, std::size_t);
-    typedef musaError_t (*deallocation_fn)(void *);
+    typedef musaError_t (MUSARTAPI *allocation_fn)(void **, std::size_t);
+    typedef musaError_t (MUSARTAPI *deallocation_fn)(void *);
 
     template<allocation_fn Alloc, deallocation_fn Dealloc, typename Pointer>
-    class cuda_memory_resource final : public mr::memory_resource<Pointer>
+    class musa_memory_resource final : public mr::memory_resource<Pointer>
     {
     public:
         Pointer do_allocate(std::size_t bytes, std::size_t alignment = THRUST_MR_DEFAULT_ALIGNMENT) override
@@ -63,8 +58,8 @@ namespace detail
 
             if (status != musaSuccess)
             {
-                musaGetLastError(); // Clear the CUDA global error state.
-                throw thrust::system::detail::bad_alloc(thrust::cuda_category().message(status).c_str());
+                musaGetLastError(); // Clear the MUSA global error state.
+                throw thrust::system::detail::bad_alloc(thrust::musa_category().message(status).c_str());
             }
 
             return Pointer(ret);
@@ -79,39 +74,39 @@ namespace detail
 
             if (status != musaSuccess)
             {
-                thrust::cuda_cub::throw_on_error(status, "CUDA free failed");
+                thrust::musa_cub::throw_on_error(status, "musa free failed");
             }
         }
     };
 
-    inline musaError_t musaMallocManaged(void ** ptr, std::size_t bytes)
+    inline musaError_t MUSARTAPI musaMallocManaged(void ** ptr, std::size_t bytes)
     {
         return ::musaMallocManaged(ptr, bytes, musaMemAttachGlobal);
     }
 
-    typedef detail::cuda_memory_resource<musaMalloc, musaFree,
+    typedef detail::musa_memory_resource<musaMalloc, musaFree,
         thrust::musa::pointer<void> >
         device_memory_resource;
-    typedef detail::cuda_memory_resource<detail::musaMallocManaged, musaFree,
+    typedef detail::musa_memory_resource<detail::musaMallocManaged, musaFree,
         thrust::musa::universal_pointer<void> >
         managed_memory_resource;
-    typedef detail::cuda_memory_resource<musaMallocHost, musaFreeHost,
+    typedef detail::musa_memory_resource<musaMallocHost, musaFreeHost,
         thrust::musa::universal_pointer<void> >
         pinned_memory_resource;
 
 } // end detail
 //! \endcond
 
-/*! The memory resource for the CUDA system. Uses <tt>musaMalloc</tt> and wraps
+/*! The memory resource for the MUSA system. Uses <tt>musaMalloc</tt> and wraps
  *  the result with \p musa::pointer.
  */
 typedef detail::device_memory_resource memory_resource;
-/*! The universal memory resource for the CUDA system. Uses
+/*! The universal memory resource for the MUSA system. Uses
  *  <tt>musaMallocManaged</tt> and wraps the result with
  *  \p musa::universal_pointer.
  */
 typedef detail::managed_memory_resource universal_memory_resource;
-/*! The host pinned memory resource for the CUDA system. Uses
+/*! The host pinned memory resource for the MUSA system. Uses
  *  <tt>musaMallocHost</tt> and wraps the result with \p
  *  musa::universal_pointer.
  */
@@ -127,5 +122,5 @@ using thrust::system::musa::universal_memory_resource;
 using thrust::system::musa::universal_host_pinned_memory_resource;
 }
 
-} // end namespace thrust
+THRUST_NAMESPACE_END
 

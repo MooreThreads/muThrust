@@ -44,7 +44,7 @@
 # thrust_set_CUB_target(MyCUBTarget)  # MyXXXTarget contains an existing
 # thrust_set_TBB_target(MyTBBTarget)  # interface to XXX for Thrust to use.
 # thrust_set_OMP_target(MyOMPTarget)
-# thrust_create_target(ThrustWithMyCUB DEVICE CUDA)
+# thrust_create_target(ThrustWithMyCUB DEVICE MUSA)
 # thrust_create_target(ThrustWithMyTBB DEVICE TBB)
 # thrust_create_target(ThrustWithMyOMP DEVICE OMP)
 #
@@ -60,7 +60,7 @@
 # # Test if a particular system has been loaded. ${var_name} is set to TRUE or
 # # FALSE to indicate if "system" is found.
 # thrust_is_system_found(<system> <var_name>)
-# thrust_is_cuda_system_found(<var_name>)
+# thrust_is_musa_system_found(<var_name>)
 # thrust_is_tbb_system_found(<var_name>)
 # thrust_is_omp_system_found(<var_name>)
 # thrust_is_cpp_system_found(<var_name>)
@@ -87,7 +87,7 @@ set(THRUST_HOST_SYSTEM_OPTIONS
   CACHE INTERNAL "Valid Thrust host systems."
 )
 set(THRUST_DEVICE_SYSTEM_OPTIONS
-  CUDA CPP OMP TBB
+  MUSA CPP OMP TBB
   CACHE INTERNAL "Valid Thrust device systems"
 )
 
@@ -137,7 +137,7 @@ function(thrust_create_target target_name)
   endif()
 
   _thrust_set_if_undefined(TCT_HOST CPP)
-  _thrust_set_if_undefined(TCT_DEVICE CUDA)
+  _thrust_set_if_undefined(TCT_DEVICE MUSA)
   _thrust_set_if_undefined(TCT_HOST_OPTION THRUST_HOST_SYSTEM)
   _thrust_set_if_undefined(TCT_DEVICE_OPTION THRUST_DEVICE_SYSTEM)
   _thrust_set_if_undefined(TCT_HOST_OPTION_DOC "Thrust host system.")
@@ -213,7 +213,7 @@ function(thrust_create_target target_name)
   if (TCT_IGNORE_CUB_VERSION_CHECK)
     target_compile_definitions(${target_name} INTERFACE "THRUST_IGNORE_CUB_VERSION_CHECK")
   else()
-    if (("${TCT_HOST}" STREQUAL "CUDA" OR "${TCT_DEVICE}" STREQUAL "CUDA") AND
+    if (("${TCT_HOST}" STREQUAL "MUSA" OR "${TCT_DEVICE}" STREQUAL "MUSA") AND
     (NOT THRUST_VERSION VERSION_EQUAL THRUST_CUB_VERSION))
       message(FATAL_ERROR
         "The version of CUB found by CMake is not compatible with this release of Thrust. "
@@ -240,8 +240,8 @@ function(thrust_is_cpp_system_found var_name)
   set(${var_name} ${${var_name}} PARENT_SCOPE)
 endfunction()
 
-function(thrust_is_cuda_system_found var_name)
-  thrust_is_system_found(CUDA ${var_name})
+function(thrust_is_musa_system_found var_name)
+  thrust_is_system_found(MUSA ${var_name})
   set(${var_name} ${${var_name}} PARENT_SCOPE)
 endfunction()
 
@@ -262,7 +262,7 @@ endfunction()
 macro(thrust_update_system_found_flags)
   set(THRUST_FOUND TRUE)
   thrust_is_system_found(CPP  THRUST_CPP_FOUND)
-  thrust_is_system_found(CUDA THRUST_CUDA_FOUND)
+  thrust_is_system_found(MUSA THRUST_MUSA_FOUND)
   thrust_is_system_found(TBB  THRUST_TBB_FOUND)
   thrust_is_system_found(OMP  THRUST_OMP_FOUND)
 endmacro()
@@ -346,7 +346,7 @@ function(thrust_debug_internal_targets)
 
   _thrust_debug_backend_targets(CPP "Thrust ${THRUST_VERSION}")
 
-  _thrust_debug_backend_targets(CUDA "CUB ${THRUST_CUB_VERSION}")
+  _thrust_debug_backend_targets(MUSA "CUB ${THRUST_CUB_VERSION}")
   thrust_debug_target(CUB::CUB "${THRUST_CUB_VERSION}")
 
   _thrust_debug_backend_targets(TBB "${THRUST_TBB_VERSION}")
@@ -434,18 +434,18 @@ function(_thrust_setup_system backend)
   endif()
 endfunction()
 
-# Use the provided cub_target for the CUDA backend. If Thrust::CUDA already
+# Use the provided cub_target for the CUDA backend. If Thrust::MUSA already
 # exists, this call has no effect.
 function(thrust_set_CUB_target cub_target)
-  if (NOT TARGET Thrust::CUDA)
+  if (NOT TARGET Thrust::MUSA)
     thrust_debug("Setting CUB target to ${cub_target}" internal)
     # Workaround cmake issue #20670 https://gitlab.kitware.com/cmake/cmake/-/issues/20670
     set(THRUST_CUB_VERSION ${CUB_VERSION} CACHE INTERNAL "CUB version used by Thrust")
-    _thrust_declare_interface_alias(Thrust::CUDA _Thrust_CUDA)
-    target_link_libraries(_Thrust_CUDA INTERFACE Thrust::Thrust ${cub_target})
+    _thrust_declare_interface_alias(Thrust::MUSA _Thrust_MUSA)
+    target_link_libraries(_Thrust_MUSA INTERFACE Thrust::Thrust ${cub_target})
     thrust_debug_target(${cub_target} "${THRUST_CUB_VERSION}" internal)
-    thrust_debug_target(Thrust::CUDA "CUB ${THRUST_CUB_VERSION}" internal)
-    _thrust_setup_system(CUDA)
+    thrust_debug_target(Thrust::MUSA "CUB ${THRUST_CUB_VERSION}" internal)
+    _thrust_setup_system(MUSA)
   endif()
 endfunction()
 
@@ -494,8 +494,8 @@ endfunction()
 # into the current scope. This provides at least some remedy for CMake issue
 # #20670 -- otherwise variables like CUB_VERSION, etc won't be in the caller's
 # scope.
-macro(_thrust_find_CUDA required)
-  if (NOT TARGET Thrust::CUDA)
+macro(_thrust_find_MUSA required)
+  if (NOT TARGET Thrust::MUSA)
     thrust_debug("Searching for CUB ${required}" internal)
     find_package(CUB ${THRUST_VERSION} CONFIG
       ${_THRUST_QUIET_FLAG}
@@ -603,8 +603,8 @@ macro(_thrust_find_backend backend required)
   # why this function exists.
   if ("${backend}" STREQUAL "CPP")
     _thrust_find_CPP("${required}")
-  elseif ("${backend}" STREQUAL "CUDA")
-    _thrust_find_CUDA("${required}")
+  elseif ("${backend}" STREQUAL "MUSA")
+    _thrust_find_MUSA("${required}")
   elseif ("${backend}" STREQUAL "TBB")
     _thrust_find_TBB("${required}")
   elseif ("${backend}" STREQUAL "OMP")

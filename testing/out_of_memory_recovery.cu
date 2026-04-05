@@ -6,7 +6,7 @@
 // 2. A `thrust::system::system_error` exception is thrown.
 // 3. Local objects are destroyed as the stack is unwound, leading to the destruction of `x`.
 // 4. `x` runs a parallel algorithm in its destructor to call the destructors of all of its elements.
-// 5. Launching that parallel algorithm fails because of the prior CUDA out of memory error.
+// 5. Launching that parallel algorithm fails because of the prior MUSA out of memory error.
 // 6. A `thrust::system::system_error` exception is thrown.
 // 7. Because we've already got an active exception, `terminate` is called.
 

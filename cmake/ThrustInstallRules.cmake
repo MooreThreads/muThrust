@@ -28,7 +28,11 @@ install(FILES "${Thrust_BINARY_DIR}/thrust/cmake/thrust-header-search.cmake"
 # included, so maintain a set of CUB install rules in both projects. By default
 # CUB headers are installed alongside Thrust -- this may be disabled by turning
 # off THRUST_INSTALL_CUB_HEADERS.
-option(THRUST_INSTALL_CUB_HEADERS "Include cub headers when installing." OFF)
+set(thrust_install_cub_default OFF)
+if (THRUST_MUSA_FOUND)
+  set(thrust_install_cub_default ON)
+endif()
+option(THRUST_INSTALL_CUB_HEADERS "Include cub headers when installing." ${thrust_install_cub_default})
 if (THRUST_INSTALL_CUB_HEADERS)
   install(DIRECTORY "${Thrust_SOURCE_DIR}/dependencies/cub/cub"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"

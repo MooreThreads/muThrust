@@ -16,16 +16,16 @@ endif()
 project(ThrustAddSubDirExample CXX)
 
 # Add required Thrust systems to THRUST_REQUIRED_SYSTEMS.
-# Options are: CPP, CUDA, TBB or OMP.
+# Options are: CPP, MUSA, TBB or OMP.
 # Multiple systems may be specified.
 # An error is emitted if the system is not found.
 set(THRUST_REQUIRED_SYSTEMS CPP)
 
 # Add optional Thrust systems to THRUST_OPTIONAL_SYSTEMS.
-# Options are: CPP, CUDA, TBB or OMP.
+# Options are: CPP, MUSA, TBB or OMP.
 # Multiple systems may be specified.
 # No error is emitted if not found.
-set(THRUST_OPTIONAL_SYSTEMS CUDA)
+set(THRUST_OPTIONAL_SYSTEMS MUSA)
 
 # Use your project's checkout of Thrust here, for most cases
 # `add_subdirectory(thrust)` will be sufficient.
@@ -44,12 +44,12 @@ target_link_libraries(ExecWithCPP ThrustCPP)
 # Required due to CMake scoping rules.
 thrust_update_system_found_flags()
 
-# Create and use a Thrust target configured to use CUDA acceleration if CUDA
+# Create and use a Thrust target configured to use MUSA acceleration if MUSA
 # is available:
-if (THRUST_CUDA_FOUND)
-  thrust_create_target(ThrustCUDA HOST CPP DEVICE CUDA)
-  musa_add_executable(ExecWithCUDA dummy.cu)
-  target_link_libraries(ExecWithCUDA ThrustCUDA)
+if (THRUST_MUSA_FOUND)
+  thrust_create_target(ThrustMUSA HOST CPP DEVICE MUSA)
+  musa_add_executable(ExecWithMUSA dummy.cu)
+  target_link_libraries(ExecWithMUSA ThrustMUSA)
 endif()
 
 #
@@ -75,16 +75,16 @@ function(assert_target target_name)
 endfunction()
 
 assert_boolean(THRUST_CPP_FOUND TRUE)
-assert_boolean(THRUST_CUDA_FOUND TRUE)
+assert_boolean(THRUST_MUSA_FOUND TRUE)
 assert_boolean(THRUST_OMP_FOUND FALSE)
 assert_boolean(THRUST_TBB_FOUND FALSE)
 
 assert_target(ThrustCPP)
-assert_target(ThrustCUDA)
+assert_target(ThrustMUSA)
 assert_target(ExecWithCPP)
-assert_target(ExecWithCUDA)
+assert_target(ExecWithMUSA)
 
 thrust_debug_target(ThrustCPP "")
-thrust_debug_target(ThrustCUDA "")
+thrust_debug_target(ThrustMUSA "")
 thrust_debug_target(ExecWithCPP "")
-thrust_debug_target(ExecWithCUDA "")
+thrust_debug_target(ExecWithMUSA "")

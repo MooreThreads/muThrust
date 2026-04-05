@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
 j * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,6 +26,8 @@ j * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
+
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/detail/cstdint.h>
 #include <thrust/detail/temporary_array.h>
@@ -49,9 +45,8 @@ j * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
 #include <thrust/distance.h>
 
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 namespace __merge {
 
@@ -175,7 +170,7 @@ namespace __merge {
       Size partition_idx = blockDim.x * blockIdx.x + threadIdx.x;
       if (partition_idx < num_partitions)
       {
-        Size partition_at = thrust::min(partition_idx * items_per_tile,
+        Size partition_at = (thrust::min)(partition_idx * items_per_tile,
                                         keys1_count + keys2_count);
         Size partition_diag = merge_path(keys1,
                                          keys2,
@@ -194,7 +189,7 @@ namespace __merge {
 
   namespace mpl = thrust::detail::mpl::math;
 
-  template<size_t NOMINAL_4B_ITEMS_PER_THREAD, size_t INPUT_SIZE>
+  template<int NOMINAL_4B_ITEMS_PER_THREAD, size_t INPUT_SIZE>
   struct items_per_thread
   {
     enum
@@ -206,13 +201,93 @@ namespace __merge {
               mpl::max<
                   int,
                   1,
-                  (NOMINAL_4B_ITEMS_PER_THREAD * 4 / INPUT_SIZE)>::value>::value,
-      value = mpl::is_odd<size_t, ITEMS_PER_THREAD>::value
+                  static_cast<int>(NOMINAL_4B_ITEMS_PER_THREAD * 4 / INPUT_SIZE)>::value>::value,
+      value = mpl::is_odd<int, ITEMS_PER_THREAD>::value
                   ? ITEMS_PER_THREAD
                   : ITEMS_PER_THREAD + 1
     };
   };
 
+  template<class TSize>
+  struct Tuning<sm30,TSize>
+  {
+    const static int INPUT_SIZE = TSize::value;
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 7,
+      ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
+                                          INPUT_SIZE>::value
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_STORE_WARP_TRANSPOSE>
+        type;
+  };    // Tuning sm300
+
+
+
+  template<class TSize>
+  struct Tuning<sm60,TSize> : Tuning<sm30,TSize>
+  {
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 15,
+      ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
+                                          Tuning::INPUT_SIZE>::value
+    };
+
+
+    typedef PtxPolicy<512,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_STORE_WARP_TRANSPOSE>
+        type;
+  };    // Tuning sm52
+
+  template<class TSize>
+  struct Tuning<sm52,TSize> : Tuning<sm30,TSize>
+  {
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 13,
+      ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
+                                          Tuning::INPUT_SIZE>::value
+    };
+
+    typedef PtxPolicy<512,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_LDG,
+                      cub::BLOCK_STORE_WARP_TRANSPOSE>
+        type;
+  };    // Tuning sm52
+
+  template<class TSize>
+  struct Tuning<sm35,TSize> : Tuning<sm30,TSize>
+  {
+    const static int INPUT_SIZE = TSize::value;
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 11,
+      ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
+                                          Tuning::INPUT_SIZE>::value
+    };
+
+
+    typedef PtxPolicy<256,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_LDG,
+                      cub::BLOCK_STORE_WARP_TRANSPOSE>
+        type;
+  };    // Tuning sm350
+
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architecture: mp21
   template<class TSize>
   struct Tuning<mp21,TSize>
   {
@@ -231,84 +306,7 @@ namespace __merge {
                       cub::BLOCK_STORE_WARP_TRANSPOSE>
         type;
   };
-
-  // template<class TSize>
-  // struct Tuning<sm30,TSize>
-  // {
-  //   const static int INPUT_SIZE = TSize::value;
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 7,
-  //     ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
-  //                                         INPUT_SIZE>::value
-  //   };
-
-  //   typedef PtxPolicy<128,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_DEFAULT,
-  //                     cub::BLOCK_STORE_WARP_TRANSPOSE>
-  //       type;
-  // };    // Tuning sm300
-
-
-
-  // template<class TSize>
-  // struct Tuning<sm60,TSize> : Tuning<sm30,TSize>
-  // {
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 15,
-  //     ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
-  //                                         Tuning::INPUT_SIZE>::value
-  //   };
-
-
-  //   typedef PtxPolicy<512,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_DEFAULT,
-  //                     cub::BLOCK_STORE_WARP_TRANSPOSE>
-  //       type;
-  // };    // Tuning sm52
-
-  // template<class TSize>
-  // struct Tuning<sm52,TSize> : Tuning<sm30,TSize>
-  // {
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 13,
-  //     ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
-  //                                         Tuning::INPUT_SIZE>::value
-  //   };
-
-  //   typedef PtxPolicy<512,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_LDG,
-  //                     cub::BLOCK_STORE_WARP_TRANSPOSE>
-  //       type;
-  // };    // Tuning sm52
-
-  // template<class TSize>
-  // struct Tuning<sm35,TSize> : Tuning<sm30,TSize>
-  // {
-  //   const static int INPUT_SIZE = TSize::value;
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 11,
-  //     ITEMS_PER_THREAD            = items_per_thread<NOMINAL_4B_ITEMS_PER_THREAD,
-  //                                         Tuning::INPUT_SIZE>::value
-  //   };
-
-
-  //   typedef PtxPolicy<256,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_LDG,
-  //                     cub::BLOCK_STORE_WARP_TRANSPOSE>
-  //       type;
-  // };    // Tuning sm350
+#endif // __MUSACC_VER_MAJOR__
 
 
   template<size_t VALUE>
@@ -487,7 +485,7 @@ namespace __merge {
         Size partition_end = merge_partitions[tile_idx + 1];
 
         Size diag0 = ITEMS_PER_TILE * tile_idx;
-        Size diag1 = thrust::min(keys1_count + keys2_count, diag0 + ITEMS_PER_TILE);
+        Size diag1 = (thrust::min)(keys1_count + keys2_count, diag0 + ITEMS_PER_TILE);
 
         // compute bounding box for keys1 & keys2
         //
@@ -832,7 +830,7 @@ namespace __merge {
       return thrust::make_pair(keys_result, items_result);
 
     size_t       storage_size = 0;
-    musaStream_t stream       = cuda_cub::stream(policy);
+    musaStream_t stream       = musa_cub::stream(policy);
     bool         debug_sync   = THRUST_DEBUG_SYNC_FLAG;
 
     musaError_t status;
@@ -849,7 +847,7 @@ namespace __merge {
                                     compare_op,
                                     stream,
                                     debug_sync);
-    cuda_cub::throw_on_error(status, "merge: failed on 1st step");
+    musa_cub::throw_on_error(status, "merge: failed on 1st step");
 
     // Allocate temporary storage.
     thrust::detail::temporary_array<thrust::detail::uint8_t, Derived>
@@ -869,10 +867,10 @@ namespace __merge {
                                     compare_op,
                                     stream,
                                     debug_sync);
-    cuda_cub::throw_on_error(status, "merge: failed on 2nd step");
+    musa_cub::throw_on_error(status, "merge: failed on 2nd step");
 
-    status = cuda_cub::synchronize(policy);
-    cuda_cub::throw_on_error(status, "merge: failed to synchronize");
+    status = musa_cub::synchronize_optional(policy);
+    musa_cub::throw_on_error(status, "merge: failed to synchronize");
 
     return thrust::make_pair(keys_result + count, items_result + count);
   }
@@ -944,7 +942,7 @@ merge(execution_policy<Derived>& policy,
       ResultIt                   result)
 {
   typedef typename thrust::iterator_value<KeysIt1>::type keys_type;
-  return cuda_cub::merge(policy,
+  return musa_cub::merge(policy,
                          keys1_first,
                          keys1_last,
                          keys2_first,
@@ -1025,7 +1023,7 @@ merge_by_key(execution_policy<Derived> &policy,
              ItemsOutputIt              items_result)
 {
   typedef typename thrust::iterator_value<KeysIt1>::type keys_type;
-  return cuda_cub::merge_by_key(policy,
+  return musa_cub::merge_by_key(policy,
                                 keys1_first,
                                 keys1_last,
                                 keys2_first,
@@ -1038,6 +1036,6 @@ merge_by_key(execution_policy<Derived> &policy,
 }
 
 
-}    // namespace cuda_cub
-} // end namespace thrust
+}    // namespace musa_cub
+THRUST_NAMESPACE_END
 #endif

@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,6 +26,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/system/musa/config.h>
@@ -40,9 +35,8 @@
 #include <thrust/detail/minmax.h>
 #include <thrust/distance.h>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 // XXX forward declare to circumvent circular depedency
 template <class Derived,
@@ -72,15 +66,14 @@ find(execution_policy<Derived> &policy,
      InputIt                    last,
      T const& value);
 
-}; // namespace cuda_cub
-} // end namespace thrust
+}; // namespace musa_cub
+THRUST_NAMESPACE_END
 
 #include <thrust/system/musa/detail/reduce.h>
 #include <thrust/iterator/zip_iterator.h>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 namespace __find_if {
 
@@ -186,7 +179,7 @@ find_if(execution_policy<Derived>& policy,
         InputIt                    last,
         Predicate                  predicate)
 {
-  return cuda_cub::find_if_n(policy, first, thrust::distance(first,last), predicate);
+  return musa_cub::find_if_n(policy, first, thrust::distance(first,last), predicate);
 }
 
 template <class Derived,
@@ -198,7 +191,7 @@ find_if_not(execution_policy<Derived>& policy,
             InputIt                    last,
             Predicate                  predicate)
 {
-  return cuda_cub::find_if(policy, first, last, thrust::detail::not1(predicate));
+  return musa_cub::find_if(policy, first, last, thrust::detail::not1(predicate));
 }
 
 
@@ -213,13 +206,13 @@ find(execution_policy<Derived> &policy,
 {
   using thrust::placeholders::_1;
 
-  return cuda_cub::find_if(policy,
+  return musa_cub::find_if(policy,
                         first,
                         last,
                         _1 == value);
 }
 
 
-} // namespace cuda_cub
-} // end namespace thrust
+} // namespace musa_cub
+THRUST_NAMESPACE_END
 #endif

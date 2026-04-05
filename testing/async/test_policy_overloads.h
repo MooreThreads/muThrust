@@ -104,13 +104,13 @@ private:
     // When a policy uses the default stream, the algorithm implementation
     // should spawn a new stream in the returned event:
     auto using_default_stream = [](auto& e) {
-      ASSERT_NOT_EQUAL(thrust::cuda_cub::default_stream(),
+      ASSERT_NOT_EQUAL(thrust::musa_cub::default_stream(),
                        e.stream().native_handle());
     };
 
     // When a policy uses a non-default stream, the implementation should pass
     // the stream through to the output:
-    thrust::system::cuda::detail::unique_stream test_stream{};
+    thrust::system::musa::detail::unique_stream test_stream{};
     auto using_test_stream = [&test_stream](auto& e) {
       ASSERT_EQUAL(test_stream.native_handle(), e.stream().native_handle());
     };
@@ -295,7 +295,7 @@ private:
     auto const stream_a = e_a.stream().native_handle();
 
     // Execution on default stream should create a new stream in the result:
-    ASSERT_NOT_EQUAL_QUIET(thrust::cuda_cub::default_stream(), stream_a);
+    ASSERT_NOT_EQUAL_QUIET(thrust::musa_cub::default_stream(), stream_a);
 
     //--------------------------------------------------------------------------
     // Test event consumption when the event is an rvalue.

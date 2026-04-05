@@ -62,7 +62,7 @@ function(thrust_set_target_properties target_name host device dialect prefix)
 
   get_property(langs GLOBAL PROPERTY ENABLED_LANGUAGES)
   set(standard_features)
-  if (CUDA IN_LIST langs)
+  if (MUSA IN_LIST langs)
     list(APPEND standard_features cuda_std_${dialect})
   endif()
   if (CXX IN_LIST langs)
@@ -168,7 +168,7 @@ function(_thrust_add_target_to_target_list target_name host device dialect prefi
 
   # Workaround Github issue #1174. cudafe promote TBB header warnings to
   # errors, even when they're -isystem includes.
-  if ((NOT host STREQUAL "TBB") OR (NOT device STREQUAL "CUDA"))
+  if ((NOT host STREQUAL "TBB") OR (NOT device STREQUAL "MUSA"))
     target_link_libraries(${target_name} INTERFACE
       thrust.promote_cudafe_warnings
     )
@@ -189,7 +189,7 @@ function(_thrust_build_target_list_multiconfig)
     message(STATUS "Testing for supported language standards...")
     include("${CMAKE_CURRENT_FUNCTION_LIST_DIR}/DetectSupportedStandards.cmake")
     detect_supported_standards(THRUST CXX ${THRUST_CPP_DIALECT_OPTIONS})
-    if (THRUST_CUDA_FOUND)
+    if (THRUST_MUSA_FOUND)
       detect_supported_standards(THRUST CUDA ${THRUST_CPP_DIALECT_OPTIONS})
     endif()
 
@@ -198,7 +198,7 @@ function(_thrust_build_target_list_multiconfig)
     set(latest_dialect 11)
     foreach(standard IN LISTS THRUST_CPP_DIALECT_OPTIONS)
       if ((THRUST_CXX_${standard}_SUPPORTED) AND
-          ((NOT THRUST_CUDA_FOUND) OR THRUST_CUDA_${standard}_SUPPORTED))
+          ((NOT THRUST_MUSA_FOUND) OR THRUST_CUDA_${standard}_SUPPORTED))
 
         # MSVC silently promotes C++11 to C++14 -- skip it:
         if ((${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC) AND (standard EQUAL 11))

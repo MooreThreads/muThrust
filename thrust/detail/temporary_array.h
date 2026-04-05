@@ -26,7 +26,7 @@ THRUST_NAMESPACE_BEGIN
 namespace detail
 {
 
-// Forward declare temporary_array, as it's used by the CUDA copy backend, which
+// Forward declare temporary_array, as it's used by the MUSA copy backend, which
 // is included in contiguous_storage's definition.
 template<typename T, typename System>
   class temporary_array;

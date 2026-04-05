@@ -20,16 +20,16 @@
 
 #ifdef __CUDACC__
 
-// use CUDA's high-resolution timers when possible
+// use MUSA's high-resolution timers when possible
 #include <musa_runtime_api.h>
-#include <thrust/system/cuda/error.h>
+#include <thrust/system/musa/error.h>
 #include <thrust/system_error.h>
 #include <string>
 
 void cuda_safe_call(musaError_t error, const std::string& message = "")
 {
   if(error)
-    throw thrust::system_error(error, thrust::cuda_category(), message);
+    throw thrust::system_error(error, thrust::musa_category(), message);
 }
 
 struct timer

@@ -112,12 +112,12 @@ void uninitialized_construct(
   using T = typename iterator_traits<ForwardIt>::value_type;
 
   ForwardIt current = first;
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   try {
   #endif
     for (; current != last; ++current)
       ::new (static_cast<void*>(addressof(*current))) T(args...);
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   } catch (...) {
     destroy(first, current);
     throw;
@@ -140,12 +140,12 @@ void uninitialized_construct_with_allocator(
   typename traits::allocator_type alloc_T(alloc);
 
   ForwardIt current = first;
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   try {
   #endif
     for (; current != last; ++current)
       traits::construct(alloc_T, addressof(*current), args...);
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   } catch (...) {
     destroy(alloc_T, first, current);
     throw;
@@ -161,12 +161,12 @@ void uninitialized_construct_n(
   using T = typename iterator_traits<ForwardIt>::value_type;
 
   ForwardIt current = first;
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   try {
   #endif
     for (; n > 0; (void) ++current, --n)
       ::new (static_cast<void*>(addressof(*current))) T(args...);
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   } catch (...) {
     destroy(first, current);
     throw;
@@ -189,12 +189,12 @@ void uninitialized_construct_n_with_allocator(
   typename traits::allocator_type alloc_T(alloc);
 
   ForwardIt current = first;
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   try {
   #endif
     for (; n > 0; (void) ++current, --n)
       traits::construct(alloc_T, addressof(*current), args...);
-  #if !__CUDA_ARCH__ // No exceptions in CUDA.
+  #if !__CUDA_ARCH__ // No exceptions in MUSA.
   } catch (...) {
     destroy(alloc_T, first, current);
     throw;

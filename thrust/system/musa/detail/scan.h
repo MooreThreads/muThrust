@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,6 +26,8 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
+
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 
 #include <thrust/detail/config/exec_check_disable.h>
@@ -44,9 +40,8 @@
 
 #include <cub/device/device_scan.cuh>
 
-namespace thrust
-{
-namespace cuda_cub
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub
 {
 namespace detail
 {
@@ -58,7 +53,7 @@ template <typename Derived,
           typename OutputIt,
           typename ScanOp>
 __host__ __device__
-OutputIt inclusive_scan_n_impl(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt inclusive_scan_n_impl(thrust::musa_cub::execution_policy<Derived> &policy,
                                InputIt first,
                                Size num_items,
                                OutputIt result,
@@ -75,7 +70,7 @@ OutputIt inclusive_scan_n_impl(thrust::cuda_cub::execution_policy<Derived> &poli
                                        cub::NullType,
                                        thrust::detail::int64_t>;
 
-  musaStream_t stream = thrust::cuda_cub::stream(policy);
+  musaStream_t stream = thrust::musa_cub::stream(policy);
   musaError_t status;
 
   // Determine temporary storage requirements:
@@ -94,7 +89,7 @@ OutputIt inclusive_scan_n_impl(thrust::cuda_cub::execution_policy<Derived> &poli
                                  num_items_fixed,
                                  stream,
                                  THRUST_DEBUG_SYNC_FLAG));
-    thrust::cuda_cub::throw_on_error(status,
+    thrust::musa_cub::throw_on_error(status,
                                      "after determining tmp storage "
                                      "requirements for inclusive_scan");
   }
@@ -118,9 +113,9 @@ OutputIt inclusive_scan_n_impl(thrust::cuda_cub::execution_policy<Derived> &poli
                                  num_items_fixed,
                                  stream,
                                  THRUST_DEBUG_SYNC_FLAG));
-    thrust::cuda_cub::throw_on_error(status,
+    thrust::musa_cub::throw_on_error(status,
                                      "after dispatching inclusive_scan kernel");
-    thrust::cuda_cub::throw_on_error(thrust::cuda_cub::synchronize(policy),
+    thrust::musa_cub::throw_on_error(thrust::musa_cub::synchronize_optional(policy),
                                      "inclusive_scan failed to synchronize");
   }
 
@@ -135,25 +130,26 @@ template <typename Derived,
           typename InitValueT,
           typename ScanOp>
 __host__ __device__
-OutputIt exclusive_scan_n_impl(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt exclusive_scan_n_impl(thrust::musa_cub::execution_policy<Derived> &policy,
                                InputIt first,
                                Size num_items,
                                OutputIt result,
                                InitValueT init,
                                ScanOp scan_op)
 {
+  using InputValueT = cub::detail::InputValue<InitValueT>;
   using Dispatch32 = cub::DispatchScan<InputIt,
                                        OutputIt,
                                        ScanOp,
-                                       InitValueT,
+                                       InputValueT,
                                        thrust::detail::int32_t>;
   using Dispatch64 = cub::DispatchScan<InputIt,
                                        OutputIt,
                                        ScanOp,
-                                       InitValueT,
+                                       InputValueT,
                                        thrust::detail::int64_t>;
 
-  musaStream_t stream = thrust::cuda_cub::stream(policy);
+  musaStream_t stream = thrust::musa_cub::stream(policy);
   musaError_t status;
 
   // Determine temporary storage requirements:
@@ -168,11 +164,11 @@ OutputIt exclusive_scan_n_impl(thrust::cuda_cub::execution_policy<Derived> &poli
                                  first,
                                  result,
                                  scan_op,
-                                 init,
+                                 InputValueT(init),
                                  num_items_fixed,
                                  stream,
                                  THRUST_DEBUG_SYNC_FLAG));
-    thrust::cuda_cub::throw_on_error(status,
+    thrust::musa_cub::throw_on_error(status,
                                      "after determining tmp storage "
                                      "requirements for exclusive_scan");
   }
@@ -192,13 +188,13 @@ OutputIt exclusive_scan_n_impl(thrust::cuda_cub::execution_policy<Derived> &poli
                                  first,
                                  result,
                                  scan_op,
-                                 init,
+                                 InputValueT(init),
                                  num_items_fixed,
                                  stream,
                                  THRUST_DEBUG_SYNC_FLAG));
-    thrust::cuda_cub::throw_on_error(status,
+    thrust::musa_cub::throw_on_error(status,
                                      "after dispatching exclusive_scan kernel");
-    thrust::cuda_cub::throw_on_error(thrust::cuda_cub::synchronize(policy),
+    thrust::musa_cub::throw_on_error(thrust::musa_cub::synchronize_optional(policy),
                                      "exclusive_scan failed to synchronize");
   }
 
@@ -218,7 +214,7 @@ template <typename Derived,
           typename OutputIt,
           typename ScanOp>
 __host__ __device__
-OutputIt inclusive_scan_n(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt inclusive_scan_n(thrust::musa_cub::execution_policy<Derived> &policy,
                           InputIt first,
                           Size num_items,
                           OutputIt result,
@@ -227,7 +223,7 @@ OutputIt inclusive_scan_n(thrust::cuda_cub::execution_policy<Derived> &policy,
   OutputIt ret = result;
   if (__THRUST_HAS_CUDART__)
   {
-    ret = thrust::cuda_cub::detail::inclusive_scan_n_impl(policy,
+    ret = thrust::musa_cub::detail::inclusive_scan_n_impl(policy,
                                                           first,
                                                           num_items,
                                                           result,
@@ -248,7 +244,7 @@ OutputIt inclusive_scan_n(thrust::cuda_cub::execution_policy<Derived> &policy,
 
 template <typename Derived, typename InputIt, typename OutputIt, typename ScanOp>
 __host__ __device__
-OutputIt inclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt inclusive_scan(thrust::musa_cub::execution_policy<Derived> &policy,
                         InputIt first,
                         InputIt last,
                         OutputIt result,
@@ -256,7 +252,7 @@ OutputIt inclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
 {
   using diff_t = typename thrust::iterator_traits<InputIt>::difference_type;
   diff_t const num_items = thrust::distance(first, last);
-  return thrust::cuda_cub::inclusive_scan_n(policy,
+  return thrust::musa_cub::inclusive_scan_n(policy,
                                             first,
                                             num_items,
                                             result,
@@ -265,12 +261,12 @@ OutputIt inclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
 
 template <typename Derived, typename InputIt, typename OutputIt>
 __host__ __device__
-OutputIt inclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt inclusive_scan(thrust::musa_cub::execution_policy<Derived> &policy,
                         InputIt first,
                         InputIt last,
                         OutputIt result)
 {
-  return thrust::cuda_cub::inclusive_scan(policy,
+  return thrust::musa_cub::inclusive_scan(policy,
                                           first,
                                           last,
                                           result,
@@ -285,7 +281,7 @@ template <typename Derived,
           typename T,
           typename ScanOp>
 __host__ __device__
-OutputIt exclusive_scan_n(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt exclusive_scan_n(thrust::musa_cub::execution_policy<Derived> &policy,
                           InputIt first,
                           Size num_items,
                           OutputIt result,
@@ -295,7 +291,7 @@ OutputIt exclusive_scan_n(thrust::cuda_cub::execution_policy<Derived> &policy,
   OutputIt ret = result;
   if (__THRUST_HAS_CUDART__)
   {
-    ret = thrust::cuda_cub::detail::exclusive_scan_n_impl(policy,
+    ret = thrust::musa_cub::detail::exclusive_scan_n_impl(policy,
                                                           first,
                                                           num_items,
                                                           result,
@@ -322,7 +318,7 @@ template <typename Derived,
           typename T,
           typename ScanOp>
 __host__ __device__
-OutputIt exclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt exclusive_scan(thrust::musa_cub::execution_policy<Derived> &policy,
                         InputIt first,
                         InputIt last,
                         OutputIt result,
@@ -331,7 +327,7 @@ OutputIt exclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
 {
   using diff_t = typename thrust::iterator_traits<InputIt>::difference_type;
   diff_t const num_items = thrust::distance(first, last);
-  return thrust::cuda_cub::exclusive_scan_n(policy,
+  return thrust::musa_cub::exclusive_scan_n(policy,
                                             first,
                                             num_items,
                                             result,
@@ -341,13 +337,13 @@ OutputIt exclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
 
 template <typename Derived, typename InputIt, typename OutputIt, typename T>
 __host__ __device__
-OutputIt exclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt exclusive_scan(thrust::musa_cub::execution_policy<Derived> &policy,
                         InputIt first,
                         InputIt last,
                         OutputIt result,
                         T init)
 {
-  return thrust::cuda_cub::exclusive_scan(policy,
+  return thrust::musa_cub::exclusive_scan(policy,
                                           first,
                                           last,
                                           result,
@@ -357,17 +353,17 @@ OutputIt exclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
 
 template <typename Derived, typename InputIt, typename OutputIt>
 __host__ __device__
-OutputIt exclusive_scan(thrust::cuda_cub::execution_policy<Derived> &policy,
+OutputIt exclusive_scan(thrust::musa_cub::execution_policy<Derived> &policy,
                         InputIt first,
                         InputIt last,
                         OutputIt result)
 {
   using init_type = typename thrust::iterator_traits<InputIt>::value_type;
-  return cuda_cub::exclusive_scan(policy, first, last, result, init_type{});
+  return musa_cub::exclusive_scan(policy, first, last, result, init_type{});
 };
 
-} // namespace cuda_cub
-} // namespace thrust
+} // namespace musa_cub
+THRUST_NAMESPACE_END
 
 #include <thrust/scan.h>
 

@@ -292,9 +292,9 @@ struct is_trivially_relocatable_impl<T[N]> : is_trivially_relocatable_impl<T> {}
 
 THRUST_NAMESPACE_END
 
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
 
-#include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
+#include <thrust/system/musa/detail/guarded_cuda_runtime_api.h>
 
 THRUST_PROCLAIM_TRIVIALLY_RELOCATABLE(char1)
 THRUST_PROCLAIM_TRIVIALLY_RELOCATABLE(char2)

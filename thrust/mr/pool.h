@@ -58,7 +58,7 @@ namespace mr
  *      from a separate resource, which in turn would necessitate the bookkeeping overhead in the upstream resource.
  *
  *  This version requires that memory allocated from Upstream is accessible from device. It supports smart references,
- *      meaning that the non-managed CUDA resource, returning a device-tagged pointer, will work, but will be much less
+ *      meaning that the non-managed MUSA resource, returning a device-tagged pointer, will work, but will be much less
  *      efficient than the disjoint version, which wouldn't need to touch device memory at all, and therefore wouldn't need
  *      to transfer it back and forth between the host and the device whenever an allocation or a deallocation happens.
  *

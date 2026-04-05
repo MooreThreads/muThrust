@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -42,23 +36,25 @@
 #include <cub/block/block_store.cuh>
 #include <cub/block/block_scan.cuh>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
-namespace cuda_cub {
+namespace musa_cub {
 namespace core {
 
-#ifdef __NVCOMPILER_CUDA__
-#  if (__NVCOMPILER_CUDA_ARCH__ >= 600)
+// Architecture tuning selection
+// MUSA uses different architecture numbers: mp_21 (210), mp_22 (220), mp_31 (310)
+// MUSA uses: sm_30 (300), sm_35 (350), sm_52 (520), sm_60 (600)
+#ifdef _NVHPC_MUSA
+#  if (__NVCOMPILER_MUSA_ARCH__ >= 600)
 #    define THRUST_TUNING_ARCH sm60
-#  elif (__NVCOMPILER_CUDA_ARCH__ >= 520)
+#  elif (__NVCOMPILER_MUSA_ARCH__ >= 520)
 #    define THRUST_TUNING_ARCH sm52
-#  elif (__NVCOMPILER_CUDA_ARCH__ >= 350)
+#  elif (__NVCOMPILER_MUSA_ARCH__ >= 350)
 #    define THRUST_TUNING_ARCH sm35
 #  else
 #    define THRUST_TUNING_ARCH sm30
 #  endif
-#else
+#elif defined(__MUSACC_VER_MAJOR__)
 // MUSA: Use CUB_PTX_ARCH which is correctly set via CUB_MUSA_ARCH
 // Note: __MUSA_ARCH__ is defined as 1 in device code, not the arch version
 #  if (CUB_PTX_ARCH >= 310)
@@ -68,7 +64,20 @@ namespace core {
 #  elif (CUB_PTX_ARCH >= 210)
 #    define THRUST_TUNING_ARCH mp21
 #  else
-#    define THRUST_TUNING_ARCH mp21  // 默认使用最低架构
+#    define THRUST_TUNING_ARCH mp21  // Default to lowest architecture
+#  endif
+#else
+// MUSA architecture
+#  if (__MUSA_ARCH__ >= 600)
+#    define THRUST_TUNING_ARCH sm60
+#  elif (__MUSA_ARCH__ >= 520)
+#    define THRUST_TUNING_ARCH sm52
+#  elif (__MUSA_ARCH__ >= 350)
+#    define THRUST_TUNING_ARCH sm35
+#  elif (__MUSA_ARCH__ >= 300)
+#    define THRUST_TUNING_ARCH sm30
+#  elif !defined (__MUSA_ARCH__)
+#    define THRUST_TUNING_ARCH sm30
 #  endif
 #endif
 
@@ -81,17 +90,28 @@ namespace core {
 
   // -------------------------------------
 
-  // supported MP arch
+  // supported SM/MP arch
   // ---------------------
-  // MUSA uses warp size of 32 for mp31, and 128 for mp21/mp22
+  // MUSA architectures
+  struct sm30  { enum { ver = 300, warpSize = 32 }; };
+  struct sm35  { enum { ver = 350, warpSize = 32 }; };
+  struct sm52  { enum { ver = 520, warpSize = 32 }; };
+  struct sm60  { enum { ver = 600, warpSize = 32 }; };
+
+  // MUSA architectures
+  // mp21/mp22 have warp size of 128, mp31 has warp size of 32
   struct mp21  { enum { ver = 210, warpSize = 128 }; };
   struct mp22  { enum { ver = 220, warpSize = 128 }; };
   struct mp31  { enum { ver = 310, warpSize = 32 }; };
 
-  // list of mp, checked from left to right order
-  // the rightmost is the lowest mp arch supported
+  // list of sm/mp, checked from left to right order
+  // the rightmost is the lowest arch supported
   // --------------------------------------------
-  typedef typelist<mp31,mp22,mp21> mp_list;
+#if defined(__MUSACC_VER_MAJOR__)
+  typedef typelist<mp31,mp22,mp21> sm_list;
+#else
+  typedef typelist<sm60,sm52,sm35,sm30> sm_list;
+#endif
 
   // lowest supported SM arch
   // --------------------------------------------------------------------------
@@ -108,7 +128,7 @@ namespace core {
     typedef SM type;
   };
 
-  typedef typename lowest_supported_sm_arch_impl<_,mp_list>::type lowest_supported_sm_arch;
+  typedef typename lowest_supported_sm_arch_impl<_,sm_list>::type lowest_supported_sm_arch;
 
   // metafunction to match next viable PtxPlan specialization
   // --------------------------------------------------------------------------
@@ -121,7 +141,7 @@ namespace core {
   template <template <class> class, class>
   struct specialize_plan_impl_match;
 
-  // we loop through the mp_list
+  // we loop through the sm_list
   template <template <class> class P, class SM, class _0, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
   struct specialize_plan_impl_loop<P, SM, typelist<_0, _1, _2, _3, _4, _5, _6, _7, _8, _9> >
        : specialize_plan_impl_loop<P, SM, typelist<    _1, _2, _3, _4, _5, _6, _7, _8, _9> > {};
@@ -149,10 +169,10 @@ namespace core {
   template <template <class> class P, class SM>
   struct has_sm_tuning : has_sm_tuning_impl<SM, typename P<lowest_supported_sm_arch>::tuning > {};
 
-  // once first match is found in mp_list, all remaining mp are possible
+  // once first match is found in sm_list, all remaining sm are possible
   // candidate for tuning, so pick the first available
-  //   if the plan P has MP-level tuning then pick it,
-  //   otherwise move on to the next mp in the mp_list
+  //   if the plan P has SM-level tuning then pick it,
+  //   otherwise move on to the next sm in the sm_list
   template <template <class> class P, class SM, class _1, class _2, class _3, class _4, class _5, class _6, class _7, class _8, class _9>
   struct specialize_plan_impl_match<P, typelist<SM, _1, _2, _3, _4, _5, _6, _7, _8, _9> >
       : thrust::detail::conditional<
@@ -164,10 +184,10 @@ namespace core {
     struct specialize_plan_msvc10_war
     {
       // if Plan has tuning type, this means it has SM-specific tuning
-      // so loop through mp_list to find match,
+      // so loop through sm_list to find match,
       // otherwise just specialize on provided SM
       typedef thrust::detail::conditional<has_tuning_t<Plan<lowest_supported_sm_arch> >::value,
-                                  specialize_plan_impl_loop<Plan, SM, mp_list>,
+                                  specialize_plan_impl_loop<Plan, SM, sm_list>,
                                   Plan<SM> >
           type;
     };
@@ -247,7 +267,7 @@ namespace core {
     };
 
     template <class Agent, size_t MAX_SHMEM>
-    struct has_enough_shmem : has_enough_shmem_impl<true, Agent, MAX_SHMEM, mp_list>
+    struct has_enough_shmem : has_enough_shmem_impl<true, Agent, MAX_SHMEM, sm_list>
     {
     };
 
@@ -365,14 +385,14 @@ namespace core {
       // get_agent_plan_impl::get(version), is for host code and for device
       // code without device-side kernel launches. NVCC and Feta check for
       // these situations differently.
-      #ifdef __NVCOMPILER_CUDA__
+      #ifdef _NVHPC_CUDA
         #ifdef __THRUST_HAS_CUDART__
           if (CUB_IS_DEVICE_CODE) {
             return typename get_plan<Agent>::type(typename Agent::ptx_plan());
           } else
         #endif
         {
-          return get_agent_plan_impl<Agent, mp_list>::get(ptx_version);
+          return get_agent_plan_impl<Agent, sm_list>::get(ptx_version);
         }
       #else
         #if (CUB_PTX_ARCH > 0) && defined(__THRUST_HAS_CUDART__)
@@ -381,7 +401,7 @@ namespace core {
           // We're on device, use default policy
           return Plan(typename Agent::ptx_plan());
         #else
-          return get_agent_plan_impl<Agent, mp_list>::get(ptx_version);
+          return get_agent_plan_impl<Agent, sm_list>::get(ptx_version);
         #endif
       #endif
     }
@@ -389,10 +409,10 @@ namespace core {
 // XXX keep this dead-code for now as a gentle reminder
 //     that kernel luunch which reats plan values is the most robust
 //     mechanism to extract sm-specific tuning parameters
-// TODO: since we are unable to afford kernel launch + musaMemcpy ON EVERY
+// TODO: since we are unable to afford kernel launch + cudaMemcpy ON EVERY
 //       algorithm invocation, we need to design a good caching strategy
 //       such that when the algorithm is called multiple times, only the
-//       first invocation will invoke kernel launch + musaMemcpy, but
+//       first invocation will invoke kernel launch + cudaMemcpy, but
 //       the subsequent invocations, will just read cached values from host mem
 //       If launched from device, this is just a device-function call
 //       no caching is required.
@@ -422,7 +442,7 @@ namespace core {
   xget_agent_plan_impl(F f, musaStream_t s, void* d_ptr)
   {
     AgentPlan plan;
-#ifdef __MUSA_ARCH__
+#ifdef __CUDA_ARCH__
     plan = get_agent_plan_dev<Agent>();
 #else
     static cub::Mutex mutex;
@@ -471,7 +491,7 @@ namespace core {
   int get_sm_count()
   {
     int dev_id;
-    cuda_cub::throw_on_error(musaGetDevice(&dev_id),
+    musa_cub::throw_on_error(musaGetDevice(&dev_id),
                              "get_sm_count :"
                              "failed to musaGetDevice");
 
@@ -480,7 +500,7 @@ namespace core {
     status = musaDeviceGetAttribute(&i32value,
                                     musaDevAttrMultiProcessorCount,
                                     dev_id);
-    cuda_cub::throw_on_error(status,
+    musa_cub::throw_on_error(status,
                              "get_sm_count:"
                              "failed to sm_count");
     return i32value;
@@ -490,7 +510,7 @@ namespace core {
   get_max_shared_memory_per_block()
   {
     int dev_id;
-    cuda_cub::throw_on_error(musaGetDevice(&dev_id),
+    musa_cub::throw_on_error(musaGetDevice(&dev_id),
                              "get_max_shared_memory_per_block :"
                              "failed to musaGetDevice");
 
@@ -499,7 +519,7 @@ namespace core {
     status = musaDeviceGetAttribute(&i32value,
                                     musaDevAttrMaxSharedMemoryPerBlock,
                                     dev_id);
-    cuda_cub::throw_on_error(status,
+    musa_cub::throw_on_error(status,
                              "get_max_shared_memory_per_block :"
                              "failed to get max shared memory per block");
 
@@ -541,7 +561,7 @@ namespace core {
         cub::CacheModifiedInputIterator<PtxPlan::LOAD_MODIFIER,
                                         value_type,
                                         size_type>,
-        It>::type type;
+                                        It>::type type;
   };    // struct Iterator
 
   template <class PtxPlan, class It>
@@ -580,16 +600,13 @@ namespace core {
             class T    = typename iterator_traits<It>::value_type>
   struct BlockLoad
   {
-    typedef cub::BlockLoad<T,
-                           PtxPlan::BLOCK_THREADS,
-                           PtxPlan::ITEMS_PER_THREAD,
-                           PtxPlan::LOAD_ALGORITHM,
-                           1,
-                           1,
-                           get_arch<PtxPlan>::type::ver>
-
-
-        type;
+    using type = cub::BlockLoad<T,
+                                PtxPlan::BLOCK_THREADS,
+                                PtxPlan::ITEMS_PER_THREAD,
+                                PtxPlan::LOAD_ALGORITHM,
+                                1,
+                                1,
+                                get_arch<PtxPlan>::type::ver>;
   };
 
   // BlockStore
@@ -600,31 +617,31 @@ namespace core {
             class T = typename iterator_traits<It>::value_type>
   struct BlockStore
   {
-    typedef cub::BlockStore<T,
-                            PtxPlan::BLOCK_THREADS,
-                            PtxPlan::ITEMS_PER_THREAD,
-                            PtxPlan::STORE_ALGORITHM,
-                            1,
-                            1,
-                            get_arch<PtxPlan>::type::ver>
-        type;
+    using type = cub::BlockStore<T,
+                                 PtxPlan::BLOCK_THREADS,
+                                 PtxPlan::ITEMS_PER_THREAD,
+                                 PtxPlan::STORE_ALGORITHM,
+                                 1,
+                                 1,
+                                 get_arch<PtxPlan>::type::ver>;
   };
-  // cuda_otional
+
+  // musa_optional
   // --------------
-  // used for function that return musaError_t along with the result
+  // used for function that return cudaError_t along with the result
   //
   template <class T>
-  class cuda_optional
+  class musa_optional
   {
     musaError_t status_;
     T           value_;
 
   public:
     __host__ __device__
-    cuda_optional() : status_(musaSuccess) {}
+    musa_optional() : status_(musaSuccess) {}
 
     __host__ __device__
-    cuda_optional(T v, musaError_t status = musaSuccess) : status_(status), value_(v) {}
+    musa_optional(T v, musaError_t status = musaSuccess) : status_(status), value_(v) {}
 
     bool __host__ __device__
     isValid() const { return musaSuccess == status_; }
@@ -638,12 +655,12 @@ namespace core {
     __host__ __device__ operator T const &() const { return value_; }
   };
 
-  cuda_optional<int> THRUST_RUNTIME_FUNCTION
+  musa_optional<int> THRUST_RUNTIME_FUNCTION
   get_ptx_version()
   {
     int ptx_version = 0;
     musaError_t status = cub::PtxVersion(ptx_version);
-    return cuda_optional<int>(ptx_version, status);
+    return musa_optional<int>(ptx_version, status);
   }
 
   musaError_t THRUST_RUNTIME_FUNCTION
@@ -739,19 +756,19 @@ namespace core {
   }
 
   namespace host {
-    inline cuda_optional<size_t> get_max_shared_memory_per_block()
+    inline musa_optional<size_t> get_max_shared_memory_per_block()
     {
       musaError_t status = musaSuccess;
       int         dev_id = 0;
       status             = musaGetDevice(&dev_id);
-      if (status != musaSuccess) return cuda_optional<size_t>(0, status);
+      if (status != musaSuccess) return musa_optional<size_t>(0, status);
 
       int max_shmem = 0;
       status        = musaDeviceGetAttribute(&max_shmem,
                                       musaDevAttrMaxSharedMemoryPerBlock,
                                       dev_id);
-      if (status != musaSuccess) return cuda_optional<size_t>(0, status);
-      return cuda_optional<size_t>(max_shmem, status);
+      if (status != musaSuccess) return musa_optional<size_t>(0, status);
+      return musa_optional<size_t>(max_shmem, status);
     }
   }
 
@@ -770,9 +787,13 @@ namespace core {
 
 
 }    // namespace core
+using core::sm60;
+using core::sm52;
+using core::sm35;
+using core::sm30;
 using core::mp31;
 using core::mp22;
 using core::mp21;
-} // namespace cuda_
+} // namespace musa_cub
 
-} // end namespace thrust
+THRUST_NAMESPACE_END

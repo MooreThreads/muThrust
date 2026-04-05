@@ -3,8 +3,8 @@
 #include <thrust/memory.h>
 
 // #include backends' testframework.h, if they exist and are required for the build
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#include <unittest/cuda/testframework.h>
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
+#include <unittest/musa/testframework.h>
 #endif
 
 #include <iostream>

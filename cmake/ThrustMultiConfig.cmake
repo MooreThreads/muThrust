@@ -122,7 +122,7 @@ function(thrust_configure_multiconfig)
 
     # CMake fixed C++17 support for NVCC + MSVC targets in 3.18.3:
     if (THRUST_CPP_DIALECT EQUAL 17 AND
-        THRUST_DEVICE_SYSTEM STREQUAL "CUDA")
+        THRUST_DEVICE_SYSTEM STREQUAL "MUSA")
       cmake_minimum_required(VERSION 3.18.3)
     endif()
   endif()

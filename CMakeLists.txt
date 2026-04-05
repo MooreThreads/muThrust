@@ -110,13 +110,13 @@ thrust_configure_multiconfig()
 thrust_find_thrust()
 thrust_build_compiler_targets()
 thrust_update_system_found_flags()
-if (THRUST_CUDA_FOUND)
+if (THRUST_MUSA_FOUND)
   include(cmake/ThrustCudaConfig.cmake)
 endif()
 thrust_build_target_list()
 
 message(STATUS "CPP system found?  ${THRUST_CPP_FOUND}")
-message(STATUS "CUDA system found? ${THRUST_CUDA_FOUND}")
+message(STATUS "CUDA system found? ${THRUST_MUSA_FOUND}")
 message(STATUS "TBB system found?  ${THRUST_TBB_FOUND}")
 message(STATUS "OMP system found?  ${THRUST_OMP_FOUND}")
 
@@ -142,7 +142,7 @@ if (THRUST_ENABLE_BENCHMARKS)
   add_subdirectory(internal/benchmark)
 endif()
 
-if (THRUST_INCLUDE_CUB_CMAKE AND THRUST_CUDA_FOUND)
+if (THRUST_INCLUDE_CUB_CMAKE AND THRUST_MUSA_FOUND)
   set(CUB_IN_THRUST ON)
   # CUB's path is specified generically to support both GitHub and Perforce
   # source tree layouts. The include directory used by cub-config.cmake

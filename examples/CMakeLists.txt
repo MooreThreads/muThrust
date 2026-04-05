@@ -54,9 +54,9 @@ endforeach()
 # Update flags to reflect RDC options. See note in ThrustCudaConfig.cmake --
 # these flag variables behave unintuitively:
 if (THRUST_ENABLE_EXAMPLES_WITH_RDC)
-  set(CMAKE_CUDA_FLAGS "${THRUST_CUDA_FLAGS_BASE} ${THRUST_CUDA_FLAGS_RDC}")
+  set(CMAKE_CUDA_FLAGS "${THRUST_MUSA_FLAGS_BASE} ${THRUST_MUSA_FLAGS_RDC}")
 else()
-  set(CMAKE_CUDA_FLAGS "${THRUST_CUDA_FLAGS_BASE} ${THRUST_CUDA_FLAGS_NO_RDC}")
+  set(CMAKE_CUDA_FLAGS "${THRUST_MUSA_FLAGS_BASE} ${THRUST_MUSA_FLAGS_NO_RDC}")
 endif()
 
 ## thrust_add_example
@@ -66,8 +66,8 @@ endif()
 # target_name_var: Variable name to overwrite with the name of the example
 #   target. Useful for post-processing target information per-backend.
 # example_name: The name of the example minus "<config_prefix>.example." For
-#   instance, examples/vector.cu will be "vector", and examples/cuda/copy.cu
-#   would be "cuda.copy".
+#   instance, examples/vector.cu will be "vector", and examples/musa/copy.cu
+#   would be "musa.copy".
 # example_src: The source file that implements the example.
 # thrust_target: The reference thrust target with configuration information.
 #
@@ -76,8 +76,8 @@ function(thrust_add_example target_name_var example_name example_src thrust_targ
   thrust_get_target_property(config_device ${thrust_target} DEVICE)
   thrust_get_target_property(config_prefix ${thrust_target} PREFIX)
 
-  # Wrap the .cu file in .cpp for non-CUDA backends
-  if ("CUDA" STREQUAL "${config_device}")
+  # Wrap the .cu file in .cpp for non-MUSA backends
+  if ("MUSA" STREQUAL "${config_device}")
     set(real_example_src "${example_src}")
   else()
     thrust_wrap_cu_in_cpp(real_example_src "${example_src}" ${thrust_target})
@@ -105,13 +105,13 @@ function(thrust_add_example target_name_var example_name example_src thrust_targ
   endif()
   add_dependencies(${example_meta_target} ${example_target})
 
-  if ("CUDA" STREQUAL "${config_device}" AND
+  if ("MUSA" STREQUAL "${config_device}" AND
       THRUST_ENABLE_EXAMPLES_WITH_RDC)
-    thrust_enable_rdc_for_cuda_target(${example_target})
+    thrust_enable_rdc_for_musa_target(${example_target})
   endif()
 
   # Get the name of FileCheck input by stripping out the config name.
-  # (e.g. "thrust.cpp.cuda.cpp14.example.xxx" -> "thrust.example.xxx.filecheck")
+  # (e.g. "thrust.cpp.musa.cpp14.example.xxx" -> "thrust.example.xxx.filecheck")
   string(REPLACE "${config_prefix}" "thrust"
     filecheck_reference_file
     "${example_target}.filecheck"
@@ -149,4 +149,4 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
 endforeach()
 
 add_subdirectory(cmake)
-add_subdirectory(cuda)
+add_subdirectory(musa)

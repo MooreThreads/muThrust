@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -34,8 +28,24 @@
 
 #include <thrust/detail/config.h>
 
-#if defined(__MUSACC__) || defined(__NVCOMPILER_CUDA__)
-#  if !defined(__MUSA_ARCH__) || (__MUSA_ARCH__>= 350 && defined(__MUSACC_RDC__))
+// 包含平台宏定义
+#include <thrust/system/musa/detail/platform_macros.h>
+
+// We don't directly include <cub/version.cuh> since it doesn't exist in
+// older releases. This header will always pull in version info:
+#include <cub/util_namespace.cuh>
+
+#if defined(__CUDACC__) || defined(_NVHPC_CUDA)
+#  if !defined(__CUDA_ARCH__) || (__CUDA_ARCH__>= 350 && defined(__CUDACC_RDC__))
+#    define __THRUST_HAS_CUDART__ 1
+#    define THRUST_RUNTIME_FUNCTION __host__ __device__ __forceinline__
+#  else
+#    define __THRUST_HAS_CUDART__ 0
+#    define THRUST_RUNTIME_FUNCTION __host__ __forceinline__
+#  endif
+// MUSA: 与 CUB_RUNTIME_FUNCTION 保持一致，设备端不启用运行时
+#elif defined(__MUSACC_VER_MAJOR__)
+#  if !defined(__MUSA_ARCH__)
 #    define __THRUST_HAS_CUDART__ 1
 #    define THRUST_RUNTIME_FUNCTION __host__ __device__ __forceinline__
 #  else
@@ -47,7 +57,7 @@
 #  define THRUST_RUNTIME_FUNCTION __host__ __forceinline__
 #endif
 
-#ifdef __MUSA_ARCH__
+#if defined(__CUDA_ARCH__) || defined(__MUSA_ARCH__)
 #define THRUST_DEVICE_CODE
 #endif
 
@@ -74,13 +84,65 @@
 #define THRUST_DEBUG_SYNC_FLAG false
 #endif
 
-#define THRUST_CUB_NS_PREFIX namespace thrust {   namespace cuda_cub {
-#define THRUST_CUB_NS_POSTFIX }  }
-
 #ifndef THRUST_IGNORE_CUB_VERSION_CHECK
+
 #include <thrust/version.h>
-#include <cub/util_namespace.cuh> // This includes <cub/version.cuh> in newer releases.
 #if THRUST_VERSION != CUB_VERSION
 #error The version of CUB in your include path is not compatible with this release of Thrust. CUB is now included in the CUDA Toolkit, so you no longer need to use your own checkout of CUB. Define THRUST_IGNORE_CUB_VERSION_CHECK to ignore this.
 #endif
+
+// Make sure the CUB namespace has been declared using the modern macros:
+CUB_NAMESPACE_BEGIN
+CUB_NAMESPACE_END
+
+#else // THRUST_IGNORE_CUB_VERSION_CHECK
+
+// Make sure the CUB namespace has been declared. Use the old macros for compat
+// with older CUB:
+CUB_NS_PREFIX
+namespace cub {}
+CUB_NS_POSTFIX
+
+// Older versions of CUB do not define this. Set it to a reasonable default if
+// not provided.
+#ifndef CUB_NS_QUALIFIER
+#define CUB_NS_QUALIFIER ::cub
+#endif
+
+#endif // THRUST_IGNORE_CUB_VERSION_CHECK
+
+// Pull the fully qualified cub:: namespace into the thrust:: namespace so we
+// don't have to use CUB_NS_QUALIFIER as long as we're in thrust::.
+THRUST_NAMESPACE_BEGIN
+namespace cub
+{
+using namespace CUB_NS_QUALIFIER;
+}
+THRUST_NAMESPACE_END
+
+// ----------------------------------------------------------------------------
+// CDP (MUSA Dynamic Parallelism) 配置
+// MUSA 平台暂不支持 CDP，需要在编译时禁用
+// ----------------------------------------------------------------------------
+
+// 原有 CDP 检测逻辑（仅在 MUSA 平台生效）
+#ifndef THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM
+  #if defined(__CUDACC_RDC__) && defined(__CUDACC__) && THRUST_CUDA_ENABLED
+    #if !defined(__CUDA_ARCH__) || (__CUDA_ARCH__ >= 350)
+      #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 1
+    #else
+      #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 0
+    #endif
+  #else
+    #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 0
+  #endif
+#endif
+
+// MUSA 平台强制禁用 CDP
+#if THRUST_MUSA_ENABLED
+  #ifdef THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM
+    #undef THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM
+  #endif
+  #define THRUST_DEVICE_CUDA_DYNAMIC_PARALLELISM 0
+  #define THRUST_MUSA_DISABLE_CDP 1
 #endif

@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,6 +26,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/system/musa/config.h>
@@ -55,8 +50,7 @@
 
 #include <cub/util_math.cuh>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
 template <typename DerivedPolicy,
           typename InputIterator1,
@@ -74,7 +68,7 @@ reduce_by_key(
     OutputIterator2                                             values_output,
     BinaryPredicate                                             binary_pred);
 
-namespace cuda_cub {
+namespace musa_cub {
 
 namespace __reduce_by_key {
 
@@ -106,6 +100,95 @@ namespace __reduce_by_key {
   struct Tuning;
 
   template <class Key, class Value>
+  struct Tuning<sm30, Key, Value>
+  {
+    enum
+    {
+      MAX_INPUT_BYTES      = mpl::max<size_t, sizeof(Key), sizeof(Value)>::value,
+      COMBINED_INPUT_BYTES = sizeof(Key) + sizeof(Value),
+
+      NOMINAL_4B_ITEMS_PER_THREAD = 6,
+
+      ITEMS_PER_THREAD = mpl::min<
+          int,
+          NOMINAL_4B_ITEMS_PER_THREAD,
+          mpl::max<
+              int,
+              1,
+              static_cast<int>(((NOMINAL_4B_ITEMS_PER_THREAD * 8) +
+               COMBINED_INPUT_BYTES - 1) /
+                  COMBINED_INPUT_BYTES)>::value>::value,
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_DEFAULT,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };    // Tuning sm30
+
+  template<class Key, class Value>
+  struct Tuning<sm35,Key,Value> : Tuning<sm30,Key,Value>
+  {
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 6,
+
+      ITEMS_PER_THREAD =
+          (Tuning::MAX_INPUT_BYTES <= 8)
+              ? 6
+              : mpl::min<
+                    int,
+                    NOMINAL_4B_ITEMS_PER_THREAD,
+                    mpl::max<
+                        int,
+                        1,
+                        ((NOMINAL_4B_ITEMS_PER_THREAD * 8) +
+                         Tuning::COMBINED_INPUT_BYTES - 1) /
+                            Tuning::COMBINED_INPUT_BYTES>::value>::value,
+    };
+
+    typedef PtxPolicy<128,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_LDG,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };    // Tuning sm35
+
+  template<class Key, class Value>
+  struct Tuning<sm52,Key,Value> : Tuning<sm30,Key,Value>
+  {
+    enum
+    {
+      NOMINAL_4B_ITEMS_PER_THREAD = 9,
+
+      ITEMS_PER_THREAD =
+          (Tuning::MAX_INPUT_BYTES <= 8)
+              ? 9
+              : mpl::min<
+                    int,
+                    NOMINAL_4B_ITEMS_PER_THREAD,
+                    mpl::max<
+                        int,
+                        1,
+                        ((NOMINAL_4B_ITEMS_PER_THREAD * 8) +
+                         Tuning::COMBINED_INPUT_BYTES - 1) /
+                            Tuning::COMBINED_INPUT_BYTES>::value>::value,
+    };
+
+    typedef PtxPolicy<256,
+                      ITEMS_PER_THREAD,
+                      cub::BLOCK_LOAD_WARP_TRANSPOSE,
+                      cub::LOAD_LDG,
+                      cub::BLOCK_SCAN_WARP_SCANS>
+        type;
+  };    // Tuning sm52
+
+#if defined(__MUSACC_VER_MAJOR__)
+  // MUSA architecture: mp21
+  template <class Key, class Value>
   struct Tuning<mp21, Key, Value>
   {
     enum
@@ -133,93 +216,7 @@ namespace __reduce_by_key {
                       cub::BLOCK_SCAN_WARP_SCANS>
         type;
   };
-
-  // template <class Key, class Value>
-  // struct Tuning<sm30, Key, Value>
-  // {
-  //   enum
-  //   {
-  //     MAX_INPUT_BYTES      = mpl::max<size_t, sizeof(Key), sizeof(Value)>::value,
-  //     COMBINED_INPUT_BYTES = sizeof(Key) + sizeof(Value),
-
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 6,
-
-  //     ITEMS_PER_THREAD = mpl::min<
-  //         int,
-  //         NOMINAL_4B_ITEMS_PER_THREAD,
-  //         mpl::max<
-  //             int,
-  //             1,
-  //             ((NOMINAL_4B_ITEMS_PER_THREAD * 8) +
-  //              COMBINED_INPUT_BYTES - 1) /
-  //                 COMBINED_INPUT_BYTES>::value>::value,
-  //   };
-
-  //   typedef PtxPolicy<128,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_DEFAULT,
-  //                     cub::BLOCK_SCAN_WARP_SCANS>
-  //       type;
-  // };    // Tuning sm30
-
-  // template<class Key, class Value>
-  // struct Tuning<sm35,Key,Value> : Tuning<sm30,Key,Value>
-  // {
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 6,
-
-  //     ITEMS_PER_THREAD =
-  //         (Tuning::MAX_INPUT_BYTES <= 8)
-  //             ? 6
-  //             : mpl::min<
-  //                   int,
-  //                   NOMINAL_4B_ITEMS_PER_THREAD,
-  //                   mpl::max<
-  //                       int,
-  //                       1,
-  //                       ((NOMINAL_4B_ITEMS_PER_THREAD * 8) +
-  //                        Tuning::COMBINED_INPUT_BYTES - 1) /
-  //                           Tuning::COMBINED_INPUT_BYTES>::value>::value,
-  //   };
-
-  //   typedef PtxPolicy<128,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_LDG,
-  //                     cub::BLOCK_SCAN_WARP_SCANS>
-  //       type;
-  // };    // Tuning sm35
-
-  // template<class Key, class Value>
-  // struct Tuning<sm52,Key,Value> : Tuning<sm30,Key,Value>
-  // {
-  //   enum
-  //   {
-  //     NOMINAL_4B_ITEMS_PER_THREAD = 9,
-
-  //     ITEMS_PER_THREAD =
-  //         (Tuning::MAX_INPUT_BYTES <= 8)
-  //             ? 9
-  //             : mpl::min<
-  //                   int,
-  //                   NOMINAL_4B_ITEMS_PER_THREAD,
-  //                   mpl::max<
-  //                       int,
-  //                       1,
-  //                       ((NOMINAL_4B_ITEMS_PER_THREAD * 8) +
-  //                        Tuning::COMBINED_INPUT_BYTES - 1) /
-  //                           Tuning::COMBINED_INPUT_BYTES>::value>::value,
-  //   };
-
-  //   typedef PtxPolicy<256,
-  //                     ITEMS_PER_THREAD,
-  //                     cub::BLOCK_LOAD_WARP_TRANSPOSE,
-  //                     cub::LOAD_LDG,
-  //                     cub::BLOCK_SCAN_WARP_SCANS>
-  //       type;
-  // };    // Tuning sm52
+#endif // __MUSACC_VER_MAJOR__
 
   template <class KeysInputIt,
             class ValuesInputIt,
@@ -480,8 +477,9 @@ namespace __reduce_by_key {
         {
           if (segment_flags[ITEM])
           {
-            storage.raw_exchange[segment_indices[ITEM] -
-                                 num_tile_segments_prefix] = scatter_items[ITEM];
+            int idx = static_cast<int>(segment_indices[ITEM] -
+                                       num_tile_segments_prefix);
+            storage.raw_exchange[idx] = scatter_items[ITEM];
           }
         }
 
@@ -821,7 +819,7 @@ namespace __reduce_by_key {
         // so just assign one tile per block
         //
         int  tile_idx          = blockIdx.x;
-        Size tile_offset       = tile_idx * ITEMS_PER_TILE;
+        Size tile_offset       = static_cast<Size>(tile_idx) * ITEMS_PER_TILE;
         Size num_remaining     = num_items - tile_offset;
 
         if (num_remaining > ITEMS_PER_TILE)
@@ -997,6 +995,98 @@ namespace __reduce_by_key {
     return status;
   }
 
+  template <typename Size,
+            typename Derived,
+            typename KeysInputIt,
+            typename ValuesInputIt,
+            typename KeysOutputIt,
+            typename ValuesOutputIt,
+            typename EqualityOp,
+            typename ReductionOp>
+  THRUST_RUNTIME_FUNCTION
+  pair<KeysOutputIt, ValuesOutputIt>
+  reduce_by_key_dispatch(execution_policy<Derived>& policy,
+                         KeysInputIt                keys_first,
+                         Size                       num_items,
+                         ValuesInputIt              values_first,
+                         KeysOutputIt               keys_output,
+                         ValuesOutputIt             values_output,
+                         EqualityOp                 equality_op,
+                         ReductionOp                reduction_op)
+  {
+    size_t       temp_storage_bytes = 0;
+    musaStream_t stream             = musa_cub::stream(policy);
+    bool         debug_sync         = THRUST_DEBUG_SYNC_FLAG;
+
+    if (num_items == 0)
+    {
+      return thrust::make_pair(keys_output, values_output);
+    }
+
+    musaError_t status;
+    status = doit_step(NULL,
+                       temp_storage_bytes,
+                       keys_first,
+                       values_first,
+                       keys_output,
+                       values_output,
+                       reinterpret_cast<Size*>(NULL),
+                       equality_op,
+                       reduction_op,
+                       num_items,
+                       stream,
+                       debug_sync);
+    musa_cub::throw_on_error(status, "reduce_by_key failed on 1st step");
+
+    size_t allocation_sizes[2] = {sizeof(Size), temp_storage_bytes};
+    void * allocations[2]      = {NULL, NULL};
+
+    size_t storage_size = 0;
+    status = core::alias_storage(NULL,
+                                 storage_size,
+                                 allocations,
+                                 allocation_sizes);
+    musa_cub::throw_on_error(status, "reduce failed on 1st alias_storage");
+
+    // Allocate temporary storage.
+    thrust::detail::temporary_array<thrust::detail::uint8_t, Derived>
+      tmp(policy, storage_size);
+    void *ptr = static_cast<void*>(tmp.data().get());
+
+    status = core::alias_storage(ptr,
+                                 storage_size,
+                                 allocations,
+                                 allocation_sizes);
+    musa_cub::throw_on_error(status, "reduce failed on 2nd alias_storage");
+
+    Size* d_num_runs_out
+      = thrust::detail::aligned_reinterpret_cast<Size*>(allocations[0]);
+
+    status = doit_step(allocations[1],
+                       temp_storage_bytes,
+                       keys_first,
+                       values_first,
+                       keys_output,
+                       values_output,
+                       d_num_runs_out,
+                       equality_op,
+                       reduction_op,
+                       num_items,
+                       stream,
+                       debug_sync);
+    musa_cub::throw_on_error(status, "reduce_by_key failed on 2nd step");
+
+    status = musa_cub::synchronize(policy);
+    musa_cub::throw_on_error(status, "reduce_by_key: failed to synchronize");
+
+    int num_runs_out = musa_cub::get_value(policy, d_num_runs_out);
+
+    return thrust::make_pair(
+      keys_output + num_runs_out,
+      values_output + num_runs_out
+    );
+  }
+
   template <typename Derived,
             typename KeysInputIt,
             typename ValuesInputIt,
@@ -1015,78 +1105,29 @@ namespace __reduce_by_key {
                 EqualityOp                 equality_op,
                 ReductionOp                reduction_op)
   {
-    typedef int size_type;
+    using size_type = typename iterator_traits<KeysInputIt>::difference_type;
 
-    size_type    num_items          = static_cast<size_type>(thrust::distance(keys_first, keys_last));
-    size_t       temp_storage_bytes = 0;
-    musaStream_t stream             = cuda_cub::stream(policy);
-    bool         debug_sync         = THRUST_DEBUG_SYNC_FLAG;
+    size_type num_items = thrust::distance(keys_first, keys_last);
 
     if (num_items == 0)
+    {
       return thrust::make_pair(keys_output, values_output);
+    }
 
-    musaError_t status;
-    status = doit_step(NULL,
-                       temp_storage_bytes,
-                       keys_first,
-                       values_first,
-                       keys_output,
-                       values_output,
-                       reinterpret_cast<size_type*>(NULL),
-                       equality_op,
-                       reduction_op,
-                       num_items,
-                       stream,
-                       debug_sync);
-    cuda_cub::throw_on_error(status, "reduce_by_key failed on 1st step");
+    pair<KeysOutputIt, ValuesOutputIt> result{};
+    THRUST_INDEX_TYPE_DISPATCH(result,
+                               reduce_by_key_dispatch,
+                               num_items,
+                               (policy,
+                                keys_first,
+                                num_items_fixed,
+                                values_first,
+                                keys_output,
+                                values_output,
+                                equality_op,
+                                reduction_op));
 
-    size_t allocation_sizes[2] = {sizeof(size_type), temp_storage_bytes};
-    void * allocations[2]      = {NULL, NULL};
-
-    size_t storage_size = 0;
-    status = core::alias_storage(NULL,
-                                 storage_size,
-                                 allocations,
-                                 allocation_sizes);
-    cuda_cub::throw_on_error(status, "reduce failed on 1st alias_storage");
-
-    // Allocate temporary storage.
-    thrust::detail::temporary_array<thrust::detail::uint8_t, Derived>
-      tmp(policy, storage_size);
-    void *ptr = static_cast<void*>(tmp.data().get());
-
-    status = core::alias_storage(ptr,
-                                 storage_size,
-                                 allocations,
-                                 allocation_sizes);
-    cuda_cub::throw_on_error(status, "reduce failed on 2nd alias_storage");
-
-    size_type* d_num_runs_out
-      = thrust::detail::aligned_reinterpret_cast<size_type*>(allocations[0]);
-
-    status = doit_step(allocations[1],
-                       temp_storage_bytes,
-                       keys_first,
-                       values_first,
-                       keys_output,
-                       values_output,
-                       d_num_runs_out,
-                       equality_op,
-                       reduction_op,
-                       num_items,
-                       stream,
-                       debug_sync);
-    cuda_cub::throw_on_error(status, "reduce_by_key failed on 2nd step");
-
-    status = cuda_cub::synchronize(policy);
-    cuda_cub::throw_on_error(status, "reduce_by_key: failed to synchronize");
-
-    int num_runs_out = cuda_cub::get_value(policy, d_num_runs_out);
-
-    return thrust::make_pair(
-      keys_output + num_runs_out,
-      values_output + num_runs_out
-    );
+    return result;
   }
 
 }    // namespace __reduce_by_key
@@ -1162,7 +1203,7 @@ reduce_by_key(execution_policy<Derived> &policy,
     thrust::iterator_value<ValInputIt>,
     thrust::iterator_value<ValOutputIt>
   >::type value_type;
-  return cuda_cub::reduce_by_key(policy,
+  return musa_cub::reduce_by_key(policy,
                               keys_first,
                               keys_last,
                               values_first,
@@ -1186,7 +1227,7 @@ reduce_by_key(execution_policy<Derived> &policy,
               ValOutputIt                values_output)
 {
   typedef typename thrust::iterator_value<KeyInputIt>::type KeyT;
-  return cuda_cub::reduce_by_key(policy,
+  return musa_cub::reduce_by_key(policy,
                               keys_first,
                               keys_last,
                               values_first,
@@ -1195,9 +1236,9 @@ reduce_by_key(execution_policy<Derived> &policy,
                               equal_to<KeyT>());
 }
 
-} // namespace cuda_
+} // namespace musa_cub
 
-} // end namespace thrust
+THRUST_NAMESPACE_END
 
 #include <thrust/memory.h>
 #include <thrust/reduce.h>

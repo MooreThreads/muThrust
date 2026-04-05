@@ -28,12 +28,12 @@
 
 #include <thrust/detail/config.h>
 
-#include <thrust/system/cuda/detail/guarded_cuda_runtime_api.h>
+#include <thrust/system/musa/detail/guarded_cuda_runtime_api.h>
 #include <thrust/system/cpp/detail/execution_policy.h>
-#include <thrust/system/cuda/detail/execution_policy.h>
+#include <thrust/system/musa/detail/execution_policy.h>
 
 THRUST_NAMESPACE_BEGIN
-namespace cuda_cub {
+namespace musa_cub {
 
   template <class Sys1, class Sys2>
   struct cross_system : execution_policy<cross_system<Sys1, Sys2> >
@@ -59,7 +59,7 @@ namespace cuda_cub {
   template <class Sys1, class Sys2>
   constexpr __host__ __device__
   auto direction_of_copy(
-    thrust::cuda::execution_policy<Sys1> const&
+    thrust::system::musa::execution_policy<Sys1> const&
   , thrust::cpp::execution_policy<Sys2> const&
   )
   THRUST_DECLTYPE_RETURNS(
@@ -73,7 +73,7 @@ namespace cuda_cub {
   constexpr __host__ __device__
   auto direction_of_copy(
     thrust::cpp::execution_policy<Sys1> const&
-  , thrust::cuda::execution_policy<Sys2> const&
+  , thrust::system::musa::execution_policy<Sys2> const&
   )
   THRUST_DECLTYPE_RETURNS(
     thrust::detail::integral_constant<
@@ -85,8 +85,8 @@ namespace cuda_cub {
   template <class Sys1, class Sys2>
   constexpr __host__ __device__
   auto direction_of_copy(
-    thrust::cuda::execution_policy<Sys1> const&
-  , thrust::cuda::execution_policy<Sys2> const&
+    thrust::system::musa::execution_policy<Sys1> const&
+  , thrust::system::musa::execution_policy<Sys2> const&
   )
   THRUST_DECLTYPE_RETURNS(
     thrust::detail::integral_constant<
@@ -215,7 +215,7 @@ namespace cuda_cub {
   template <class Sys1, class Sys2>
   __host__ __device__
   auto
-  select_device_system(thrust::cuda::execution_policy<Sys1> &sys1,
+  select_device_system(thrust::musa::execution_policy<Sys1> &sys1,
                        thrust::execution_policy<Sys2> &)
   THRUST_DECLTYPE_RETURNS(sys1)
 
@@ -223,7 +223,7 @@ namespace cuda_cub {
   template <class Sys1, class Sys2>
   __host__ __device__
   auto
-  select_device_system(thrust::cuda::execution_policy<Sys1> const &sys1,
+  select_device_system(thrust::musa::execution_policy<Sys1> const &sys1,
                        thrust::execution_policy<Sys2> const &)
   THRUST_DECLTYPE_RETURNS(sys1)
 
@@ -232,7 +232,7 @@ namespace cuda_cub {
   __host__ __device__
   auto
   select_device_system(thrust::execution_policy<Sys1> &,
-                       thrust::cuda::execution_policy<Sys2> &sys2)
+                       thrust::musa::execution_policy<Sys2> &sys2)
   THRUST_DECLTYPE_RETURNS(sys2)
 
   // Host to device.
@@ -240,23 +240,23 @@ namespace cuda_cub {
   __host__ __device__
   auto
   select_device_system(thrust::execution_policy<Sys1> const &,
-                       thrust::cuda::execution_policy<Sys2> const &sys2)
+                       thrust::musa::execution_policy<Sys2> const &sys2)
   THRUST_DECLTYPE_RETURNS(sys2)
 
   // Device to device.
   template <class Sys1, class Sys2>
   __host__ __device__
   auto
-  select_device_system(thrust::cuda::execution_policy<Sys1> &sys1,
-                       thrust::cuda::execution_policy<Sys2> &)
+  select_device_system(thrust::musa::execution_policy<Sys1> &sys1,
+                       thrust::musa::execution_policy<Sys2> &)
   THRUST_DECLTYPE_RETURNS(sys1)
 
   // Device to device.
   template <class Sys1, class Sys2>
   __host__ __device__
   auto
-  select_device_system(thrust::cuda::execution_policy<Sys1> const &sys1,
-                       thrust::cuda::execution_policy<Sys2> const &)
+  select_device_system(thrust::musa::execution_policy<Sys1> const &sys1,
+                       thrust::musa::execution_policy<Sys2> const &)
   THRUST_DECLTYPE_RETURNS(sys1)
 
   /////////////////////////////////////////////////////////////////////////////
@@ -265,7 +265,7 @@ namespace cuda_cub {
   template <class Sys1, class Sys2>
   __host__ __device__
   auto
-  select_host_system(thrust::cuda::execution_policy<Sys1> &,
+  select_host_system(thrust::musa::execution_policy<Sys1> &,
                      thrust::execution_policy<Sys2> &sys2)
   THRUST_DECLTYPE_RETURNS(sys2)
 
@@ -273,7 +273,7 @@ namespace cuda_cub {
   template <class Sys1, class Sys2>
   __host__ __device__
   auto
-  select_host_system(thrust::cuda::execution_policy<Sys1> const &,
+  select_host_system(thrust::musa::execution_policy<Sys1> const &,
                      thrust::execution_policy<Sys2> const &sys2)
   THRUST_DECLTYPE_RETURNS(sys2)
 
@@ -282,7 +282,7 @@ namespace cuda_cub {
   __host__ __device__
   auto
   select_host_system(thrust::execution_policy<Sys1> &sys1,
-                     thrust::cuda::execution_policy<Sys2> &)
+                     thrust::musa::execution_policy<Sys2> &)
   THRUST_DECLTYPE_RETURNS(sys1)
 
   // Host to device.
@@ -290,7 +290,7 @@ namespace cuda_cub {
   __host__ __device__
   auto
   select_host_system(thrust::execution_policy<Sys1> const &sys1,
-                     thrust::cuda::execution_policy<Sys2> const &)
+                     thrust::musa::execution_policy<Sys2> const &)
   THRUST_DECLTYPE_RETURNS(sys1)
 
   // Device to device.
@@ -334,5 +334,5 @@ namespace cuda_cub {
     return cross_system<Sys1, Sys2>(non_const_sys1, non_const_sys2);
   }
 
-} // namespace cuda_cub
+} // namespace musa_cub
 THRUST_NAMESPACE_END

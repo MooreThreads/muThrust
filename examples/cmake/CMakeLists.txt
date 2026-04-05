@@ -10,7 +10,7 @@ if ("NVCXX" STREQUAL "${CMAKE_CUDA_COMPILER_ID}")
   )
 endif()
 
-if (THRUST_CPP_FOUND AND THRUST_CUDA_FOUND)
+if (THRUST_CPP_FOUND AND THRUST_MUSA_FOUND)
   # Do a basic check of the cmake/ThrustAddSubdir.cmake mechanism:
   add_test(
     NAME thrust.example.cmake.add_subdir

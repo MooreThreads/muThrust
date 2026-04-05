@@ -9,9 +9,9 @@ endforeach()
 # Update flags to reflect RDC options. See note in ThrustCudaConfig.cmake --
 # these flag variables behave unintuitively:
 if (THRUST_ENABLE_TESTS_WITH_RDC)
-  set(CMAKE_CUDA_FLAGS "${THRUST_CUDA_FLAGS_BASE} ${THRUST_CUDA_FLAGS_RDC}")
+  set(CMAKE_CUDA_FLAGS "${THRUST_MUSA_FLAGS_BASE} ${THRUST_MUSA_FLAGS_RDC}")
 else()
-  set(CMAKE_CUDA_FLAGS "${THRUST_CUDA_FLAGS_BASE} ${THRUST_CUDA_FLAGS_NO_RDC}")
+  set(CMAKE_CUDA_FLAGS "${THRUST_MUSA_FLAGS_BASE} ${THRUST_MUSA_FLAGS_NO_RDC}")
 endif()
 
 # Generate testing framework libraries:
@@ -27,19 +27,19 @@ macro(thrust_declare_test_restrictions test_name)
 endmacro()
 
 # Async/future/event tests only support the CUDA backend:
-thrust_declare_test_restrictions(async_copy        CPP.CUDA OMP.CUDA TBB.CUDA)
-thrust_declare_test_restrictions(async_for_each    CPP.CUDA OMP.CUDA TBB.CUDA)
-thrust_declare_test_restrictions(async_reduce      CPP.CUDA OMP.CUDA TBB.CUDA)
-thrust_declare_test_restrictions(async_reduce_into CPP.CUDA OMP.CUDA TBB.CUDA)
-thrust_declare_test_restrictions(async_sort        CPP.CUDA OMP.CUDA TBB.CUDA)
-thrust_declare_test_restrictions(async_transform   CPP.CUDA OMP.CUDA TBB.CUDA)
-thrust_declare_test_restrictions(event             CPP.CUDA OMP.CUDA TBB.CUDA)
-thrust_declare_test_restrictions(future            CPP.CUDA OMP.CUDA TBB.CUDA)
+thrust_declare_test_restrictions(async_copy        CPP.MUSA OMP.MUSA TBB.MUSA)
+thrust_declare_test_restrictions(async_for_each    CPP.MUSA OMP.MUSA TBB.MUSA)
+thrust_declare_test_restrictions(async_reduce      CPP.MUSA OMP.MUSA TBB.MUSA)
+thrust_declare_test_restrictions(async_reduce_into CPP.MUSA OMP.MUSA TBB.MUSA)
+thrust_declare_test_restrictions(async_sort        CPP.MUSA OMP.MUSA TBB.MUSA)
+thrust_declare_test_restrictions(async_transform   CPP.MUSA OMP.MUSA TBB.MUSA)
+thrust_declare_test_restrictions(event             CPP.MUSA OMP.MUSA TBB.MUSA)
+thrust_declare_test_restrictions(future            CPP.MUSA OMP.MUSA TBB.MUSA)
 
 # This test is incompatible with TBB and OMP, since it requires special per-device
 # handling to process exceptions in a device function, which is only implemented
 # for CUDA.
-thrust_declare_test_restrictions(unittest_static_assert CPP.CPP CPP.CUDA)
+thrust_declare_test_restrictions(unittest_static_assert CPP.CPP CPP.MUSA)
 
 # MUSA: Tests that depend on parallel_for have been fixed by using direct kernel
 # launch in agent_launcher.h instead of function pointer-based launch.
@@ -77,7 +77,7 @@ set(MUSA_DISABLED_TESTS
 # target_name_var: Variable name to overwrite with the name of the test
 #   target. Useful for post-processing target information per-backend.
 # test_name: The name of the test minus "<config_prefix>.test." For example,
-#   testing/vector.cu will be "vector", and testing/cuda/copy.cu will be
+#   testing/vector.cu will be "vector", and testing/musa/copy.cu will be
 #   "cuda.copy".
 # test_src: The source file that implements the test.
 # thrust_target: The reference thrust target with configuration information.
@@ -180,7 +180,7 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
     thrust_add_test(test_target ${test_name} "${test_src}" ${thrust_target})
 
     if (THRUST_ENABLE_TESTS_WITH_RDC AND ("CUDA" STREQUAL "${config_device}"))
-      thrust_enable_rdc_for_cuda_target(${test_target})
+      thrust_enable_rdc_for_musa_target(${test_target})
     endif()
   endforeach()
 endforeach()
@@ -189,6 +189,6 @@ endforeach()
 add_subdirectory(async)
 add_subdirectory(cmake)
 add_subdirectory(cpp)
-add_subdirectory(cuda)
+add_subdirectory(musa)
 add_subdirectory(omp)
 add_subdirectory(regression)

@@ -54,8 +54,8 @@ namespace mr
  *  The disjoint version of the pool resources uses a separate upstream memory resource, \p Bookkeeper, to allocate memory
  *      necessary to manage the cached memory. There may be many reasons to do that; the canonical one is that \p Upstream
  *      allocates memory that is inaccessible to the code of the pool resource, which means that it cannot embed the necessary
- *      information in memory obtained from \p Upstream; for instance, \p Upstream can be a CUDA non-managed memory
- *      resource, or a CUDA managed memory resource whose memory we would prefer to not migrate back and forth between
+ *      information in memory obtained from \p Upstream; for instance, \p Upstream can be a MUSA non-managed memory
+ *      resource, or a MUSA managed memory resource whose memory we would prefer to not migrate back and forth between
  *      host and device when executing bookkeeping code.
  *
  *  This is not the only case where it makes sense to use a disjoint pool resource, though. In a multi-core environment

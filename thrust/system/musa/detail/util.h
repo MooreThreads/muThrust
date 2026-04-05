@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights meserved.
  *
@@ -35,22 +29,23 @@
 #include <cstdio>
 #include <thrust/detail/config.h>
 #include <thrust/iterator/iterator_traits.h>
-#include <cub/util_arch.cuh>
 #include <thrust/system/musa/detail/execution_policy.h>
 #include <thrust/system_error.h>
 #include <thrust/system/musa/error.h>
 
-namespace thrust
-{
+#include <cub/detail/device_synchronize.cuh>
+#include <cub/util_arch.cuh>
 
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+
+namespace musa_cub {
 
 inline __host__ __device__
 musaStream_t
 default_stream()
 {
-#ifdef MUSA_API_PER_THREAD_DEFAULT_STREAM
-  return musaStreamPerThread;
+#ifdef CUDA_API_PER_THREAD_DEFAULT_STREAM
+  return cudaStreamPerThread;
 #else
   return musaStreamLegacy;
 #endif
@@ -73,6 +68,25 @@ stream(execution_policy<Derived> &policy)
   return get_stream(derived_cast(policy));
 }
 
+
+// Fallback implementation of the customization point.
+template <class Derived>
+__host__ __device__
+bool
+must_perform_optional_stream_synchronization(execution_policy<Derived> &)
+{
+  return true;
+}
+
+// Entry point/interface.
+template <class Derived>
+__host__ __device__ bool
+must_perform_optional_synchronization(execution_policy<Derived> &policy)
+{
+  return must_perform_optional_stream_synchronization(derived_cast(policy));
+}
+
+
 // Fallback implementation of the customization point.
 __thrust_exec_check_disable__
 template <class Derived>
@@ -90,7 +104,7 @@ synchronize_stream(execution_policy<Derived> &policy)
     #if THRUST_INCLUDE_DEVICE_CODE
       #if __THRUST_HAS_CUDART__
         THRUST_UNUSED_VAR(policy);
-        musaDeviceSynchronize();
+        cub::detail::device_synchronize();
         result = musaGetLastError();
       #else
         THRUST_UNUSED_VAR(policy);
@@ -108,6 +122,50 @@ musaError_t
 synchronize(Policy &policy)
 {
   return synchronize_stream(derived_cast(policy));
+}
+
+// Fallback implementation of the customization point.
+__thrust_exec_check_disable__
+template <class Derived>
+__host__ __device__
+musaError_t
+synchronize_stream_optional(execution_policy<Derived> &policy)
+{
+  musaError_t result;
+  if (THRUST_IS_HOST_CODE) {
+    #if THRUST_INCLUDE_HOST_CODE
+      if(must_perform_optional_synchronization(policy)){
+        musaStreamSynchronize(stream(policy));
+        result = musaGetLastError();
+      }else{
+        result = musaSuccess;
+      }
+    #endif
+  } else {
+    #if THRUST_INCLUDE_DEVICE_CODE
+      #if __THRUST_HAS_CUDART__
+        if(must_perform_optional_synchronization(policy)){
+          cub::detail::device_synchronize();
+          result = musaGetLastError();
+        }else{
+          result = musaSuccess;
+        }
+      #else
+        THRUST_UNUSED_VAR(policy);
+        result = musaSuccess;
+      #endif
+    #endif
+  }
+  return result;
+}
+
+// Entry point/interface.
+template <class Policy>
+__host__ __device__
+musaError_t
+synchronize_optional(Policy &policy)
+{
+  return synchronize_stream_optional(derived_cast(policy));
 }
 
 template <class Type>
@@ -158,14 +216,14 @@ trivial_copy_device_to_device(Policy &    policy,
   musaError_t  status = musaSuccess;
   if (count == 0) return status;
 
-  musaStream_t stream = cuda_cub::stream(policy);
+  musaStream_t stream = musa_cub::stream(policy);
   //
   status = ::musaMemcpyAsync(dst,
                              src,
                              sizeof(Type) * count,
                              musaMemcpyDeviceToDevice,
                              stream);
-  cuda_cub::synchronize(policy);
+  musa_cub::synchronize(policy);
   return status;
 }
 
@@ -174,7 +232,7 @@ terminate()
 {
   if (THRUST_IS_DEVICE_CODE) {
     #if THRUST_INCLUDE_DEVICE_CODE
-      asm("trap;");
+      __trap();  // MUSA: 使用 __trap() 替代 PTX trap
     #endif
   } else {
     #if THRUST_INCLUDE_HOST_CODE
@@ -187,7 +245,7 @@ __host__  __device__
 inline void throw_on_error(musaError_t status)
 {
 #if __THRUST_HAS_CUDART__
-  // Clear the global CUDA error state which may have been set by the last
+  // Clear the global MUSA error state which may have been set by the last
   // call. Otherwise, errors may "leak" to unrelated kernel launches.
   musaGetLastError();
 #endif
@@ -196,19 +254,19 @@ inline void throw_on_error(musaError_t status)
   {
     if (THRUST_IS_HOST_CODE) {
       #if THRUST_INCLUDE_HOST_CODE
-        throw thrust::system_error(status, thrust::cuda_category());
+        throw thrust::system_error(status, thrust::musa_category());
       #endif
     } else {
       #if THRUST_INCLUDE_DEVICE_CODE
         #if __THRUST_HAS_CUDART__
-          printf("Thrust CUDA backend error: %s: %s\n",
+          printf("Thrust musa backend error: %s: %s\n",
                  musaGetErrorName(status),
                  musaGetErrorString(status));
         #else
-          printf("Thrust CUDA backend error: %d\n",
+          printf("Thrust musa backend error: %d\n",
                  static_cast<int>(status));
         #endif
-        cuda_cub::terminate();
+        musa_cub::terminate();
       #endif
     }
   }
@@ -218,7 +276,7 @@ __host__ __device__
 inline void throw_on_error(musaError_t status, char const *msg)
 {
 #if __THRUST_HAS_CUDART__
-  // Clear the global CUDA error state which may have been set by the last
+  // Clear the global MUSA error state which may have been set by the last
   // call. Otherwise, errors may "leak" to unrelated kernel launches.
   musaGetLastError();
 #endif
@@ -227,21 +285,21 @@ inline void throw_on_error(musaError_t status, char const *msg)
   {
     if (THRUST_IS_HOST_CODE) {
       #if THRUST_INCLUDE_HOST_CODE
-        throw thrust::system_error(status, thrust::cuda_category(), msg);
+        throw thrust::system_error(status, thrust::musa_category(), msg);
       #endif
     } else {
       #if THRUST_INCLUDE_DEVICE_CODE
         #if __THRUST_HAS_CUDART__
-          printf("Thrust CUDA backend error: %s: %s: %s\n",
+          printf("Thrust musa backend error: %s: %s: %s\n",
                  musaGetErrorName(status),
                  musaGetErrorString(status),
                  msg);
         #else
-          printf("Thrust CUDA backend error: %d: %s \n",
+          printf("Thrust musa backend error: %d: %s \n",
                  static_cast<int>(status),
                  msg);
         #endif
-        cuda_cub::terminate();
+        musa_cub::terminate();
       #endif
     }
   }
@@ -299,13 +357,13 @@ struct transform_input_iterator_t
   __host__ __device__ __forceinline__ reference operator*() const
   {
     typename thrust::iterator_value<InputIt>::type x = *input;
-    return op(x);
+    return static_cast<reference>(op(x));
   }
   /// Indirection
   __host__ __device__ __forceinline__ reference operator*()
   {
     typename thrust::iterator_value<InputIt>::type x = *input;
-    return op(x);
+    return static_cast<reference>(op(x));
   }
 
   /// Addition
@@ -592,4 +650,4 @@ struct counting_iterator_t
 
 }    // cuda_
 
-} // end namespace thrust
+THRUST_NAMESPACE_END

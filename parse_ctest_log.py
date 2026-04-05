@@ -26,6 +26,7 @@ class TestInfo:
     total_cases: int = 0
     passed_cases: int = 0
     failed_cases: int = 0
+    known_failed_cases: int = 0
     failed_details: List[TestCase] = field(default_factory=list)
 
 def parse_log(log_path: str) -> Tuple[List[TestInfo], int]:
@@ -104,10 +105,12 @@ def parse_log(log_path: str) -> Tuple[List[TestInfo], int]:
             if test_num in test_map:
                 info = test_map[test_num]
                 info.passed_cases = passes
+                info.known_failed_cases = known_failures
                 info.failed_cases = failures + errors  # Count errors as failures too
-                # If total_cases wasn't set, calculate it
-                if info.total_cases == 0:
-                    info.total_cases = passes + failures + known_failures + errors
+                # Keep case-rate statistics aligned with pass/fail accounting.
+                # Known failures are reported separately and excluded from the
+                # pass-rate denominator so totals remain internally consistent.
+                info.total_cases = passes + failures + errors
             continue
 
         # Parse failure names for details
@@ -185,6 +188,7 @@ def generate_report(tests: List[TestInfo], output_path: str, filter_tests: bool 
     total_cases = sum(t.total_cases for t in tests)
     passed_cases = sum(t.passed_cases for t in tests)
     failed_cases = sum(t.failed_cases for t in tests)
+    known_failed_cases = sum(t.known_failed_cases for t in tests)
 
     program_pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
     case_pass_rate = (passed_cases / total_cases * 100) if total_cases > 0 else 0
@@ -238,7 +242,9 @@ def generate_report(tests: List[TestInfo], output_path: str, filter_tests: bool 
             rate = (t.passed_cases / t.total_cases * 100) if t.total_cases > 0 else 0
             report.append(f"| {status} | {short_name} | {t.total_cases} | {t.passed_cases} | {t.failed_cases} | {rate:.1f}% |")
         else:
-            if t.result == "Timeout":
+            if t.known_failed_cases > 0:
+                reason = f"known failure x{t.known_failed_cases}"
+            elif t.result == "Timeout":
                 reason = "超时"
             elif t.result == "Exception":
                 reason = "异常"
@@ -291,6 +297,8 @@ def generate_report(tests: List[TestInfo], output_path: str, filter_tests: bool 
     report.append("")
     report.append(f"- **测试程序:** {passed_tests}/{total_tests} 通过 ({program_pass_rate:.1f}%)")
     report.append(f"- **测试用例:** {passed_cases}/{total_cases} 通过 ({case_pass_rate:.1f}%)")
+    if known_failed_cases > 0:
+        report.append(f"- **已知失败用例:** {known_failed_cases} 个，不计入通过率")
     if failed_tests + timeout_tests + exception_tests > 0:
         report.append(f"- 有 **{failed_tests + timeout_tests + exception_tests}** 个测试程序未通过")
     report.append("")

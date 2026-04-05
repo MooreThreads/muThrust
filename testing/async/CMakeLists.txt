@@ -10,16 +10,16 @@
 
 # The async tests only support CUDA enabled configs. Create a list of valid
 # thrust targets:
-set(cuda_configs)
+set(musa_configs)
 foreach(thrust_target IN LISTS THRUST_TARGETS)
   thrust_get_target_property(config_device ${thrust_target} DEVICE)
-  if (config_device STREQUAL CUDA)
-    list(APPEND cuda_configs ${thrust_target})
+  if (config_device STREQUAL MUSA)
+    list(APPEND musa_configs ${thrust_target})
   endif()
 endforeach()
 
-list(LENGTH cuda_configs num_cuda_configs)
-if (num_cuda_configs EQUAL 0)
+list(LENGTH musa_configs num_musa_configs)
+if (num_musa_configs EQUAL 0)
   return() # No valid configs found, nothing to do.
 endif()
 
@@ -43,7 +43,7 @@ function(thrust_add_async_test_dir algo_name)
   set(algo_meta_target thrust.all.test.async.${algo_name}.all)
   add_custom_target(${algo_meta_target})
 
-  foreach(thrust_target IN LISTS cuda_configs)
+  foreach(thrust_target IN LISTS musa_configs)
     thrust_get_target_property(config_prefix ${thrust_target} PREFIX)
 
     # Per-algorithm, per-config metatarget: thrust.[config].test.async.[algo].all
@@ -64,7 +64,7 @@ function(thrust_add_async_test_dir algo_name)
 
       thrust_add_test(test_target ${test_name} "${test_src}" ${thrust_target})
       if(THRUST_ENABLE_TESTS_WITH_RDC)
-        thrust_enable_rdc_for_cuda_target(${test_target})
+        thrust_enable_rdc_for_musa_target(${test_target})
       endif()
 
       add_dependencies(${algo_config_meta_target} ${test_target})

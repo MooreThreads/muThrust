@@ -11,9 +11,9 @@ foreach(thrust_target IN LISTS THRUST_TARGETS)
   thrust_get_target_property(config_device ${thrust_target} DEVICE)
   thrust_get_target_property(config_prefix ${thrust_target} PREFIX)
 
-  # Skip non cpp.cuda targets:
+  # Skip non cpp.musa targets:
   if (NOT config_host   STREQUAL "CPP" OR
-      NOT config_device STREQUAL "CUDA")
+      NOT config_device STREQUAL "MUSA")
     continue()
   endif()
 

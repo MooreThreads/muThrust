@@ -9,12 +9,12 @@ endif()
 
 # Split CUDA_FLAGS into 3 parts:
 #
-# THRUST_CUDA_FLAGS_BASE: Common CUDA flags for all targets.
-# THRUST_CUDA_FLAGS_RDC: Additional CUDA flags for targets compiled with RDC.
-# THRUST_CUDA_FLAGS_NO_RDC: Additional CUDA flags for targets compiled without RDC.
+# THRUST_MUSA_FLAGS_BASE: Common CUDA flags for all targets.
+# THRUST_MUSA_FLAGS_RDC: Additional CUDA flags for targets compiled with RDC.
+# THRUST_MUSA_FLAGS_NO_RDC: Additional CUDA flags for targets compiled without RDC.
 #
 # This is necessary because CUDA SMs 5.3, 6.2, and 7.2 do not support RDC, but
-# we want to always build some targets (e.g. testing/cuda/*) with RDC.
+# we want to always build some targets (e.g. testing/musa/*) with RDC.
 # We work around this by building the "always RDC" targets without support for
 # those SMs. This requires two sets of CUDA_FLAGS.
 #
@@ -28,9 +28,9 @@ endif()
 # since they might not behave as expected. This will improve with CMake 3.18,
 # which add the DEVICE_LINK genex, fixing the issue with using per-target
 # CUDA_FLAGS: https://gitlab.kitware.com/cmake/cmake/-/issues/18265
-set(THRUST_CUDA_FLAGS_BASE "${CMAKE_CUDA_FLAGS}")
-set(THRUST_CUDA_FLAGS_RDC)
-set(THRUST_CUDA_FLAGS_NO_RDC)
+set(THRUST_MUSA_FLAGS_BASE "${CMAKE_CUDA_FLAGS}")
+set(THRUST_MUSA_FLAGS_RDC)
+set(THRUST_MUSA_FLAGS_NO_RDC)
 
 # Archs that don't support RDC:
 set(no_rdc_archs 53 62 72)
@@ -130,9 +130,9 @@ foreach (arch IN LISTS THRUST_KNOWN_COMPUTE_ARCHS)
   else()
     string(APPEND compute_message " sm_${arch}")
   endif()
-  string(APPEND THRUST_CUDA_FLAGS_NO_RDC " ${arch_flag}")
+  string(APPEND THRUST_MUSA_FLAGS_NO_RDC " ${arch_flag}")
   if (NOT arch IN_LIST no_rdc_archs)
-    string(APPEND THRUST_CUDA_FLAGS_RDC " ${arch_flag}")
+    string(APPEND THRUST_MUSA_FLAGS_RDC " ${arch_flag}")
   endif()
 endforeach()
 
@@ -145,7 +145,7 @@ if (NOT "NVCXX" STREQUAL "${CMAKE_CUDA_COMPILER_ID}")
     if (DEFINED CMAKE_MUSA_COMPILER OR MUSA_FOUND)
       # MUSA 不需要 compute_future
     else()
-      string(APPEND THRUST_CUDA_FLAGS_BASE
+      string(APPEND THRUST_MUSA_FLAGS_BASE
         " -gencode arch=compute_${highest_arch},code=compute_${highest_arch}"
       )
       string(APPEND compute_message " compute_${highest_arch}")
@@ -195,7 +195,7 @@ foreach (sm IN LISTS no_rdc_archs)
 endforeach()
 
 # By default RDC is not used:
-set(CMAKE_CUDA_FLAGS "${THRUST_CUDA_FLAGS_BASE} ${THRUST_CUDA_FLAGS_NO_RDC}")
+set(CMAKE_CUDA_FLAGS "${THRUST_MUSA_FLAGS_BASE} ${THRUST_MUSA_FLAGS_NO_RDC}")
 
 # MUSA: Set CUB_MUSA_ARCH for correct warp size calculation
 # The architecture values are: mp21=210, mp22=220, mp31=310

@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 // Copyright (c) 2018 NVIDIA Corporation
 // Author: Bryce Adelstein Lelbach <brycelelbach@gmail.com>
 //
@@ -19,8 +13,7 @@
 #include <thrust/system/musa/pointer.h>
 #include <thrust/system/musa/detail/execution_policy.h>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
 namespace system { namespace musa
 {
@@ -72,7 +65,7 @@ unique_eager_future_type(
   thrust::musa::execution_policy<DerivedPolicy> const&
 ) noexcept;
 
-} // end namespace thrust
+THRUST_NAMESPACE_END
 
 #include <thrust/system/musa/detail/future.inl>
 

@@ -20,7 +20,7 @@ int main()
             << "Device system: "
 #if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CPP
             << "CPP\n";
-#elif THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
+#elif THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
             << "musa\n";
 #elif THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_OMP
             << "OMP\n";

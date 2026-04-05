@@ -27,5 +27,73 @@
 
 #pragma once
 
-// MUSA uses the same execution_policy as CUDA
-#include <thrust/system/cuda/detail/execution_policy.h>
+#include <thrust/detail/config.h>
+
+#include <thrust/version.h>
+#include <thrust/detail/execution_policy.h>
+#include <thrust/iterator/detail/any_system_tag.h>
+#include <thrust/system/musa/config.h>
+
+#include <thrust/detail/allocator_aware_execution_policy.h>
+
+#if THRUST_CPP_DIALECT >= 2011
+  #include <thrust/detail/dependencies_aware_execution_policy.h>
+#endif
+
+THRUST_NAMESPACE_BEGIN
+
+namespace musa_cub
+{
+
+struct tag;
+
+template <class>
+struct execution_policy;
+
+template <>
+struct execution_policy<tag> : thrust::execution_policy<tag>
+{
+  typedef tag tag_type;
+};
+
+struct tag : execution_policy<tag>
+, thrust::detail::allocator_aware_execution_policy<musa_cub::execution_policy>
+#if THRUST_CPP_DIALECT >= 2011
+, thrust::detail::dependencies_aware_execution_policy<musa_cub::execution_policy>
+#endif
+{};
+
+template <class Derived>
+struct execution_policy : thrust::execution_policy<Derived>
+{
+  typedef tag tag_type;
+  operator tag() const { return tag(); }
+};
+
+} // namespace musa_cub
+
+namespace system { namespace musa { namespace detail
+{
+
+using thrust::musa_cub::tag;
+using thrust::musa_cub::execution_policy;
+
+}}} // namespace system::musa::detail
+
+namespace system { namespace musa
+{
+
+using thrust::musa_cub::tag;
+using thrust::musa_cub::execution_policy;
+
+}} // namespace system::musa
+
+namespace musa
+{
+
+using thrust::musa_cub::tag;
+using thrust::musa_cub::execution_policy;
+
+} // namespace musa
+
+THRUST_NAMESPACE_END

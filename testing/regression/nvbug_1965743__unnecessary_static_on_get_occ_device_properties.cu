@@ -1,5 +1,5 @@
 // nvcc -Xcompiler -Wall -Xcompiler -Werror -ccbin=clang
 
-#include <thrust/system/cuda/detail/core/util.h>
+#include <thrust/system/musa/detail/core/util.h>
 
 int main() {}

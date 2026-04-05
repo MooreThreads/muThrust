@@ -59,15 +59,15 @@
 
 // figure out which device compiler we're using
 // MUSA: 检测 MUSA 编译器
-#if defined(__CUDACC__) || defined(_NVHPC_CUDA) || defined(__MUSACC_VER_MAJOR__)
+#if defined(__MUSACC__) || defined(_NVHPC_MUSA) || defined(__MUSACC_VER_MAJOR__)
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_NVCC
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_MSVC
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_GCC
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_GCC
 #elif THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_CLANG
-// CUDA-capable clang should behave similar to NVCC.
-#if defined(__CUDA__)
+// MUSA-capable clang should behave similar to NVCC.
+#if defined(__MUSA__)
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_NVCC
 #else
 #define THRUST_DEVICE_COMPILER THRUST_DEVICE_COMPILER_CLANG
@@ -84,7 +84,7 @@
 #endif // _OPENMP
 
 
-#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC) && !defined(__CUDA_ARCH__)
+#if (THRUST_HOST_COMPILER == THRUST_HOST_COMPILER_MSVC) && !defined(__MUSA_ARCH__)
   #define THRUST_DISABLE_MSVC_WARNING_BEGIN(x)                                \
     __pragma(warning(push))                                                   \
     __pragma(warning(disable : x))                                            \

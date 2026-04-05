@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -22,7 +16,7 @@
 
 
 /*! \file thrust/system/musa/error.h
- *  \brief CUDA-specific error reporting
+ *  \brief MUSA-specific error reporting
  */
 
 #pragma once
@@ -32,8 +26,7 @@
 #include <thrust/system/error_code.h>
 #include <thrust/system/musa/detail/guarded_driver_types.h>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
 namespace system
 {
@@ -41,21 +34,21 @@ namespace system
 namespace musa
 {
 
-// To construct an error_code after a CUDA Runtime error:
+// To construct an error_code after a MUSA Runtime error:
 //
-//   error_code(::musaGetLastError(), cuda_category())
+//   error_code(::cudaGetLastError(), musa_category())
 
 // XXX N3000 prefers enum class errc { ... }
-/*! Namespace for CUDA Runtime errors.
+/*! Namespace for MUSA Runtime errors.
  */
 namespace errc
 {
 
-/*! \p errc_t enumerates the kinds of CUDA Runtime errors.
+/*! \p errc_t enumerates the kinds of MUSA Runtime errors.
  */
 enum errc_t
 {
-  // from musa/include/driver_types.h
+  // from cuda/include/driver_types.h
   // mirror their order
   success                            = musaSuccess,
   missing_configuration              = musaErrorMissingConfiguration,
@@ -97,7 +90,7 @@ enum errc_t
   no_device                          = musaErrorNoDevice,
   ecc_uncorrectable                  = musaErrorECCUncorrectable,
 
-#if MUSART_VERSION >= 4020
+#if CUDART_VERSION >= 4020
   shared_object_symbol_not_found     = musaErrorSharedObjectSymbolNotFound,
   shared_object_init_failed          = musaErrorSharedObjectInitFailed,
   unsupported_limit                  = musaErrorUnsupportedLimit,
@@ -119,7 +112,7 @@ enum errc_t
   operating_system_error             = musaErrorOperatingSystem,
 #endif
 
-#if MUSART_VERSION >= 5000
+#if CUDART_VERSION >= 5000
   peer_access_unsupported            = musaErrorPeerAccessUnsupported,
   launch_max_depth_exceeded          = musaErrorLaunchMaxDepthExceeded,
   launch_file_scoped_texture_used    = musaErrorLaunchFileScopedTex,
@@ -135,19 +128,19 @@ enum errc_t
 
 } // end namespace errc
 
-} // end namespace cuda_cub
+} // end namespace musa_cub
 
 /*! \return A reference to an object of a type derived from class \p thrust::error_category.
  *  \note The object's \p equivalent virtual functions shall behave as specified
  *        for the class \p thrust::error_category. The object's \p name virtual function shall
- *        return a pointer to the string <tt>"musa"</tt>. The object's
+ *        return a pointer to the string <tt>"cuda"</tt>. The object's
  *        \p default_error_condition virtual function shall behave as follows:
  *
- *        If the argument <tt>ev</tt> corresponds to a CUDA error value, the function
- *        shall return <tt>error_condition(ev,cuda_category())</tt>.
+ *        If the argument <tt>ev</tt> corresponds to a MUSA error value, the function
+ *        shall return <tt>error_condition(ev,musa_category())</tt>.
  *        Otherwise, the function shall return <tt>system_category.default_error_condition(ev)</tt>.
  */
-inline const error_category &cuda_category(void);
+inline const error_category &musa_category(void);
 
 
 // XXX N3000 prefers is_error_code_enum<musa::errc>
@@ -158,32 +151,32 @@ template<> struct is_error_code_enum<musa::errc::errc_t> : thrust::detail::true_
 
 
 // XXX replace musa::errc::errc_t with musa::errc upon c++0x
-/*! \return <tt>error_code(static_cast<int>(e), musa::error_category())</tt>
+/*! \return <tt>error_code(static_cast<int>(e), cuda::error_category())</tt>
  */
 inline error_code make_error_code(musa::errc::errc_t e);
 
 
 // XXX replace musa::errc::errc_t with musa::errc upon c++0x
-/*! \return <tt>error_condition(static_cast<int>(e), musa::error_category())</tt>.
+/*! \return <tt>error_condition(static_cast<int>(e), cuda::error_category())</tt>.
  */
 inline error_condition make_error_condition(musa::errc::errc_t e);
 
 } // end system
 
-namespace cuda_cub
+namespace musa_cub
 {
 namespace errc = system::musa::errc;
 } // end cuda_cub
 
 namespace musa
 {
-// XXX replace with using system::cuda_errc upon c++0x
+// XXX replace with using system::musa_errc upon c++0x
 namespace errc = system::musa::errc;
-} // end musa
+} // end cuda
 
-using system::cuda_category;
+using system::musa_category;
 
-} // end namespace thrust
+THRUST_NAMESPACE_END
 
 #include <thrust/system/musa/detail/error.inl>
 

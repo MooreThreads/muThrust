@@ -57,7 +57,7 @@ endfunction()
 
 function(find_installed_project)
   set(CMAKE_PREFIX_PATH "${CMAKE_INSTALL_PREFIX}")
-  find_package(Thrust CONFIG COMPONENTS CPP CUDA)
+  find_package(Thrust CONFIG COMPONENTS CPP MUSA)
 
   if (NOT Thrust_FOUND)
     message(FATAL_ERROR
@@ -94,11 +94,11 @@ function(find_installed_project)
   assert_target(Thrust)
   assert_target(CUB::CUB)
   assert_target(Thrust::CPP::Host)
-  assert_target(Thrust::CUDA::Device)
+  assert_target(Thrust::MUSA::Device)
 
   thrust_update_system_found_flags()
   assert_boolean(THRUST_CPP_FOUND TRUE)
-  assert_boolean(THRUST_CUDA_FOUND TRUE)
+  assert_boolean(THRUST_MUSA_FOUND TRUE)
   assert_boolean(THRUST_OMP_FOUND FALSE)
   assert_boolean(THRUST_TBB_FOUND FALSE)
 

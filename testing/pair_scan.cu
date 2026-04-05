@@ -3,8 +3,8 @@
 #include <thrust/transform.h>
 #include <thrust/scan.h>
 
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#include <unittest/cuda/testframework.h>
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
+#include <unittest/musa/testframework.h>
 #endif
 
 struct make_pair_functor

@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,13 +26,13 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #include <thrust/system/musa/config.h>
 #include <thrust/system/musa/detail/execution_policy.h>
 #include <thrust/system/musa/detail/cross_system.h>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
 template <typename DerivedPolicy, typename InputIt, typename OutputIt>
 __host__ __device__ OutputIt
@@ -54,7 +48,7 @@ copy_n(const thrust::detail::execution_policy_base<DerivedPolicy> &exec,
        Size                                                        n,
        OutputIt                                                    result);
 
-namespace cuda_cub {
+namespace musa_cub {
 
 // D->D copy requires NVCC compiler
 template <class System,
@@ -97,8 +91,8 @@ copy_n(cross_system<System1, System2> systems,
        Size           n,
        OutputIterator result);
 
-}    // namespace cuda_
-} // end namespace thrust
+}    // namespace musa_cub
+THRUST_NAMESPACE_END
 
 
 
@@ -106,9 +100,8 @@ copy_n(cross_system<System1, System2> systems,
 #include <thrust/system/musa/detail/internal/copy_cross_system.h>
 #include <thrust/system/musa/detail/par_to_seq.h>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
@@ -197,8 +190,8 @@ copy_n(cross_system<System1, System2> systems,
 } // end copy_n()
 
 
-}    // namespace cuda_cub
-} // end namespace thrust
+}    // namespace musa_cub
+THRUST_NAMESPACE_END
 
 #include <thrust/memory.h>
 #include <thrust/detail/temporary_array.h>

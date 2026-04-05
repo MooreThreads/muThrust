@@ -16,7 +16,7 @@
 //
 // When a Thrust iterator is referenced (e.g. *iter) the result is not
 // a native or "raw" reference like int& or float&.  Instead,
-// the result is a type such as thrust::system::cuda::reference<int>
+// the result is a type such as thrust::system::musa::reference<int>
 // or thrust::system::tbb::reference<float>, depending on the system
 // to which the data belongs.  These reference wrappers are necessary
 // to make expressions like *iter1 = *iter2; work correctly when

@@ -16,7 +16,7 @@ int main(void)
     thrust::default_random_engine rng;
     thrust::generate(h_vec.begin(), h_vec.end(), rng);
 
-    // interface to CUDA code
+    // interface to MUSA code
     sort_on_device(h_vec);
 
     // print sorted array

@@ -26,7 +26,7 @@
 
 #if 0
 #include <thrust/system/cpp/detail/per_device_resource.h>
-#include <thrust/system/cuda/detail/per_device_resource.h>
+#include <thrust/system/musa/detail/per_device_resource.h>
 #include <thrust/system/omp/detail/per_device_resource.h>
 #include <thrust/system/tbb/detail/per_device_resource.h>
 #endif

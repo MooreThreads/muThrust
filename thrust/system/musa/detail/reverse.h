@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,13 +26,13 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <thrust/system/musa/detail/execution_policy.h>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 template <class Derived, class ItemsIt, class ResultIt>
 ResultIt __host__ __device__
@@ -53,8 +47,8 @@ reverse(execution_policy<Derived> &policy,
         ItemsIt                    first,
         ItemsIt                    last);
 
-}    // namespace cuda_cub
-} // end namespace thrust
+}    // namespace musa_cub
+THRUST_NAMESPACE_END
 
 #include <thrust/advance.h>
 #include <thrust/distance.h>
@@ -62,9 +56,8 @@ reverse(execution_policy<Derived> &policy,
 #include <thrust/system/musa/detail/copy.h>
 #include <thrust/iterator/reverse_iterator.h>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 
 template <class Derived,
           class ItemsIt,
@@ -75,7 +68,7 @@ reverse_copy(execution_policy<Derived> &policy,
              ItemsIt                    last,
              ResultIt                   result)
 {
-  return cuda_cub::copy(policy,
+  return musa_cub::copy(policy,
                         thrust::make_reverse_iterator(last),
                         thrust::make_reverse_iterator(first),
                         result);
@@ -95,10 +88,10 @@ reverse(execution_policy<Derived> &policy,
   ItemsIt mid(first);
   thrust::advance(mid, N / 2);
 
-  cuda_cub::swap_ranges(policy, first, mid, thrust::make_reverse_iterator(last));
+  musa_cub::swap_ranges(policy, first, mid, thrust::make_reverse_iterator(last));
 }
 
 
-}    // namespace cuda_cub
-} // end namespace thrust
+}    // namespace musa_cub
+THRUST_NAMESPACE_END
 #endif

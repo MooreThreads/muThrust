@@ -602,7 +602,7 @@ void TestVectorResizing(void)
     catch(std::length_error e) {}
     catch(std::bad_alloc e)
     {
-      // reset the CUDA error
+      // reset the MUSA error
       musaGetLastError();
     } // end catch
 #endif // defined(__CUDACC__) && CUDART_VERSION==3000

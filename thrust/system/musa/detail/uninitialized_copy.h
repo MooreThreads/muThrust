@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,6 +26,7 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <iterator>
@@ -40,10 +35,9 @@
 #include <thrust/system/musa/detail/util.h>
 #include <thrust/system/musa/detail/parallel_for.h>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
-namespace cuda_cub {
+namespace musa_cub {
 
 namespace __uninitialized_copy {
 
@@ -66,7 +60,7 @@ namespace __uninitialized_copy {
       InputType const &in  = raw_reference_cast(input[idx]);
       OutputType &     out = raw_reference_cast(output[idx]);
 
-#if defined(__MUSA__) && defined(__clang__)
+#if defined(__CUDA__) && defined(__clang__)
       // XXX unsafe, but clang is seemngly unable to call in-place new
       out = in;
 #else
@@ -89,12 +83,12 @@ uninitialized_copy_n(execution_policy<Derived> &policy,
 {
   typedef __uninitialized_copy::functor<InputIt,OutputIt> functor_t;
 
-  cuda_cub::parallel_for(policy,
+  musa_cub::parallel_for(policy,
                          functor_t(first, result),
                          count);
 
-  cuda_cub::throw_on_error(
-    cuda_cub::synchronize(policy)
+  musa_cub::throw_on_error(
+    musa_cub::synchronize_optional(policy)
   , "uninitialized_copy_n: failed to synchronize"
   );
 
@@ -110,13 +104,13 @@ uninitialized_copy(execution_policy<Derived>& policy,
                    InputIt                    last,
                    OutputIt                   result)
 {
-  return cuda_cub::uninitialized_copy_n(policy,
+  return musa_cub::uninitialized_copy_n(policy,
                                         first,
                                         thrust::distance(first, last),
                                         result);
 }
 
-}    // namespace cuda_
+}    // namespace musa_cub
 
-} // end namespace thrust
+THRUST_NAMESPACE_END
 #endif

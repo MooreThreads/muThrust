@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /*
  *  Copyright 2008-2018 NVIDIA Corporation
  *
@@ -21,7 +15,7 @@
  */
 
 /*! \file thrust/system/musa/memory.h
- *  \brief Managing memory associated with Thrust's CUDA system.
+ *  \brief Managing memory associated with Thrust's MUSA system.
  */
 
 #pragma once
@@ -33,53 +27,54 @@
 #include <thrust/mr/allocator.h>
 #include <ostream>
 
-namespace thrust { namespace cuda_cub
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub
 {
 
-/*! Allocates an area of memory available to Thrust's <tt>musa</tt> system.
+/*! Allocates an area of memory available to Thrust's <tt>cuda</tt> system.
  *  \param n Number of bytes to allocate.
- *  \return A <tt>musa::pointer<void></tt> pointing to the beginning of the newly
- *          allocated memory. A null <tt>musa::pointer<void></tt> is returned if
+ *  \return A <tt>cuda::pointer<void></tt> pointing to the beginning of the newly
+ *          allocated memory. A null <tt>cuda::pointer<void></tt> is returned if
  *          an error occurs.
- *  \note The <tt>musa::pointer<void></tt> returned by this function must be
- *        deallocated with \p musa::free.
- *  \see musa::free
+ *  \note The <tt>cuda::pointer<void></tt> returned by this function must be
+ *        deallocated with \p cuda::free.
+ *  \see cuda::free
  *  \see std::malloc
  */
 inline __host__ __device__ pointer<void> malloc(std::size_t n);
 
-/*! Allocates a typed area of memory available to Thrust's <tt>musa</tt> system.
+/*! Allocates a typed area of memory available to Thrust's <tt>cuda</tt> system.
  *  \param n Number of elements to allocate.
- *  \return A <tt>musa::pointer<T></tt> pointing to the beginning of the newly
- *          allocated elements. A null <tt>musa::pointer<T></tt> is returned if
+ *  \return A <tt>cuda::pointer<T></tt> pointing to the beginning of the newly
+ *          allocated elements. A null <tt>cuda::pointer<T></tt> is returned if
  *          an error occurs.
- *  \note The <tt>musa::pointer<T></tt> returned by this function must be
- *        deallocated with \p musa::free.
- *  \see musa::free
+ *  \note The <tt>cuda::pointer<T></tt> returned by this function must be
+ *        deallocated with \p cuda::free.
+ *  \see cuda::free
  *  \see std::malloc
  */
 template <typename T>
 inline __host__ __device__ pointer<T> malloc(std::size_t n);
 
-/*! Deallocates an area of memory previously allocated by <tt>musa::malloc</tt>.
- *  \param ptr A <tt>musa::pointer<void></tt> pointing to the beginning of an area
- *         of memory previously allocated with <tt>musa::malloc</tt>.
- *  \see musa::malloc
+/*! Deallocates an area of memory previously allocated by <tt>cuda::malloc</tt>.
+ *  \param ptr A <tt>cuda::pointer<void></tt> pointing to the beginning of an area
+ *         of memory previously allocated with <tt>cuda::malloc</tt>.
+ *  \see cuda::malloc
  *  \see std::free
  */
 inline __host__ __device__ void free(pointer<void> ptr);
 
-/*! \p musa::allocator is the default allocator used by the \p musa system's
- *  containers such as <tt>musa::vector</tt> if no user-specified allocator is
- *  provided. \p musa::allocator allocates (deallocates) storage with \p
- *  musa::malloc (\p musa::free).
+/*! \p cuda::allocator is the default allocator used by the \p cuda system's
+ *  containers such as <tt>cuda::vector</tt> if no user-specified allocator is
+ *  provided. \p cuda::allocator allocates (deallocates) storage with \p
+ *  cuda::malloc (\p cuda::free).
  */
 template<typename T>
 using allocator = thrust::mr::stateless_resource_allocator<
   T, thrust::system::musa::memory_resource
 >;
 
-/*! \p musa::universal_allocator allocates memory that can be used by the \p musa
+/*! \p cuda::universal_allocator allocates memory that can be used by the \p cuda
  *  system and host systems.
  */
 template<typename T>
@@ -87,14 +82,14 @@ using universal_allocator = thrust::mr::stateless_resource_allocator<
   T, thrust::system::musa::universal_memory_resource
 >;
 
-} // namespace cuda_cub
+} // namespace musa_cub
 
 namespace system { namespace musa
 {
-using thrust::cuda_cub::malloc;
-using thrust::cuda_cub::free;
-using thrust::cuda_cub::allocator;
-using thrust::cuda_cub::universal_allocator;
+using thrust::musa_cub::malloc;
+using thrust::musa_cub::free;
+using thrust::musa_cub::allocator;
+using thrust::musa_cub::universal_allocator;
 }} // namespace system::musa
 
 /*! \namespace thrust::musa
@@ -102,13 +97,13 @@ using thrust::cuda_cub::universal_allocator;
  */
 namespace musa
 {
-using thrust::cuda_cub::malloc;
-using thrust::cuda_cub::free;
-using thrust::cuda_cub::allocator;
-using thrust::cuda_cub::universal_allocator;
+using thrust::musa_cub::malloc;
+using thrust::musa_cub::free;
+using thrust::musa_cub::allocator;
+using thrust::musa_cub::universal_allocator;
 } // namespace musa
 
-} // namespace thrust
+THRUST_NAMESPACE_END
 
 #include <thrust/system/musa/detail/memory.inl>
 

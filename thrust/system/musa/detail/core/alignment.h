@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /*
  *  Copyright 2008-2013 NVIDIA Corporation
  *
@@ -24,11 +18,12 @@
 
 #pragma once
 
+#include <thrust/detail/config.h>
+
 #include <thrust/system/musa/detail/util.h>
 
-namespace thrust
-{
-namespace cuda_cub {
+THRUST_NAMESPACE_BEGIN
+namespace musa_cub {
 namespace alignment_of_detail {
 
 
@@ -76,7 +71,7 @@ struct alignment_of
 template <std::size_t Align>
 struct aligned_type;
 
-// __align__ is CUDA-specific, so guard it
+// __align__ is MUSA-specific, so guard it
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 
 // implementing aligned_type portably is tricky:
@@ -252,4 +247,4 @@ struct aligned_storage
 
 }    // end cuda_
 
-} // end namespace thrust
+THRUST_NAMESPACE_END

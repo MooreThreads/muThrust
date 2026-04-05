@@ -110,7 +110,7 @@ function(thrust_build_compiler_targets)
       # -Wunused-variable: Some variables only used in CUDA paths, not MUSA
       # -Wunused-local-typedef: Unused typedef aliases in template metaprogramming
       # -Wreorder-ctor: Constructor initialization order (code style issue)
-      # -Wgnu-anonymous-struct: GNU anonymous struct extension (CUDA compatibility)
+      # -Wgnu-anonymous-struct: GNU anonymous struct extension (MUSA compatibility)
       # -Wmisleading-indentation: Indentation style warnings
       # -Wsometimes-uninitialized: False positives for conditional initialization
       # -Wdeprecated-declarations: Using deprecated CUDA APIs in MUSA context

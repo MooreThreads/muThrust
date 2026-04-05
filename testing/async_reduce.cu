@@ -103,11 +103,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -121,11 +121,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -162,11 +162,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -181,11 +181,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -227,11 +227,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -247,11 +247,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -295,11 +295,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -315,11 +315,11 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INVOKER(
   // Members.
 , musaStream_t stream_;
   // Constructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
   );
   // Destructor.
-, thrust::cuda_cub::throw_on_error(
+, thrust::musa_cub::throw_on_error(
     musaStreamDestroy(stream_)
   );
   // `validate_event` member.
@@ -849,7 +849,7 @@ struct test_async_reduce_on_then_after
     ASSERT_EQUAL(h0, d0);
 
     musaStream_t stream;
-    thrust::cuda_cub::throw_on_error(
+    thrust::musa_cub::throw_on_error(
       musaStreamCreateWithFlags(&stream, musaStreamNonBlocking)
     );
 
@@ -900,7 +900,7 @@ struct test_async_reduce_on_then_after
 
     ASSERT_EQUAL(r0, r1);
 
-    thrust::cuda_cub::throw_on_error(
+    thrust::musa_cub::throw_on_error(
       musaStreamDestroy(stream)
     );
   }
@@ -924,12 +924,12 @@ struct test_async_reduce_allocator_on_then_after
     ASSERT_EQUAL(h0, d0);
 
     musaStream_t stream0;
-    thrust::cuda_cub::throw_on_error(
+    thrust::musa_cub::throw_on_error(
       musaStreamCreateWithFlags(&stream0, musaStreamNonBlocking)
     );
 
     musaStream_t stream1;
-    thrust::cuda_cub::throw_on_error(
+    thrust::musa_cub::throw_on_error(
       musaStreamCreateWithFlags(&stream1, musaStreamNonBlocking)
     );
 
@@ -986,8 +986,8 @@ struct test_async_reduce_allocator_on_then_after
 
     ASSERT_EQUAL(r0, r1);
 
-    thrust::cuda_cub::throw_on_error(musaStreamDestroy(stream0));
-    thrust::cuda_cub::throw_on_error(musaStreamDestroy(stream1));
+    thrust::musa_cub::throw_on_error(musaStreamDestroy(stream0));
+    thrust::musa_cub::throw_on_error(musaStreamDestroy(stream1));
 #endif
   }
 };

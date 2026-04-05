@@ -1,9 +1,3 @@
-/****************************************************************************
-* This library contains code from thrust, thrust is licensed under the license
-* below.
-* Some files of thrust may have been modified by Moore Threads Technology Co.
-* , Ltd
-******************************************************************************/
 /******************************************************************************
  * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
  *
@@ -32,16 +26,16 @@
  ******************************************************************************/
 #pragma once
 
+#include <thrust/detail/config.h>
 
 #if THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 #include <iterator>
 #include <thrust/system/musa/detail/scan.h>
 #include <thrust/distance.h>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
-namespace cuda_cub {
+namespace musa_cub {
 
 template <class Derived,
           class InputIt,
@@ -73,7 +67,7 @@ transform_inclusive_scan(execution_policy<Derived> &policy,
                                      TransformOp>
       transformed_iterator_t;
 
-  return cuda_cub::inclusive_scan_n(policy,
+  return musa_cub::inclusive_scan_n(policy,
                                  transformed_iterator_t(first, transform_op),
                                  num_items,
                                  result,
@@ -105,7 +99,7 @@ transform_exclusive_scan(execution_policy<Derived> &policy,
                                      TransformOp>
       transformed_iterator_t;
 
-  return cuda_cub::exclusive_scan_n(policy,
+  return musa_cub::exclusive_scan_n(policy,
                                  transformed_iterator_t(first, transform_op),
                                  num_items,
                                  result,
@@ -113,7 +107,7 @@ transform_exclusive_scan(execution_policy<Derived> &policy,
                                  scan_op);
 }
 
-}    // namespace cuda_cub
+}    // namespace musa_cub
 
-} // end namespace thrust
+THRUST_NAMESPACE_END
 #endif

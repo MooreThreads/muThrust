@@ -28,16 +28,16 @@
 
 #include <thrust/detail/config.h>
 
-// MUSA 系统标签 - 复用 CUDA 实现
-#include <thrust/system/cuda/tag.h>
+// MUSA 系统标签 - 复用 MUSA 实现
+#include <thrust/system/musa/tag.h>
 
 THRUST_NAMESPACE_BEGIN
 
 namespace musa
 {
 
-// MUSA 标签是 CUDA 标签的别名
-using tag = thrust::cuda::tag;
+// MUSA 标签是 MUSA 标签的别名
+using tag = thrust::musa::tag;
 
 } // end namespace musa
 

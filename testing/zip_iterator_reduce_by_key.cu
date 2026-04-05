@@ -2,8 +2,8 @@
 #include <thrust/iterator/zip_iterator.h>
 #include <thrust/reduce.h>
 
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-#include <unittest/cuda/testframework.h>
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
+#include <unittest/musa/testframework.h>
 #endif
 
 using namespace unittest;
@@ -72,8 +72,8 @@ struct TestZipIteratorReduceByKey
     
     // The tests below get miscompiled on Tesla hw for 8b types
 
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_CUDA
-    if(const CUDATestDriver *driver = dynamic_cast<const CUDATestDriver*>(&UnitTestDriver::s_driver()))
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
+    if(const MUSATestDriver *driver = dynamic_cast<const MUSATestDriver*>(&UnitTestDriver::s_driver()))
     {
       if(typeid(T) == typeid(unittest::uint8_t) && driver->current_device_architecture() < 200)
       {

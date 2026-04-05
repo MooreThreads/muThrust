@@ -34,8 +34,7 @@
 #include <thrust/system/system_error.h>
 #include <thrust/system/musa/error.h>
 
-namespace thrust
-{
+THRUST_NAMESPACE_BEGIN
 
 namespace system
 {
@@ -51,7 +50,7 @@ namespace experimental
  *  \{
  */
 
-/*! \p pinned_allocator is a CUDA-specific host memory allocator
+/*! \p pinned_allocator is a MUSA-specific host memory allocator
  *  that employs \c musaMallocHost for allocation.
  *
  *  \see http://www.sgi.com/tech/stl/Allocators.html
@@ -163,7 +162,7 @@ template<typename T>
 
       if(error)
       {
-        musaGetLastError(); // Clear global CUDA error state.
+        musaGetLastError(); // Clear global MUSA error state.
         throw std::bad_alloc();
       } // end if
 
@@ -185,12 +184,12 @@ template<typename T>
     {
       musaError_t error = musaFreeHost(p);
 
-      musaGetLastError(); // Clear global CUDA error state.
+      musaGetLastError(); // Clear global MUSA error state.
 
       if(error)
       {
-        musaGetLastError(); // Clear global CUDA error state.
-        throw thrust::system_error(error, thrust::cuda_category());
+        musaGetLastError(); // Clear global MUSA error state.
+        throw thrust::system_error(error, thrust::musa_category());
       } // end if
     } // end deallocate()
 
@@ -246,5 +245,5 @@ using thrust::system::musa::experimental::pinned_allocator;
 
 } // end musa
 
-} // end thrust
+THRUST_NAMESPACE_END
 
