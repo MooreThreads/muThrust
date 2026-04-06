@@ -26,8 +26,14 @@ THRUST_NAMESPACE_BEGIN
 namespace detail
 {
 
-// define an empty allocator class to use below
-struct device_delete_allocator {};
+// A lightweight typed allocator facade used only to route destroy_range onto
+// the device system for device_ptr-backed ranges.
+template <typename T>
+struct device_delete_allocator
+{
+  using value_type = T;
+  using pointer    = device_ptr<T>;
+};
 
 }
 
@@ -36,7 +42,7 @@ template<typename T>
                      const size_t n)
 {
   // we can use device_allocator to destroy the range
-  thrust::detail::device_delete_allocator a;
+  thrust::detail::device_delete_allocator<T> a;
   thrust::detail::destroy_range(a, ptr, n);
   thrust::device_free(ptr);
 } // end device_delete()

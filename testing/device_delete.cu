@@ -14,34 +14,37 @@ struct Foo
   __host__ __device__
   ~Foo(void)
   {
-#ifdef __CUDA_ARCH__
+#if defined(__CUDA_ARCH__) || defined(__MUSA_ARCH__)
     // __device__ overload
     if(set_me_upon_destruction != 0)
-      *set_me_upon_destruction = true;
+      *set_me_upon_destruction = 1;
 #endif
   }
 
-  bool *set_me_upon_destruction;
+  int *set_me_upon_destruction;
 };
 
 #if !defined(__QNX__)
 void TestDeviceDeleteDestructorInvocation(void)
 {
-  KNOWN_FAILURE;
-//
-//  thrust::device_vector<bool> destructor_flag(1, false);
-//
-//  thrust::device_ptr<Foo> foo_ptr  = thrust::device_new<Foo>();
-//
-//  Foo exemplar;
-//  exemplar.set_me_upon_destruction = thrust::raw_pointer_cast(&destructor_flag[0]);
-//  *foo_ptr = exemplar;
-//
-//  ASSERT_EQUAL(false, destructor_flag[0]);
-//
-//  thrust::device_delete(foo_ptr);
-//
-//  ASSERT_EQUAL(true, destructor_flag[0]);
+  thrust::device_vector<int> destructor_flag(1, 0);
+
+  thrust::device_ptr<Foo> foo_ptr = thrust::device_new<Foo>();
+
+  Foo exemplar;
+  exemplar.set_me_upon_destruction =
+    thrust::raw_pointer_cast(destructor_flag.data());
+  *foo_ptr = exemplar;
+
+  // MUSA assignment to device_reference may destroy internal temporaries on the
+  // device. Clear the observation flag so this test only checks device_delete.
+  destructor_flag[0] = 0;
+
+  ASSERT_EQUAL(0, destructor_flag[0]);
+
+  thrust::device_delete(foo_ptr);
+
+  ASSERT_EQUAL(1, destructor_flag[0]);
 }
 DECLARE_UNITTEST(TestDeviceDeleteDestructorInvocation);
 #endif
