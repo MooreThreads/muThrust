@@ -1,6 +1,10 @@
 # Bring in CMAKE_INSTALL_LIBDIR
 include(GNUInstallDirs)
 
+# MUSA toolkits place CMake package files under ${prefix}/lib, not lib64.
+set(thrust_cmake_install_dir "lib/cmake/thrust")
+set(cub_cmake_install_dir "lib/cmake/cub")
+
 # Thrust is a header library; no need to build anything before installing:
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
 
@@ -10,14 +14,18 @@ install(DIRECTORY "${Thrust_SOURCE_DIR}/thrust"
     PATTERN "*.h"
     PATTERN "*.inl"
 )
+if (EXISTS "${Thrust_SOURCE_DIR}/thrust/statement")
+  install(FILES "${Thrust_SOURCE_DIR}/thrust/statement"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/thrust")
+endif()
 
 install(DIRECTORY "${Thrust_SOURCE_DIR}/thrust/cmake/"
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/thrust"
+  DESTINATION "${thrust_cmake_install_dir}"
   PATTERN thrust-header-search EXCLUDE
 )
 # Need to configure a file to store the infix specified in
 # CMAKE_INSTALL_INCLUDEDIR since it can be defined by the user
-set(install_location "${CMAKE_INSTALL_LIBDIR}/cmake/thrust")
+set(install_location "${thrust_cmake_install_dir}")
 configure_file("${Thrust_SOURCE_DIR}/thrust/cmake/thrust-header-search.cmake.in"
   "${Thrust_BINARY_DIR}/thrust/cmake/thrust-header-search.cmake"
   @ONLY)
@@ -39,13 +47,17 @@ if (THRUST_INSTALL_CUB_HEADERS)
     FILES_MATCHING
       PATTERN "*.cuh"
   )
+  if (EXISTS "${Thrust_SOURCE_DIR}/dependencies/cub/cub/statement")
+    install(FILES "${Thrust_SOURCE_DIR}/dependencies/cub/cub/statement"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/cub")
+  endif()
 
   # Need to configure a file to store THRUST_INSTALL_HEADER_INFIX
   install(DIRECTORY "${Thrust_SOURCE_DIR}/dependencies/cub/cub/cmake/"
-    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/cub"
+    DESTINATION "${cub_cmake_install_dir}"
     PATTERN cub-header-search EXCLUDE
   )
-  set(install_location "${CMAKE_INSTALL_LIBDIR}/cmake/cub")
+  set(install_location "${cub_cmake_install_dir}")
   configure_file("${Thrust_SOURCE_DIR}/dependencies/cub/cub/cmake/cub-header-search.cmake.in"
     "${Thrust_BINARY_DIR}/dependencies/cub/cub/cmake/cub-header-search.cmake"
     @ONLY)

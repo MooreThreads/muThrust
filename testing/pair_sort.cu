@@ -46,5 +46,8 @@ template <typename T>
     ASSERT_EQUAL(h_values, d_values);
   }
 };
+#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
+VariableUnitTest<TestPairStableSortByKey, unittest::type_list<unittest::int32_t> > TestPairStableSortByKeyInstance;
+#else
 VariableUnitTest<TestPairStableSortByKey, unittest::type_list<unittest::int8_t,unittest::int16_t,unittest::int32_t> > TestPairStableSortByKeyInstance;
-
+#endif

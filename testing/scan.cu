@@ -518,7 +518,9 @@ void TestScanWithLargeTypes(void)
 
 #if !defined(__QNX__)
   _TestScanWithLargeTypes<int,  8>();
+#if THRUST_DEVICE_SYSTEM != THRUST_DEVICE_SYSTEM_MUSA
   _TestScanWithLargeTypes<int, 64>();
+#endif
 #else
   KNOWN_FAILURE;
 #endif

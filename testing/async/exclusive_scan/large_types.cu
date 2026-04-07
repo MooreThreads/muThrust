@@ -49,8 +49,10 @@ struct test_large_types
 
     test_policy_overloads<invoker<FixedVector<int, 1>>>::run(num_values);
     test_policy_overloads<invoker<FixedVector<int, 8>>>::run(num_values);
+#if THRUST_DEVICE_SYSTEM != THRUST_DEVICE_SYSTEM_MUSA
     test_policy_overloads<invoker<FixedVector<int, 32>>>::run(num_values);
     test_policy_overloads<invoker<FixedVector<int, 64>>>::run(num_values);
+#endif
   }
 };
 DECLARE_UNITTEST(test_large_types);

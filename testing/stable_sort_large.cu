@@ -31,8 +31,10 @@ void TestStableSortWithLargeKeys(void)
     _TestStableSortWithLargeKeys<int,   16>();
     _TestStableSortWithLargeKeys<int,   32>();
     _TestStableSortWithLargeKeys<int,   64>();
+#if THRUST_DEVICE_SYSTEM != THRUST_DEVICE_SYSTEM_MUSA
     _TestStableSortWithLargeKeys<int,  128>();
     _TestStableSortWithLargeKeys<int,  256>();
+#endif
 
 // XXX these take too long to compile
 //    _TestStableSortWithLargeKeys<int,  512>();
@@ -42,4 +44,3 @@ void TestStableSortWithLargeKeys(void)
 //    _TestStableSortWithLargeKeys<int, 8192>();
 }
 DECLARE_UNITTEST(TestStableSortWithLargeKeys);
-

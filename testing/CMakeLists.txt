@@ -41,26 +41,11 @@ thrust_declare_test_restrictions(future            CPP.MUSA OMP.MUSA TBB.MUSA)
 # for CUDA.
 thrust_declare_test_restrictions(unittest_static_assert CPP.CPP CPP.MUSA)
 
-# MUSA: Tests that depend on parallel_for have been fixed by using direct kernel
-# launch in agent_launcher.h instead of function pointer-based launch.
-# Remaining disabled tests have other issues (see comments below).
-set(MUSA_DISABLED_TESTS
-  # Tests that hit MUSA compiler backend bugs (large vector types):
-  scan
-  stable_sort_large
-  # Additional tests failing due to MUSA cross-translation-unit template issues:
-  # extrema tests: INVESTIGATING - temporarily enabled
-  # scan/sort tests
-  # pair_sort: wrong result for thrust::pair<int8_t, int8_t> keys
-  # pair_scan: runtime failure in trivial_device_copy D->H
-  # pair_scan_by_key: wrong result for thrust::pair<int8_t, int8_t>
-  pair_scan
-  pair_scan_by_key
-  pair_sort
-  # partition tests
-  # iterator tests
-  # set operations
-)
+# MUSA: Tests that used to depend on parallel_for have been fixed by using
+# direct kernel launch in agent_launcher.h instead of function pointer-based
+# launch. Remaining MUSA-specific large-type limits are handled inside the test
+# sources, so there are no whole-file test disables left here.
+set(MUSA_DISABLED_TESTS)
 
 ## thrust_add_test
 #

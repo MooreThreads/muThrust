@@ -102,8 +102,8 @@ export THRUST_TEST_JOBS=4
 export PATH=/usr/local/musa/bin:$PATH
 cd muThrust
 
-Thrust_DIR=/usr/local/musa/lib64/cmake/thrust \
-CUB_DIR=/usr/local/musa/lib64/cmake/cub \
+Thrust_DIR=/usr/local/musa/lib/cmake/thrust \
+CUB_DIR=/usr/local/musa/lib/cmake/cub \
 ./build_thrust.sh build
 ```
 
