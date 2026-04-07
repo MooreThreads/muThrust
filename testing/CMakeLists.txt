@@ -51,23 +51,15 @@ set(MUSA_DISABLED_TESTS
   # Additional tests failing due to MUSA cross-translation-unit template issues:
   # extrema tests: INVESTIGATING - temporarily enabled
   # scan/sort tests
+  # pair_sort: wrong result for thrust::pair<int8_t, int8_t> keys
+  # pair_scan: runtime failure in trivial_device_copy D->H
+  # pair_scan_by_key: wrong result for thrust::pair<int8_t, int8_t>
   pair_scan
   pair_scan_by_key
   pair_sort
   # partition tests
-  is_partitioned
-  partition_point
-  partition
-  # reduce_by_key: device code generation issue
-  reduce_by_key
   # iterator tests
-  reverse_iterator
-  transform_input_output_iterator
-  transform_output_iterator
-  transform_scan
   # set operations
-  set_intersection_key_value
-  set_union_key_value
 )
 
 ## thrust_add_test

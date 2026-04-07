@@ -321,7 +321,7 @@ namespace __partition {
       predicate_wrapper(wrap_value<ITEM, item_type> const &x,
                         __tag<false /* USE_STENCIL */>)
       {
-        return predicate(x());
+        return static_cast<bool>(predicate(x()));
       }
 
       THRUST_DEVICE_FUNCTION bool
@@ -338,7 +338,7 @@ namespace __partition {
       predicate_wrapper(wrap_value<STENCIL, T> const &x,
                         __tag<true>)
       {
-        return predicate(x());
+        return static_cast<bool>(predicate(x()));
       }
 
       THRUST_DEVICE_FUNCTION bool
