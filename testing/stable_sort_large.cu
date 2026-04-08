@@ -29,8 +29,10 @@ void TestStableSortWithLargeKeys(void)
     _TestStableSortWithLargeKeys<int,    4>();
     _TestStableSortWithLargeKeys<int,    8>();
     _TestStableSortWithLargeKeys<int,   16>();
+#if THRUST_DEVICE_SYSTEM != THRUST_DEVICE_SYSTEM_MUSA || !defined(CUB_MUSA_ARCH) || CUB_MUSA_ARCH >= 310
     _TestStableSortWithLargeKeys<int,   32>();
     _TestStableSortWithLargeKeys<int,   64>();
+#endif
 #if THRUST_DEVICE_SYSTEM != THRUST_DEVICE_SYSTEM_MUSA
     _TestStableSortWithLargeKeys<int,  128>();
     _TestStableSortWithLargeKeys<int,  256>();
