@@ -61,8 +61,4 @@ template <typename T>
     ASSERT_EQUAL_QUIET(h_pairs, d_pairs);
   }
 };
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
-VariableUnitTest<TestPairScanByKey, unittest::type_list<unittest::int32_t> > TestPairScanByKeyInstance;
-#else
 VariableUnitTest<TestPairScanByKey, unittest::type_list<unittest::int8_t,unittest::int16_t,unittest::int32_t> > TestPairScanByKeyInstance;
-#endif

@@ -43,6 +43,7 @@
 #include <thrust/system/musa/config.h>
 #include <thrust/system/musa/detail/dispatch.h>
 #include <thrust/system/musa/detail/par_to_seq.h>
+#include <thrust/system/musa/detail/pair_vector_adapter.h>
 #include <thrust/system/musa/detail/util.h>
 
 #include <cub/device/dispatch/dispatch_scan_by_key.cuh>
@@ -84,10 +85,98 @@ ValuesOutIt inclusive_scan_by_key_n(
     thrust::detail::try_unwrap_contiguous_iterator_return_t<ValuesInIt>;
   using ValuesOutUnwrapIt =
     thrust::detail::try_unwrap_contiguous_iterator_return_t<ValuesOutIt>;
+  using ValueT = typename thrust::iterator_value<ValuesInIt>::type;
+  using OutputValueT = typename thrust::iterator_value<ValuesOutIt>::type;
 
   auto keys_unwrap = thrust::detail::try_unwrap_contiguous_iterator(keys);
   auto values_unwrap = thrust::detail::try_unwrap_contiguous_iterator(values);
   auto result_unwrap = thrust::detail::try_unwrap_contiguous_iterator(result);
+
+  if constexpr (thrust::musa_cub::detail::is_small_pair_vectorizable<ValueT>::value
+                && std::is_same<ValueT, OutputValueT>::value
+                && std::is_pointer<ValuesInUnwrapIt>::value
+                && std::is_pointer<ValuesOutUnwrapIt>::value)
+  {
+    using Adapter = thrust::musa_cub::detail::pair_vector_adapter<ValueT>;
+    using StorageT = typename Adapter::storage_type;
+    using StorageValuesInIt = decltype(
+      thrust::musa_cub::detail::pair_storage_pointer(values_unwrap));
+    using StorageValuesOutIt = decltype(
+      thrust::musa_cub::detail::pair_storage_pointer(result_unwrap));
+    using StorageOp =
+      thrust::musa_cub::detail::pair_vector_scan_op<ScanOpT, ValueT>;
+    using Dispatch32 = cub::DispatchScanByKey<KeysInUnwrapIt,
+                                              StorageValuesInIt,
+                                              StorageValuesOutIt,
+                                              EqualityOpT,
+                                              StorageOp,
+                                              cub::NullType,
+                                              thrust::detail::int32_t>;
+    using Dispatch64 = cub::DispatchScanByKey<KeysInUnwrapIt,
+                                              StorageValuesInIt,
+                                              StorageValuesOutIt,
+                                              EqualityOpT,
+                                              StorageOp,
+                                              cub::NullType,
+                                              thrust::detail::int64_t>;
+
+    auto storage_values =
+      thrust::musa_cub::detail::pair_storage_pointer(values_unwrap);
+    auto storage_result =
+      thrust::musa_cub::detail::pair_storage_pointer(result_unwrap);
+    StorageOp storage_scan_op{scan_op};
+    musaStream_t stream = thrust::musa_cub::stream(policy);
+    musaError_t status{};
+
+    std::size_t tmp_size = 0;
+    THRUST_INDEX_TYPE_DISPATCH2(status,
+                                Dispatch32::Dispatch,
+                                Dispatch64::Dispatch,
+                                num_items,
+                                (nullptr,
+                                 tmp_size,
+                                 keys_unwrap,
+                                 storage_values,
+                                 storage_result,
+                                 equality_op,
+                                 storage_scan_op,
+                                 cub::NullType{},
+                                 num_items_fixed,
+                                 stream,
+                                 THRUST_DEBUG_SYNC_FLAG));
+    thrust::musa_cub::throw_on_error(status,
+                                     "after determining tmp storage "
+                                     "requirements for pair inclusive_scan_by_key");
+
+    thrust::detail::temporary_array<thrust::detail::uint8_t, Derived> tmp{
+      policy,
+      tmp_size};
+
+    THRUST_INDEX_TYPE_DISPATCH2(status,
+                                Dispatch32::Dispatch,
+                                Dispatch64::Dispatch,
+                                num_items,
+                                (tmp.data().get(),
+                                 tmp_size,
+                                 keys_unwrap,
+                                 storage_values,
+                                 storage_result,
+                                 equality_op,
+                                 storage_scan_op,
+                                 cub::NullType{},
+                                 num_items_fixed,
+                                 stream,
+                                 THRUST_DEBUG_SYNC_FLAG));
+
+    thrust::musa_cub::throw_on_error(
+      status, "after dispatching pair inclusive_scan_by_key kernel");
+
+    thrust::musa_cub::throw_on_error(
+      thrust::musa_cub::synchronize_optional(policy),
+      "pair inclusive_scan_by_key failed to synchronize");
+
+    return result + num_items;
+  }
 
   using Dispatch32 = cub::DispatchScanByKey<KeysInUnwrapIt,
                                             ValuesInUnwrapIt,
@@ -197,10 +286,99 @@ ValuesOutIt exclusive_scan_by_key_n(
     thrust::detail::try_unwrap_contiguous_iterator_return_t<ValuesInIt>;
   using ValuesOutUnwrapIt =
     thrust::detail::try_unwrap_contiguous_iterator_return_t<ValuesOutIt>;
+  using ValueT = typename thrust::iterator_value<ValuesInIt>::type;
+  using OutputValueT = typename thrust::iterator_value<ValuesOutIt>::type;
 
   auto keys_unwrap = thrust::detail::try_unwrap_contiguous_iterator(keys);
   auto values_unwrap = thrust::detail::try_unwrap_contiguous_iterator(values);
   auto result_unwrap = thrust::detail::try_unwrap_contiguous_iterator(result);
+
+  if constexpr (thrust::musa_cub::detail::is_small_pair_vectorizable<ValueT>::value
+                && std::is_same<ValueT, OutputValueT>::value
+                && std::is_pointer<ValuesInUnwrapIt>::value
+                && std::is_pointer<ValuesOutUnwrapIt>::value)
+  {
+    using Adapter = thrust::musa_cub::detail::pair_vector_adapter<ValueT>;
+    using StorageT = typename Adapter::storage_type;
+    using StorageValuesInIt = decltype(
+      thrust::musa_cub::detail::pair_storage_pointer(values_unwrap));
+    using StorageValuesOutIt = decltype(
+      thrust::musa_cub::detail::pair_storage_pointer(result_unwrap));
+    using StorageOp =
+      thrust::musa_cub::detail::pair_vector_scan_op<ScanOpT, ValueT>;
+    using Dispatch32 = cub::DispatchScanByKey<KeysInUnwrapIt,
+                                              StorageValuesInIt,
+                                              StorageValuesOutIt,
+                                              EqualityOpT,
+                                              StorageOp,
+                                              StorageT,
+                                              thrust::detail::int32_t>;
+    using Dispatch64 = cub::DispatchScanByKey<KeysInUnwrapIt,
+                                              StorageValuesInIt,
+                                              StorageValuesOutIt,
+                                              EqualityOpT,
+                                              StorageOp,
+                                              StorageT,
+                                              thrust::detail::int64_t>;
+
+    auto storage_values =
+      thrust::musa_cub::detail::pair_storage_pointer(values_unwrap);
+    auto storage_result =
+      thrust::musa_cub::detail::pair_storage_pointer(result_unwrap);
+    StorageT storage_init = Adapter::to_storage(init_value);
+    StorageOp storage_scan_op{scan_op};
+    musaStream_t stream = thrust::musa_cub::stream(policy);
+    musaError_t status{};
+
+    std::size_t tmp_size = 0;
+    THRUST_INDEX_TYPE_DISPATCH2(status,
+                                Dispatch32::Dispatch,
+                                Dispatch64::Dispatch,
+                                num_items,
+                                (nullptr,
+                                 tmp_size,
+                                 keys_unwrap,
+                                 storage_values,
+                                 storage_result,
+                                 equality_op,
+                                 storage_scan_op,
+                                 storage_init,
+                                 num_items_fixed,
+                                 stream,
+                                 THRUST_DEBUG_SYNC_FLAG));
+    thrust::musa_cub::throw_on_error(status,
+                                     "after determining tmp storage "
+                                     "requirements for pair exclusive_scan_by_key");
+
+    thrust::detail::temporary_array<thrust::detail::uint8_t, Derived> tmp{
+      policy,
+      tmp_size};
+
+    THRUST_INDEX_TYPE_DISPATCH2(status,
+                                Dispatch32::Dispatch,
+                                Dispatch64::Dispatch,
+                                num_items,
+                                (tmp.data().get(),
+                                 tmp_size,
+                                 keys_unwrap,
+                                 storage_values,
+                                 storage_result,
+                                 equality_op,
+                                 storage_scan_op,
+                                 storage_init,
+                                 num_items_fixed,
+                                 stream,
+                                 THRUST_DEBUG_SYNC_FLAG));
+
+    thrust::musa_cub::throw_on_error(
+      status, "after dispatching pair exclusive_scan_by_key kernel");
+
+    thrust::musa_cub::throw_on_error(
+      thrust::musa_cub::synchronize_optional(policy),
+      "pair exclusive_scan_by_key failed to synchronize");
+
+    return result + num_items;
+  }
 
   using Dispatch32 = cub::DispatchScanByKey<KeysInUnwrapIt,
                                             ValuesInUnwrapIt,

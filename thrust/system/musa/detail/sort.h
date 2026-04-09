@@ -40,6 +40,7 @@
 
 #include <thrust/system/musa/detail/execution_policy.h>
 #include <thrust/system/musa/detail/par_to_seq.h>
+#include <thrust/system/musa/detail/pair_vector_adapter.h>
 #include <thrust/detail/trivial_sequence.h>
 #include <thrust/detail/integer_math.h>
 #include <thrust/extrema.h>
@@ -431,12 +432,72 @@ namespace __smart_sort {
             class ItemsIt,
             class CompareOp>
   THRUST_RUNTIME_FUNCTION typename enable_if_comparison_sort<KeysIt, CompareOp>::type
-  smart_sort(Policy&   policy,
-             KeysIt    keys_first,
-             KeysIt    keys_last,
-             ItemsIt   items_first,
+  smart_sort(execution_policy<Policy>& policy,
+             KeysIt                     keys_first,
+             KeysIt                     keys_last,
+             ItemsIt                    items_first,
              CompareOp compare_op)
   {
+    using key_type = typename iterator_value<KeysIt>::type;
+    using size_type = typename iterator_traits<KeysIt>::difference_type;
+    const size_type count = keys_last - keys_first;
+
+    if (count == 0)
+    {
+      return;
+    }
+
+    if constexpr (thrust::musa_cub::detail::is_small_pair_vectorizable<key_type>::value)
+    {
+      using Adapter = thrust::musa_cub::detail::pair_vector_adapter<key_type>;
+      using storage_key_type = typename Adapter::storage_type;
+      using storage_compare_op =
+        thrust::musa_cub::detail::pair_vector_compare_op<CompareOp, key_type>;
+
+      thrust::detail::trivial_sequence<KeysIt, Policy> keys(policy, keys_first, keys_last);
+      storage_key_type* storage_keys_first =
+        thrust::musa_cub::detail::pair_storage_pointer(
+          thrust::raw_pointer_cast(&*keys.begin()));
+      storage_key_type* storage_keys_last = storage_keys_first + count;
+
+      if (SORT_ITEMS::value)
+      {
+        thrust::detail::trivial_sequence<ItemsIt, Policy> values(
+          policy, items_first, items_first + count);
+
+        __merge_sort::merge_sort<SORT_ITEMS, STABLE>(
+          policy,
+          storage_keys_first,
+          storage_keys_last,
+          thrust::raw_pointer_cast(&*values.begin()),
+          storage_compare_op{compare_op});
+
+        if (!is_contiguous_iterator<ItemsIt>::value)
+        {
+          musa_cub::copy(policy, values.begin(), values.end(), items_first);
+        }
+      }
+      else
+      {
+        __merge_sort::merge_sort<SORT_ITEMS, STABLE>(
+          policy,
+          storage_keys_first,
+          storage_keys_last,
+          static_cast<storage_key_type*>(nullptr),
+          storage_compare_op{compare_op});
+      }
+
+      if (!is_contiguous_iterator<KeysIt>::value)
+      {
+        musa_cub::copy(policy, keys.begin(), keys.end(), keys_first);
+      }
+
+      musa_cub::throw_on_error(
+        musa_cub::synchronize_optional(policy),
+        "smart_sort(pair): failed to synchronize");
+      return;
+    }
+
     __merge_sort::merge_sort<SORT_ITEMS, STABLE>(policy,
                                                  keys_first,
                                                  keys_last,

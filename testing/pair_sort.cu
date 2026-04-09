@@ -42,12 +42,11 @@ template <typename T>
     // sort on the device
     thrust::stable_sort_by_key(d_pairs.begin(), d_pairs.end(), d_values.begin());
 
-    ASSERT_EQUAL_QUIET(h_pairs,  d_pairs);
-    ASSERT_EQUAL(h_values, d_values);
+    thrust::host_vector<P> h_pairs_from_d = d_pairs;
+    thrust::host_vector<int> h_values_from_d = d_values;
+
+    ASSERT_EQUAL_QUIET(h_pairs,  h_pairs_from_d);
+    ASSERT_EQUAL(h_values, h_values_from_d);
   }
 };
-#if THRUST_DEVICE_SYSTEM == THRUST_DEVICE_SYSTEM_MUSA
-VariableUnitTest<TestPairStableSortByKey, unittest::type_list<unittest::int32_t> > TestPairStableSortByKeyInstance;
-#else
 VariableUnitTest<TestPairStableSortByKey, unittest::type_list<unittest::int8_t,unittest::int16_t,unittest::int32_t> > TestPairStableSortByKeyInstance;
-#endif

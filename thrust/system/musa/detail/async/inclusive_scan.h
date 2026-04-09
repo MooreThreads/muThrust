@@ -135,6 +135,8 @@ async_inclusive_scan_n(execution_policy<DerivedPolicy>& policy,
         extract_dependencies(std::move(thrust::detail::derived_cast(policy)))));
   }
 
+  musaStream_t const dispatch_stream = ev.stream().native_handle();
+
   // Run scan.
   {
     THRUST_INDEX_TYPE_DISPATCH2(status,
@@ -148,7 +150,7 @@ async_inclusive_scan_n(execution_policy<DerivedPolicy>& policy,
                                  op,
                                  cub::NullType{},
                                  n_fixed,
-                                 user_raw_stream,
+                                 dispatch_stream,
                                  THRUST_DEBUG_SYNC_FLAG));
     thrust::musa_cub::throw_on_error(status,
                                      "after dispatching inclusive_scan kernel");
@@ -190,4 +192,3 @@ THRUST_NAMESPACE_END
 #endif // THRUST_DEVICE_COMPILER == THRUST_DEVICE_COMPILER_NVCC
 
 #endif // C++14
-

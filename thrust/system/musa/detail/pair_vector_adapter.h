@@ -118,6 +118,20 @@ struct pair_vector_scan_op
   }
 };
 
+template <typename CompareOp, typename PairT>
+struct pair_vector_compare_op
+{
+  using adapter = pair_vector_adapter<PairT>;
+  using storage_type = typename adapter::storage_type;
+
+  mutable CompareOp compare_op;
+
+  __host__ __device__ bool operator()(storage_type lhs, storage_type rhs) const
+  {
+    return compare_op(adapter::to_pair(lhs), adapter::to_pair(rhs));
+  }
+};
+
 template <typename PairT>
 __host__ __device__ typename pair_vector_adapter<PairT>::storage_type*
 pair_storage_pointer(PairT* ptr)
