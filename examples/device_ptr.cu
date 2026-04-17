@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <thrust/device_ptr.h>
 #include <thrust/device_malloc.h>
 #include <thrust/device_free.h>

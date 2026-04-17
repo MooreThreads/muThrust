@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 // Copyright (c)      2018 NVIDIA Corporation
 //                         (Bryce Adelstein Lelbach <brycelelbach@gmail.com>)
 // Copyright (c) 2013-2018 Eric Niebler (`THRUST_RETURNS`, etc)

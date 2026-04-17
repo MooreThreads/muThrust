@@ -1,3 +1,9 @@
+/****************************************************************************
+* This library contains code from thrust, thrust is licensed under the license
+* below.
+* Some files of thrust may have been modified by Moore Threads Technology Co.
+* , Ltd
+******************************************************************************/
 #include <unittest/unittest.h>
 #include <thrust/detail/static_assert.h>
 #include <thrust/type_traits/is_operator_less_or_greater_function_object.h>
