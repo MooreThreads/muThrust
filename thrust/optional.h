@@ -2767,14 +2767,12 @@ public:
   ///
   /// \group emplace
   __thrust_exec_check_disable__
-  template <class... Args>
+  template <class U = T>
   __host__ __device__
-  T &emplace(Args &&... args) noexcept {
-    static_assert(std::is_constructible<T, Args &&...>::value,
-                  "T must be constructible with Args");
-
-    *this = nullopt;
-    this->construct(std::forward<Args>(args)...);
+  T &emplace(U &&u) noexcept {
+    static_assert(std::is_lvalue_reference<U>::value, "U must be an lvalue");
+    m_value = addressof(u);
+    return *m_value;
   }
 
   /// Swaps this optional with the other.
@@ -2894,4 +2892,3 @@ template <class T> struct hash<THRUST_NS_QUALIFIER::optional<T>> {
 } // namespace std
 
 #endif // THRUST_CPP_DIALECT >= 2011
-

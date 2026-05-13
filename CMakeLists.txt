@@ -12,7 +12,7 @@ endif()
 set( CMAKE_INSTALL_PREFIX "/usr/local/musa" CACHE PATH
     "Install path prefix, prepended onto install directories" )
 set ( VERSION_STRING "1.17.2" )
-project(Thrust VERSION ${VERSION_STRING})
+project(Thrust VERSION ${VERSION_STRING} LANGUAGES NONE)
 # MUSA Configuration
 include(cmake/SimpleMUSA.cmake)
 

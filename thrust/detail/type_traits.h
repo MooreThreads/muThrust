@@ -724,7 +724,8 @@ struct is_empty_helper_base
 
 template<typename T>
   struct is_empty : integral_constant<bool,
-    sizeof(is_empty_helper_base) == sizeof(is_empty_helper<T>)
+    sizeof(is_empty_helper_base) ==
+      sizeof(is_empty_helper<typename remove_cv<T>::type>)
   >
   {
   };
@@ -738,4 +739,3 @@ using detail::false_type;
 THRUST_NAMESPACE_END
 
 #include <thrust/detail/type_traits/has_trivial_assign.h>
-

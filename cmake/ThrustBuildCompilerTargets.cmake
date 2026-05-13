@@ -9,6 +9,7 @@
 # thrust.compiler_interface_cpp11
 # thrust.compiler_interface_cpp14
 # thrust.compiler_interface_cpp17
+# thrust.compiler_interface_cpp20
 # - Interface targets providing compiler-specific options that should only be
 #   applied to certain dialects of C++.
 #
@@ -129,6 +130,14 @@ function(thrust_build_compiler_targets)
         "-Wno-deprecated-declarations"
         "-Wno-pass-failed"
       )
+      if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND
+          CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 20)
+        list(APPEND cxx_compile_options
+          "-Wno-deprecated-builtins"
+          "-Wno-deprecated-volatile"
+          "-Wno-deprecated-anon-enum-enum-conversion"
+        )
+      endif()
       message(STATUS "Thrust: MUSA compiler detected: Suppressing selected warnings")
     endif()
   endif()
@@ -211,6 +220,7 @@ function(thrust_build_compiler_targets)
   add_library(thrust.compiler_interface_cpp11 INTERFACE)
   add_library(thrust.compiler_interface_cpp14 INTERFACE)
   add_library(thrust.compiler_interface_cpp17 INTERFACE)
+  add_library(thrust.compiler_interface_cpp20 INTERFACE)
 
   if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # C4127: conditional expression is constant
