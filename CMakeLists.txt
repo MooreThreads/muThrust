@@ -28,7 +28,7 @@ endif()
 # This must be done before any languages are enabled:
 if (THRUST_TOPLEVEL_PROJECT)
   include(./module_version/generate_version_query.cmake)
-  add_version_query(${VERSION_STRING})
+  add_version_query(${VERSION_STRING} ${VERSION_STRING} muThrust)
   include(cmake/ThrustCompilerHacks.cmake)
 endif()
 
