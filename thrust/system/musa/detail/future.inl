@@ -34,7 +34,9 @@
 #include <thrust/system/musa/detail/util.h>
 #include <thrust/system/musa/detail/get_value.h>
 
+#include <cstdlib>
 #include <type_traits>
+#include <vector>
 #include <thrust/detail/memory_wrapper.h>
 
 THRUST_NAMESPACE_BEGIN
@@ -153,26 +155,138 @@ struct stream_deleter final
   }
 };
 
+struct pooled_streams final
+{
+  int device_;
+  std::vector<CUstream_st*> streams_;
+
+  __host__
+  explicit pooled_streams(int device) : device_(device) {}
+
+  pooled_streams(pooled_streams const&) = delete;
+  pooled_streams& operator=(pooled_streams const&) = delete;
+
+  __host__
+  ~pooled_streams()
+  {
+    for (auto stream : streams_)
+    {
+      // Destructors cannot report errors reliably during process shutdown.
+      musaStreamDestroy(stream);
+    }
+  }
+};
+
+inline __host__
+bool stream_pool_enabled()
+{
+  char const* env = std::getenv("THRUST_MUSA_DISABLE_STREAM_POOL");
+  return !(env && env[0] != '\0' && env[0] != '0');
+}
+
+inline __host__
+std::size_t stream_pool_limit()
+{
+  static std::size_t const limit = [] {
+    char const* env = std::getenv("THRUST_MUSA_STREAM_POOL_LIMIT");
+    if (env && env[0] != '\0')
+    {
+      char* end = nullptr;
+      unsigned long value = std::strtoul(env, &end, 10);
+      if (end != env)
+        return static_cast<std::size_t>(value);
+    }
+    return std::size_t{128};
+  }();
+  return limit;
+}
+
+inline __host__
+pooled_streams& stream_pool_for_device(int device)
+{
+  static thread_local std::vector<std::unique_ptr<pooled_streams>> pools;
+
+  for (auto& pool : pools)
+    if (pool->device_ == device)
+      return *pool;
+
+  pools.push_back(std::unique_ptr<pooled_streams>(new pooled_streams(device)));
+  return *pools.back();
+}
+
+inline __host__
+CUstream_st* acquire_stream_from_pool(int device)
+{
+  if (stream_pool_enabled())
+  {
+    auto& streams = stream_pool_for_device(device).streams_;
+    if (!streams.empty())
+    {
+      CUstream_st* stream = streams.back();
+      streams.pop_back();
+      return stream;
+    }
+  }
+
+  CUstream_st* stream = nullptr;
+  thrust::musa_cub::throw_on_error(
+    musaStreamCreateWithFlags(&stream, musaStreamNonBlocking)
+  );
+  return stream;
+}
+
+inline __host__
+void release_stream_to_pool(CUstream_st* stream, int device)
+{
+  if (nullptr == stream)
+    return;
+
+  if (!stream_pool_enabled() || device < 0)
+  {
+    thrust::musa_cub::throw_on_error(musaStreamDestroy(stream));
+    return;
+  }
+
+  // A pooled stream may be reused by unrelated async work. Make sure all
+  // previous work is complete before making it available again.
+  thrust::musa_cub::throw_on_error(musaStreamSynchronize(stream));
+
+  auto& streams = stream_pool_for_device(device).streams_;
+  if (streams.size() < stream_pool_limit())
+  {
+    streams.push_back(stream);
+  }
+  else
+  {
+    thrust::musa_cub::throw_on_error(musaStreamDestroy(stream));
+  }
+}
+
 struct stream_conditional_deleter final
 {
 private:
   bool cond_;
+  int device_;
 
 public:
   __host__
   constexpr stream_conditional_deleter() noexcept
-    : cond_(true) {}
+    : cond_(true), device_(-1) {}
+
+  __host__
+  explicit constexpr stream_conditional_deleter(int device) noexcept
+    : cond_(true), device_(device) {}
 
   __host__
   explicit constexpr stream_conditional_deleter(nonowning_t) noexcept
-    : cond_(false) {}
+    : cond_(false), device_(-1) {}
 
   __host__
   void operator()(CUstream_st* s) const
   {
     if (cond_ && nullptr != s)
     {
-      thrust::musa_cub::throw_on_error(musaStreamDestroy(s));
+      release_stream_to_pool(s, device_);
     }
   }
 };
@@ -193,11 +307,10 @@ public:
   unique_stream()
     : handle_(nullptr, stream_conditional_deleter())
   {
-    native_handle_type s;
-    thrust::musa_cub::throw_on_error(
-      musaStreamCreateWithFlags(&s, musaStreamNonBlocking)
-    );
-    handle_.reset(s);
+    int device = 0;
+    thrust::musa_cub::throw_on_error(musaGetDevice(&device));
+    handle_ = decltype(handle_)(nullptr, stream_conditional_deleter(device));
+    handle_.reset(acquire_stream_from_pool(device));
   }
 
   /// \brief Construct a non-owning handle to an existing stream. When the
@@ -1375,4 +1488,3 @@ THRUST_DECLTYPE_RETURNS(std::move(dependency))
 THRUST_NAMESPACE_END
 
 #endif // C++14
-

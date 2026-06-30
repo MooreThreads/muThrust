@@ -111,38 +111,30 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device.on(stream_)
+, thrust::device.on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 );
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device(thrust::device_allocator<void>{}).on(stream_)
+, thrust::device(thrust::device_allocator<void>{}).on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 );
@@ -175,19 +167,15 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on_init
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device.on(stream_)
+, thrust::device.on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 , unittest::random_integer<T>()
@@ -195,19 +183,15 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on_init
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device(thrust::device_allocator<void>{}).on(stream_)
+, thrust::device(thrust::device_allocator<void>{}).on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 , unittest::random_integer<T>()
@@ -245,19 +229,15 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on_init_plus
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device.on(stream_)
+, thrust::device.on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 , unittest::random_integer<T>()
@@ -266,19 +246,15 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on_init_plus
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device(thrust::device_allocator<void>{}).on(stream_)
+, thrust::device(thrust::device_allocator<void>{}).on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 , unittest::random_integer<T>()
@@ -318,19 +294,15 @@ DEFINE_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_on_init_custom_plus
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device.on(stream_)
+, thrust::device.on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 , unittest::random_integer<T>()
@@ -339,19 +311,15 @@ DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
 DEFINE_STATEFUL_ASYNC_REDUCE_INTO_INVOKER(
   reduce_into_async_invoker_device_allocator_on_init_custom_plus
   // Members.
-, musaStream_t stream_;
+, thrust::system::musa::detail::unique_stream stream_;
   // Constructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamCreateWithFlags(&stream_, musaStreamNonBlocking)
-  );
+, THRUST_PP_EMPTY()
   // Destructor.
-, thrust::musa_cub::throw_on_error(
-    musaStreamDestroy(stream_)
-  );
+, THRUST_PP_EMPTY()
   // `validate_event` member.
-, ASSERT_EQUAL_QUIET(stream_, e.stream().native_handle());
+, ASSERT_EQUAL_QUIET(stream_.native_handle(), e.stream().native_handle());
   // Arguments to `thrust::async::reduce_into`.
-, thrust::device(thrust::device_allocator<void>{}).on(stream_)
+, thrust::device(thrust::device_allocator<void>{}).on(stream_.get())
 , THRUST_FWD(first), THRUST_FWD(last)
 , THRUST_FWD(output)
 , unittest::random_integer<T>()
